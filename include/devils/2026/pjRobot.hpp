@@ -34,6 +34,9 @@ namespace devils
                 double rightX = mainController.get_analog(ANALOG_RIGHT_X) / 127.0;
                 double rightY = mainController.get_analog(ANALOG_RIGHT_Y) / 127.0;
 
+                bool topOuttakeButton = mainController.get_digital(DIGITAL_R1);
+                bool midOuttakeButton = mainController.get_digital(DIGITAL_R2);
+
                 // Curve Joystick Inputs
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
                 leftX = JoystickCurve::curve(leftX, 3.0, 0.05, 0.2);
@@ -46,10 +49,16 @@ namespace devils
                 // Combine Left and Right X Joystick Inputs
                 double combinedX = JoystickCurve::combine(leftX, rightX);
 
-                intake.move(rightY);
+                // Run Intake/Outtake
+                if (topOuttakeButton)
+                    intake.outtakeTop();
+                else if (midOuttakeButton)
+                    intake.outtakeMid();
+                else
+                    intake.intake(rightY);
 
                 // Drive normally
-                chassis.move(leftY, combinedX);
+                chassis.move(leftY, combinedX * 0.5f);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -65,29 +74,16 @@ namespace devils
             AutoStep::stopAll();
         }
 
-        // Constants
-        static constexpr double DEAD_WHEEL_RADIUS = 0.991; // in (slightly smaller to account for roller play)
-        static constexpr double CONVEYOR_LENGTH = 84.0;    // teeth
-        static constexpr double HOOK_INTERVAL = 21.0;      // teeth
-        static constexpr double REJECT_OFFSET = 13;        // teeth
-
-        Vector2 verticalSensorOffset = Vector2(-0.5, 0);
-        Vector2 horizontalSensorOffset = Vector2(0, 1);
-
         // Hardware
-        // VEXBridge bridge = VEXBridge();
-
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-11, 3, -12, 4, -1});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {6, -9, 5, -10, 21});
-        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {1, 2});
-
-
-        // LED Strips
-        LEDStrip ledStrip = LEDStrip(9);
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-6, 7, -8, 9, -10});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17, 18, -19, 20});
+        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {1});
+        SmartMotorGroup middleIntakeMotors = SmartMotorGroup("MiddleIntakeMotors", {2});
+        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {3});
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(intakeMotors);
+        IntakeSystem intake = IntakeSystem(topIntakeMotors, middleIntakeMotors, bottomIntakeMotors);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
