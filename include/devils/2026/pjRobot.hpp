@@ -1,13 +1,7 @@
 #pragma once
 
 #include "../devils.h"
-#include "subsystems/ConveyorSystem.hpp"
-#include "subsystems/IntakeSystem.hpp"
-#include "subsystems/MogoGrabSystem.hpp"
-#include "autonomous/pjMatchAuto.hpp"
-#include "autonomous/pjSkillsAuto.hpp"
-#include "autonomous/pjSkillsStartAuto.hpp"
-#include "autonomous/testAuto.hpp"
+#include "subsystems/intakeSystem.hpp"
 #include "pros/adi.hpp"
 
 namespace devils
@@ -52,6 +46,7 @@ namespace devils
                 // Combine Left and Right X Joystick Inputs
                 double combinedX = JoystickCurve::combine(leftX, rightX);
 
+                intake.move(rightY);
 
                 // Drive normally
                 chassis.move(leftY, combinedX);
@@ -84,13 +79,15 @@ namespace devils
 
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-11, 3, -12, 4, -1});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {6, -9, 5, -10, 21});
+        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {1, 2});
+
 
         // LED Strips
         LEDStrip ledStrip = LEDStrip(9);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        
+        IntakeSystem intake = IntakeSystem(intakeMotors);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
