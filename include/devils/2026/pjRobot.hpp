@@ -10,12 +10,10 @@ namespace devils
     {
         PJRobot()
         {
-
         }
 
         void autonomous() override
         {
-            
         }
 
         void opcontrol() override
@@ -41,7 +39,7 @@ namespace devils
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
                 leftX = JoystickCurve::curve(leftX, 3.0, 0.05, 0.2);
                 rightX = JoystickCurve::curve(rightX, 3.0, 0.1, 0.2);
-                rightY = JoystickCurve::curve(rightY, 3.0, 0.1, 0.15, 0.8);
+                rightY = JoystickCurve::curve(rightY, 3.0, 0.1, 0.15);
 
                 // Decrease turning speed for improved control
                 rightX *= 0.5;
@@ -56,7 +54,7 @@ namespace devils
                     intake.outtakeMid();
                 else
                     intake.stopOuttake();
-                
+
                 intake.bottomIntake(rightY);
 
                 // Drive normally
@@ -77,10 +75,10 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-6, 7, -8, 9, -10});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17, 18, -19, 20});
-        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {1});
-        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {3});
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-19, 17, -18, 20, -16});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {11, -13, 12, -14, 15});
+        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {9});
+        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10});
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
