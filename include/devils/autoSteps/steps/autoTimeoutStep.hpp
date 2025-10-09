@@ -7,14 +7,14 @@
 namespace devils
 {
     /**
-     * Represents an autostep that aborts after a given duration.
+     * Automatically starts and stops a step during a fixed duration.
      */
     class AutoTimeoutStep : public AutoStep
     {
     public:
         /**
          * Creates a new timeout step.
-         * @param autoStep The step to execute.
+         * @param autoStep The step to manage.
          * @param duration The duration of the step in milliseconds.
          */
         AutoTimeoutStep(
@@ -25,6 +25,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             // Start Timer
@@ -32,14 +33,14 @@ namespace devils
 
             // Start Auto Step
             if (autoStep)
-                autoStep->onStart();
+                autoStep->start();
         }
 
         void onUpdate() override
         {
-            // Update Auto Step
-            if (autoStep)
-                autoStep->onUpdate();
+            // Check if the Auto Step has finished early
+            if (autoStep && autoStep->getState() == AsyncTaskState::STOPPED)
+                stop();
         }
 
         void onStop() override
@@ -49,21 +50,13 @@ namespace devils
 
             // Stop Auto Step
             if (autoStep)
-                autoStep->onStop();
+                autoStep->stop();
         }
 
         bool checkFinished() override
         {
             // Check Timer
-            if (timer.finished())
-                return true;
-
-            // Check Auto Step
-            if (autoStep)
-                return autoStep->checkFinished();
-
-            // Otherwise, return true
-            return true;
+            return timer.finished();
         }
 
     protected:

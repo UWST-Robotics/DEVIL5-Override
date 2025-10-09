@@ -64,6 +64,7 @@ namespace devils
             return options;
         }
 
+    protected:
         void onStart() override
         {
             // Reset Finished

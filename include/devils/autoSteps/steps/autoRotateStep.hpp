@@ -31,6 +31,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             // Calculate Target Pose
@@ -41,7 +42,6 @@ namespace devils
             AutoRotateToStep::onStart();
         }
 
-    protected:
         // Drive Step Variables
         double distance = 0;
     };

@@ -31,6 +31,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             // Calculate Target Pose
@@ -43,7 +44,6 @@ namespace devils
             AutoRotateToStep::onStart();
         }
 
-    protected:
         Pose targetPose;
     };
 }

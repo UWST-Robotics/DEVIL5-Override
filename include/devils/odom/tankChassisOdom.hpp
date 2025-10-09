@@ -1,6 +1,6 @@
 #pragma once
 #include "differentialWheelOdom.hpp"
-#include "../utils/runnable.hpp"
+#include "../utils/asyncTask.hpp"
 #include "../hardware/structs/gyro.h"
 #include "poseVelocityCalculator.hpp"
 
@@ -11,7 +11,7 @@ namespace devils
     /**
      * Represents an odometry system using a tank chassis.
      */
-    class TankChassisOdom : public DifferentialWheelOdom, public Runnable
+    class TankChassisOdom : public DifferentialWheelOdom, public AsyncTask
     {
     public:
         /**
@@ -29,22 +29,6 @@ namespace devils
         {
         }
 
-        void onUpdate() override
-        {
-            // Process differential odometry
-            double leftPosition = chassis.getLeftMotors().getPosition() / ticksPerRevolution;
-            double rightPosition = chassis.getRightMotors().getPosition() / ticksPerRevolution;
-            DifferentialWheelOdom::update(leftPosition, rightPosition);
-
-            // Apply IMU
-            if (imu != nullptr)
-            {
-                Pose currentPose = getPose();
-                currentPose.rotation = imu->getHeading();
-                setPose(currentPose);
-            }
-        }
-
         /**
          * Sets the number of encoder ticks per full revolution of the wheels.
          */
@@ -60,6 +44,23 @@ namespace devils
         void useIMU(IGyro *imu)
         {
             this->imu = imu;
+        }
+
+    protected:
+        void onUpdate() override
+        {
+            // Process differential odometry
+            double leftPosition = chassis.getLeftMotors().getPosition() / ticksPerRevolution;
+            double rightPosition = chassis.getRightMotors().getPosition() / ticksPerRevolution;
+            DifferentialWheelOdom::update(leftPosition, rightPosition);
+
+            // Apply IMU
+            if (imu != nullptr)
+            {
+                Pose currentPose = getPose();
+                currentPose.rotation = imu->getHeading();
+                setPose(currentPose);
+            }
         }
 
     private:

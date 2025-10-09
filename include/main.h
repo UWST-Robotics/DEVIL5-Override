@@ -18,6 +18,7 @@
 
 // Add each robot definition here
 #include "devils/2026/pjRobot.hpp"
+#include "devils/2026/robinRobot.hpp"
 
 using namespace devils;
 

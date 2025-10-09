@@ -1,30 +1,21 @@
 #pragma once
 
 #include "liblvgl/lvgl.h"
+#include "../utils/asyncTask.hpp"
 
 namespace devils
 {
-    class EyesRenderer : Runnable
+    class EyesRenderer : public AsyncTask
     {
     public:
-        EyesRenderer(lv_obj_t *parent) : Runnable(50)
+        EyesRenderer(lv_obj_t *parent) : AsyncTask()
         {
             this->parent = parent;
-
         }
 
-        void onUpdate() override
+        /// @brief Initializes and renders the eyes on the parent object.
+        void render()
         {
-            static int16_t t = 0;
-            t++;
-
-            lv_obj_set_pos(
-                eyesGroup,
-                std::cos(t * 0.1) * 20,
-                0);
-        }
-
-        void render() {
             fullScreenContainer = lv_obj_create(parent);
             lv_obj_set_size(fullScreenContainer, lv_pct(100), lv_pct(100));
             eyesGroup = lv_obj_create(fullScreenContainer);
@@ -36,7 +27,6 @@ namespace devils
             lv_obj_set_style_bg_color(fullScreenContainer, lv_color_make(3, 36, 53), 0);
             lv_obj_set_style_bg_opa(eyesGroup, 0, 0);
             lv_obj_set_scrollbar_mode(eyesGroup, LV_SCROLLBAR_MODE_OFF);
-            
 
             leftEye = makeEye(-100, 0, 120);
             rightEye = makeEye(100, 0, 120);
@@ -52,10 +42,19 @@ namespace devils
             lv_obj_add_event_cb(leftEyebrow, handleDestroy, LV_EVENT_LONG_PRESSED, this);
             lv_obj_add_event_cb(rightEyebrow, handleDestroy, LV_EVENT_LONG_PRESSED, this);
 
+            start();
+        }
 
+    protected:
+        void onUpdate() override
+        {
+            static int16_t t = 0;
+            t++;
 
-            runAsync();
-
+            lv_obj_set_pos(
+                eyesGroup,
+                std::cos(t * 0.05) * 20,
+                0);
         }
 
         void destroy()
@@ -106,8 +105,6 @@ namespace devils
             // get target object
             EyesRenderer *renderer = static_cast<EyesRenderer *>(lv_event_get_user_data(e));
             renderer->destroy();
-
-            
         }
 
         static void removeObject(lv_obj_t *obj)
@@ -126,7 +123,6 @@ namespace devils
         lv_obj_t *rightEye;
         lv_obj_t *leftEyebrow;
         lv_obj_t *rightEyebrow;
-
     };
-    
+
 }
