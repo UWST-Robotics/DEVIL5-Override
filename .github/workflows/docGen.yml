@@ -18,8 +18,8 @@ jobs:
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.12.0
       with:
-        working-directory: 'submodule/'
-        doxyfile-path: 'docs/Doxygen'
+        working-directory: './'
+        doxyfile-path: './public'
 
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v4
