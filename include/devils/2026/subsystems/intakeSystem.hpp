@@ -25,22 +25,27 @@ namespace devils
          * @param bottomIntakeMotors The motors controlling the intake.
          */
         IntakeSystem(SmartMotorGroup &topIntakeMotors,
-                     SmartMotorGroup &bottomIntakeMotors)
+                     SmartMotorGroup &bottomIntakeMotors,
+                     SmartMotorGroup &backIntakeMotors)
             :   topIntakeMotors(topIntakeMotors), 
-                bottomIntakeMotors(bottomIntakeMotors)
+                bottomIntakeMotors(bottomIntakeMotors),
+                backIntakeMotors(backIntakeMotors)
         {
             topIntakeMotors.setPosition(0);
             bottomIntakeMotors.setPosition(0);
+            backIntakeMotors.setPosition(0);
         }
         
         /**
          * Moves intake using speed
          * @param speed - Voltage to run intake between -1 and 1.
          */
-        void bottomIntake(float speed)
+        void defaultIntake(float speed)
         {
             speed = std::clamp(speed, MIN_SPEED, MAX_SPEED);
 
+            bottomIntakeMotors.moveVoltage(speed);
+            backIntakeMotors.moveVoltage(speed);
             topIntakeMotors.moveVoltage(speed);
         }
 
@@ -50,6 +55,8 @@ namespace devils
         void outtakeTop()
         {
             topIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
+            backIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
+            bottomIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
         }
 
         /**
@@ -66,6 +73,8 @@ namespace devils
         void outtakeMid()
         {
             topIntakeMotors.moveVoltage(OUTTAKE_MIDDLE_SPEED);
+            backIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
+            bottomIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
         }
     private:
         static constexpr float MAX_SPEED = 1.0;  // %
@@ -77,5 +86,6 @@ namespace devils
         // Hardware
         SmartMotorGroup &topIntakeMotors;
         SmartMotorGroup &bottomIntakeMotors;
+        SmartMotorGroup &backIntakeMotors;
     };
 }

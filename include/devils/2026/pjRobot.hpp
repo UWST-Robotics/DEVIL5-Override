@@ -55,9 +55,7 @@ namespace devils
                 else if (midOuttakeButton)
                     intake.outtakeMid();
                 else
-                    intake.stopOuttake();
-                
-                intake.bottomIntake(rightY);
+                    intake.defaultIntake(rightY);
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f);
@@ -77,14 +75,15 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-6, 7, -8, 9, -10});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17, 18, -19, 20});
-        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {1});
-        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {3});
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-16, 17, -18, 20, -19});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {11, -13, 12, -14, 15});
+        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {-1});
+        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10});
+        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-5, -6});
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors);
+        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, backIntakeMotors);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
