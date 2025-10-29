@@ -31,6 +31,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             // Start the drive step
@@ -89,7 +90,6 @@ namespace devils
             return AutoDriveToStep::checkFinished();
         }
 
-    protected:
         static constexpr double DELTA_T = 0.01;       // indices
         static constexpr double LOOKAHEAD_DIST = 8.0; // inches
 

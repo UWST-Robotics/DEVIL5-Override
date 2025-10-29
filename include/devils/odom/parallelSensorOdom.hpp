@@ -1,7 +1,7 @@
 #pragma once
 
 #include "differentialWheelOdom.hpp"
-#include "../utils/runnable.hpp"
+#include "../utils/asyncTask.hpp"
 #include "poseVelocityCalculator.hpp"
 
 #define M_PI 3.14159265358979323846
@@ -12,7 +12,7 @@ namespace devils
      * Represents an odometry system using a set of parallel rotation sensors.
      * If the sensors are perpendicular, use `PerpendicularSensorOdometry` instead.
      */
-    class ParallelSensorOdometry : public DifferentialWheelOdom, public Runnable
+    class ParallelSensorOdometry : public DifferentialWheelOdom, public AsyncTask
     {
     public:
         /**

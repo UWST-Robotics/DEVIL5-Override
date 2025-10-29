@@ -1,7 +1,7 @@
 #pragma once
 
 #include "odomSource.hpp"
-#include "../utils/runnable.hpp"
+#include "../utils/asyncTask.hpp"
 #include "pros/rtos.hpp"
 #include <queue>
 #include <algorithm>
@@ -12,7 +12,7 @@ namespace devils
      * Delays the output pose of an odometry source by a specified amount of time.
      * Used for latency compensation in vision-based odometry.
      */
-    class DelayedOdom : public OdomSource, public Runnable
+    class DelayedOdom : public OdomSource, public AsyncTask
     {
     public:
         /**
@@ -25,7 +25,7 @@ namespace devils
             double delay)
             : baseOdom(baseOdom),
               maxQueueSize(delay / INTERVAL_DELAY),
-              Runnable(INTERVAL_DELAY)
+              AsyncTask()
         {
             // Ensure the queue size is at least 1
             if (maxQueueSize < 1)
@@ -34,24 +34,6 @@ namespace devils
             // Check if the queue size is too large
             if (maxQueueSize > MAX_QUEUE_SIZE)
                 maxQueueSize = MAX_QUEUE_SIZE;
-        }
-
-        void onUpdate() override
-        {
-            // Get the current pose from the base odometry source
-            auto pose = baseOdom.getPose();
-            auto velocity = baseOdom.getVelocity();
-
-            // Push the pose to the queue
-            poseQueue.push(pose);
-            velocityQueue.push(velocity);
-
-            // Check if the queue is too large
-            while (poseQueue.size() > maxQueueSize)
-                poseQueue.pop();
-
-            while (velocityQueue.size() > maxQueueSize)
-                velocityQueue.pop();
         }
 
         Pose getPose() override
@@ -77,6 +59,25 @@ namespace devils
         void setPose(Pose pose) override
         {
             baseOdom.setPose(pose);
+        }
+
+    protected:
+        void onUpdate() override
+        {
+            // Get the current pose from the base odometry source
+            auto pose = baseOdom.getPose();
+            auto velocity = baseOdom.getVelocity();
+
+            // Push the pose to the queue
+            poseQueue.push(pose);
+            velocityQueue.push(velocity);
+
+            // Check if the queue is too large
+            while (poseQueue.size() > maxQueueSize)
+                poseQueue.pop();
+
+            while (velocityQueue.size() > maxQueueSize)
+                velocityQueue.pop();
         }
 
     private:

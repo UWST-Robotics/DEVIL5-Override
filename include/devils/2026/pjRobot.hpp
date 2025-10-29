@@ -10,12 +10,10 @@ namespace devils
     {
         PJRobot()
         {
-
         }
 
         void autonomous() override
         {
-            
         }
 
         void opcontrol() override
@@ -41,7 +39,7 @@ namespace devils
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
                 leftX = JoystickCurve::curve(leftX, 3.0, 0.05, 0.2);
                 rightX = JoystickCurve::curve(rightX, 3.0, 0.1, 0.2);
-                rightY = JoystickCurve::curve(rightY, 3.0, 0.1, 0.15, 0.8);
+                rightY = JoystickCurve::curve(rightY, 3.0, 0.1, 0.15);
 
                 // Decrease turning speed for improved control
                 rightX *= 0.5;

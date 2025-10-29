@@ -6,13 +6,14 @@
 #include "../geometry/polygon.hpp"
 #include "../odom/odomSource.hpp"
 #include "structs/hardwareBase.hpp"
+#include "../utils/asyncTask.hpp"
 
 namespace devils
 {
     /**
      * Represents a Vex V5 GPS
      */
-    class GPS : public OdomSource, public Runnable, private HardwareBase
+    class GPS : public OdomSource, public AsyncTask, private HardwareBase
     {
     public:
         /**
@@ -28,43 +29,6 @@ namespace devils
             if (errno != 0)
                 reportFault("Invalid port");
             gps.set_data_rate(20);
-        }
-
-        /**
-         * Updates the odometry with the latest GPS data
-         */
-        void onUpdate() override
-        {
-            double gpsX = gps.get_position_x();
-            double gpsY = gps.get_position_y();
-            double gpsHeading = gps.get_heading();
-
-            if (gpsX == PROS_ERR_F || gpsY == PROS_ERR_F || gpsHeading == PROS_ERR_F)
-            {
-                reportFault("Get GPS position failed");
-                return;
-            }
-
-            // Convert Units
-            gpsX = Units::metersToIn(gpsX);
-            gpsY = -Units::metersToIn(gpsY);
-            gpsHeading = Units::normalizeRadians(Units::degToRad(gpsHeading) - GPS_ROTATION_OFFSET - rotationalOffset);
-
-            // Check Calibrating
-            if (isCalibrating())
-                return;
-
-            // Check Within Bounds
-            if (gpsX < -MAX_GPS_X || gpsX > MAX_GPS_X || gpsY < -MAX_GPS_Y || gpsY > MAX_GPS_Y)
-            {
-                reportFault("GPS out of bounds");
-                return;
-            }
-
-            // Update Pose
-            currentPose.x = gpsX;
-            currentPose.y = gpsY;
-            currentPose.rotation = gpsHeading;
         }
 
         /**
@@ -133,6 +97,44 @@ namespace devils
             if (calibrationStartTime < 0)
                 calibrationStartTime = pros::millis();
             return (pros::millis() - calibrationStartTime) < CALIBRATION_TIME;
+        }
+
+    protected:
+        /**
+         * Updates the odometry with the latest GPS data
+         */
+        void onUpdate() override
+        {
+            double gpsX = gps.get_position_x();
+            double gpsY = gps.get_position_y();
+            double gpsHeading = gps.get_heading();
+
+            if (gpsX == PROS_ERR_F || gpsY == PROS_ERR_F || gpsHeading == PROS_ERR_F)
+            {
+                reportFault("Get GPS position failed");
+                return;
+            }
+
+            // Convert Units
+            gpsX = Units::metersToIn(gpsX);
+            gpsY = -Units::metersToIn(gpsY);
+            gpsHeading = Units::normalizeRadians(Units::degToRad(gpsHeading) - GPS_ROTATION_OFFSET - rotationalOffset);
+
+            // Check Calibrating
+            if (isCalibrating())
+                return;
+
+            // Check Within Bounds
+            if (gpsX < -MAX_GPS_X || gpsX > MAX_GPS_X || gpsY < -MAX_GPS_Y || gpsY > MAX_GPS_Y)
+            {
+                reportFault("GPS out of bounds");
+                return;
+            }
+
+            // Update Pose
+            currentPose.x = gpsX;
+            currentPose.y = gpsY;
+            currentPose.rotation = gpsHeading;
         }
 
     private:

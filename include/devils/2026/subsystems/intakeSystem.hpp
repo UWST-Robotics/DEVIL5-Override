@@ -35,7 +35,7 @@ namespace devils
             bottomIntakeMotors.setPosition(0);
             backIntakeMotors.setPosition(0);
         }
-        
+
         /**
          * Moves intake using speed
          * @param speed - Voltage to run intake between -1 and 1.
@@ -50,8 +50,8 @@ namespace devils
         }
 
         /**
-        *   Outtakes game pieces to the top goal
-        */
+         *   Outtakes game pieces to the top goal
+         */
         void outtakeTop()
         {
             topIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
@@ -60,28 +60,29 @@ namespace devils
         }
 
         /**
-        *   Stops outtaking game pieces
-        */
+         *   Stops outtaking game pieces
+         */
         void stopOuttake()
         {
             topIntakeMotors.stop();
         }
 
         /**
-        *   Outtakes game pieces to the middle goal
-        */
+         *   Outtakes game pieces to the middle goal
+         */
         void outtakeMid()
         {
             topIntakeMotors.moveVoltage(OUTTAKE_MIDDLE_SPEED);
             backIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
             bottomIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
         }
+
     private:
         static constexpr float MAX_SPEED = 1.0;  // %
         static constexpr float MIN_SPEED = -0.6; // %
 
-        static constexpr float OUTTAKE_TOP_SPEED = 0.8; // %
-        static constexpr float OUTTAKE_MIDDLE_SPEED = -0.8; // %
+        static constexpr float OUTTAKE_TOP_SPEED = 0.8;     // %
+        static constexpr float OUTTAKE_MIDDLE_SPEED = -0.5; // %
 
         // Hardware
         SmartMotorGroup &topIntakeMotors;

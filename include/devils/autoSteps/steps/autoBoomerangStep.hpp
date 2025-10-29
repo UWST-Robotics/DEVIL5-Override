@@ -33,6 +33,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             // Start the drive step

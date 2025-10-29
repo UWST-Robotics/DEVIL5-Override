@@ -6,7 +6,7 @@
 #include "../utils/logger.hpp"
 #include "../odom/odomSource.hpp"
 #include "../odom/poseVelocityCalculator.hpp"
-#include "../utils/runnable.hpp"
+#include "../utils/asyncTask.hpp"
 
 namespace devils
 {
@@ -15,14 +15,16 @@ namespace devils
      * This is useful for testing autonomous routines without a physical robot.
      * Can be used as an OdomSource.
      */
-    class DummyChassis : public ChassisBase, public OdomSource, public Runnable, public PoseVelocityCalculator
+    class DummyChassis : public ChassisBase, public OdomSource, public AsyncTask, public PoseVelocityCalculator
     {
     public:
         DummyChassis()
         {
-            // Run on startup
-            runAsync();
+            // Run AsyncTask on startup
+            AsyncTask::start();
         }
+
+        // ChassisBase implementation
 
         void stop() override
         {
@@ -40,6 +42,26 @@ namespace devils
             lastStrafe = strafe;
         }
 
+        // OdomSource implementation
+
+        void setPose(Pose pose) override
+        {
+            currentPose = pose;
+        }
+
+        Pose getPose() override
+        {
+            return currentPose;
+        }
+
+        PoseVelocity getVelocity() override
+        {
+            return PoseVelocityCalculator::getVelocity();
+        }
+
+    protected:
+        // AsyncTask implementation
+
         void onUpdate() override
         {
             // TODO: Multiply acceleration by delta time
@@ -56,21 +78,6 @@ namespace devils
 
             // Update Velocity
             updateVelocity(currentPose);
-        }
-
-        void setPose(Pose pose) override
-        {
-            currentPose = pose;
-        }
-
-        Pose getPose() override
-        {
-            return currentPose;
-        }
-
-        PoseVelocity getVelocity() override
-        {
-            return PoseVelocityCalculator::getVelocity();
         }
 
     private:

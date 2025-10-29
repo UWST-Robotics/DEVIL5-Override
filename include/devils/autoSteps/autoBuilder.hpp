@@ -3,7 +3,6 @@
 #include "../geometry/units.hpp"
 #include "../odom/odomSource.hpp"
 #include "../chassis/chassisBase.hpp"
-#include "../vexbridge/vbPath.hpp"
 #include "./steps/autoJumpToStep.hpp"
 #include "./steps/autoDriveStep.hpp"
 #include "./steps/autoDriveToStep.hpp"
@@ -144,7 +143,6 @@ namespace devils
 
             // Create a new path
             SplinePath path = SplinePath::makeArc(fromPose, toPose, strength, isReversed);
-            VBPath::sync("AutoBuilderPath", path);
 
             // Flip final velocity if the path is reversed
             if (isReversed)

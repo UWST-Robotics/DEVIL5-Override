@@ -35,6 +35,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             odom.setPose(targetPose);
@@ -45,7 +46,6 @@ namespace devils
             return true;
         }
 
-    protected:
         // Params
         OdomSource &odom;
         Pose targetPose;

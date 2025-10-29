@@ -75,7 +75,6 @@
 #include "autoSteps/steps/autoRotateToStep.hpp"
 #include "autoSteps/steps/autoPauseStep.hpp"
 #include "autoSteps/steps/autoJumpToStep.hpp"
-#include "autoSteps/steps/autoBranchStep.hpp"
 #include "autoSteps/steps/autoPurePursuitStep.hpp"
 #include "autoSteps/steps/autoRamseteStep.hpp"
 #include "autoSteps/transformer/mirrorTransform.hpp"
@@ -88,6 +87,5 @@
 #include "lights/ledStrip.hpp"
 
 // VEXBridge
-#include "../vexbridge/vexbridge.h"
-#include "vexbridge/vbOdom.hpp"
-#include "vexbridge/vbPath.hpp"
+// TODO: VEXBridge is currently broken
+// #include "../vexbridge/vexbridge.h"

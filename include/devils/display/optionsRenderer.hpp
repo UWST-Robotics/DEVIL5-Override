@@ -1,27 +1,24 @@
-#pragma once 
+#pragma once
 
 #include "liblvgl/lvgl.h"
 #include "./components/radio.hpp"
 #include "./eyesRenderer.hpp"
-
 
 namespace devils
 {
     const std::map<AllianceColor, lv_color_t> color_map = {
         {RED_ALLIANCE, lv_color_make(255, 0, 0)},
         {BLUE_ALLIANCE, lv_color_make(0, 0, 255)},
-        {NONE_ALLIANCE, lv_color_make(124, 124, 124)}
-    };   
+        {NONE_ALLIANCE, lv_color_make(124, 124, 124)}};
     const std::map<AllianceColor, std::string> color_name_map = {
         {RED_ALLIANCE, "Red"},
         {BLUE_ALLIANCE, "Blue"},
-        {NONE_ALLIANCE, "None"}
-    };
-        
-    class OptionsRenderer : Runnable
+        {NONE_ALLIANCE, "None"}};
+
+    class OptionsRenderer
     {
     public:
-        OptionsRenderer(const char* bot_name, const std::vector<Routine>& routines, RobotAutoOptions *options) : Runnable(50)
+        OptionsRenderer(const char *bot_name, const std::vector<Routine> &routines, RobotAutoOptions *options)
         {
             OptionsRenderer::options = options;
             OptionsRenderer::routines = routines;
@@ -34,18 +31,18 @@ namespace devils
         {
             lv_obj_del(root);
         }
-    
+
     private:
         static lv_obj_t *root;
 
         void initializeRoot()
         {
             root = lv_obj_create(NULL);
-            eyesRenderer = new EyesRenderer(root);
+            eyesRenderer = std::make_shared<EyesRenderer>(root);
             lv_scr_load(root);
         }
 
-        void createOptionsDisplayContainer(const char* bot_name, const std::vector<Routine>& routines)
+        void createOptionsDisplayContainer(const char *bot_name, const std::vector<Routine> &routines)
         {
             auto fullscreen_container = lv_obj_create(root);
             lv_obj_set_size(fullscreen_container, lv_pct(100), lv_pct(100));
@@ -99,7 +96,7 @@ namespace devils
             lv_obj_center(alliance_color_label);
         }
 
-        void createRoutineContainer(lv_obj_t *parent, const std::vector<Routine>& routines)
+        void createRoutineContainer(lv_obj_t *parent, const std::vector<Routine> &routines)
         {
             auto right_container = lv_obj_create(parent);
             lv_obj_set_size(right_container, lv_pct(70), lv_pct(100));
@@ -122,7 +119,7 @@ namespace devils
             lv_obj_set_style_text_font(routine_title, &lv_font_montserrat_16, 0);
 
             std::vector<std::string> routine_names;
-            for (const auto& routine : routines)
+            for (const auto &routine : routines)
             {
                 routine_names.push_back(routine.displayName);
             }
@@ -141,13 +138,13 @@ namespace devils
             lv_obj_set_flex_align(screen_saver_toggle_container, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END);
             lv_obj_set_style_pad_all(screen_saver_toggle_container, 0, 0);
             lv_obj_set_style_border_width(screen_saver_toggle_container, 0, 0);
-            
+
             auto screen_saver_toggle_button = lv_btn_create(screen_saver_toggle_container);
             lv_obj_set_size(screen_saver_toggle_button, lv_pct(100), 50);
             auto screen_saver_toggle_label = lv_label_create(screen_saver_toggle_button);
-            lv_label_set_text(screen_saver_toggle_label, "Save");  
+            lv_label_set_text(screen_saver_toggle_label, "Save");
             lv_obj_center(screen_saver_toggle_label);
-            lv_obj_add_event_cb(screen_saver_toggle_button, handleScreenSaverToggle, LV_EVENT_CLICKED, NULL);      
+            lv_obj_add_event_cb(screen_saver_toggle_button, handleScreenSaverToggle, LV_EVENT_CLICKED, NULL);
         }
 
         static void handleAllianceColorChange(lv_event_t *e)
@@ -169,7 +166,7 @@ namespace devils
         static void handleRoutineChange(std::string selected_routine)
         {
             Routine new_routine;
-            for (const auto& routine : routines)
+            for (const auto &routine : routines)
             {
                 if (routine.displayName == selected_routine)
                 {
@@ -201,11 +198,9 @@ namespace devils
             eyesRenderer->render();
         }
 
-    
-        
         static AllianceColor getCurrentAllianceColor(const char *text)
         {
-            for (const auto& pair : color_name_map)
+            for (const auto &pair : color_name_map)
             {
                 if (pair.second == text)
                 {
@@ -228,12 +223,12 @@ namespace devils
 
         static RobotAutoOptions *options;
         static std::vector<Routine> routines;
-        static EyesRenderer *eyesRenderer;
+        static std::shared_ptr<EyesRenderer> eyesRenderer;
         static bool isScreenSaverEnabled;
     };
 
     RobotAutoOptions *OptionsRenderer::options = nullptr;
-    EyesRenderer *OptionsRenderer::eyesRenderer = nullptr;
+    std::shared_ptr<EyesRenderer> OptionsRenderer::eyesRenderer = nullptr;
     bool OptionsRenderer::isScreenSaverEnabled = false;
     std::vector<Routine> OptionsRenderer::routines = {};
     lv_obj_t *OptionsRenderer::root = nullptr;

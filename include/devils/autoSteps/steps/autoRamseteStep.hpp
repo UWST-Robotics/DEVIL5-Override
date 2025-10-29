@@ -62,6 +62,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             // Save the start time
@@ -142,7 +143,6 @@ namespace devils
             return trajectory->duration() * 1000 <= t;
         }
 
-    protected:
         ChassisBase &chassis;
         OdomSource &odomSource;
         std::shared_ptr<Trajectory> trajectory;

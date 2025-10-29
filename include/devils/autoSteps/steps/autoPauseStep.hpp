@@ -21,6 +21,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             timer.start();
@@ -31,7 +32,6 @@ namespace devils
             return timer.finished();
         }
 
-    protected:
         Timer timer;
     };
 }

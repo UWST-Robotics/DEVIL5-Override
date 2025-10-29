@@ -65,6 +65,7 @@ namespace devils
         {
         }
 
+    protected:
         void onStart() override
         {
             // Reset PID Controllers
@@ -134,7 +135,6 @@ namespace devils
             return fabs(distanceToTarget) < options.goalDist;
         }
 
-    protected:
         /**
          * Gets the speed at a given distance to the target.
          * @param distanceToTarget The distance to the target in inches

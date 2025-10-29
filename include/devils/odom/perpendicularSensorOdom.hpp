@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../utils/runnable.hpp"
+#include "../utils/asyncTask.hpp"
 #include "../odom/odomSource.hpp"
 #include "../hardware/rotationSensor.hpp"
 #include "../hardware/structs/gyro.h"
@@ -12,7 +12,7 @@ namespace devils
      * Represents an odometry system using a set of perpendicular rotation sensors.
      * If the sensors are parallel, use `ParallelSensorOdometry` instead.
      */
-    class PerpendicularSensorOdometry : public OdomSource, public Runnable, public PoseVelocityCalculator
+    class PerpendicularSensorOdometry : public OdomSource, public AsyncTask, public PoseVelocityCalculator
     {
     public:
         /**
@@ -32,6 +32,54 @@ namespace devils
             lastUpdateTimestamp = pros::millis();
         }
 
+        /**
+         * Gets the current pose of the robot.
+         */
+        Pose getPose() override
+        {
+            return currentPose;
+        }
+
+        /**
+         * Sets the current pose of the robot.
+         * @param pose The pose to set the robot to.
+         */
+        void setPose(Pose pose) override
+        {
+            currentPose = pose;
+
+            if (imu != nullptr)
+                imu->setHeading(pose.rotation);
+        }
+
+        /**
+         * Sets the IMU to use for odometry.
+         * @param imu The IMU to use for odometry.
+         */
+        void useIMU(IGyro *imu)
+        {
+            this->imu = imu;
+        }
+
+        /**
+         * Sets the sensor offsets for the odometry system.
+         * Accounts for the difference in sensor placement on the robot.
+         * @param verticalSensorOffset The offset for the vertical sensor relative to the robot's center of rotation.
+         * @param horizontalSensorOffset The offset for the horizontal sensor relative to the robot's center of rotation.
+         */
+        void setSensorOffsets(Vector2 &verticalSensorOffset,
+                              Vector2 &horizontalSensorOffset)
+        {
+            this->verticalSensorOffset = &verticalSensorOffset;
+            this->horizontalSensorOffset = &horizontalSensorOffset;
+        }
+
+        PoseVelocity getVelocity() override
+        {
+            return PoseVelocityCalculator::getVelocity();
+        }
+
+    protected:
         /**
          * Updates the odometry from vertical and horizontal tracking wheels.
          */
@@ -116,53 +164,6 @@ namespace devils
 
             // Update Velocity
             PoseVelocityCalculator::updateVelocity(currentPose);
-        }
-
-        /**
-         * Gets the current pose of the robot.
-         */
-        Pose getPose() override
-        {
-            return currentPose;
-        }
-
-        /**
-         * Sets the current pose of the robot.
-         * @param pose The pose to set the robot to.
-         */
-        void setPose(Pose pose) override
-        {
-            currentPose = pose;
-
-            if (imu != nullptr)
-                imu->setHeading(pose.rotation);
-        }
-
-        /**
-         * Sets the IMU to use for odometry.
-         * @param imu The IMU to use for odometry.
-         */
-        void useIMU(IGyro *imu)
-        {
-            this->imu = imu;
-        }
-
-        /**
-         * Sets the sensor offsets for the odometry system.
-         * Accounts for the difference in sensor placement on the robot.
-         * @param verticalSensorOffset The offset for the vertical sensor relative to the robot's center of rotation.
-         * @param horizontalSensorOffset The offset for the horizontal sensor relative to the robot's center of rotation.
-         */
-        void setSensorOffsets(Vector2 &verticalSensorOffset,
-                              Vector2 &horizontalSensorOffset)
-        {
-            this->verticalSensorOffset = &verticalSensorOffset;
-            this->horizontalSensorOffset = &horizontalSensorOffset;
-        }
-
-        PoseVelocity getVelocity() override
-        {
-            return PoseVelocityCalculator::getVelocity();
         }
 
     private:
