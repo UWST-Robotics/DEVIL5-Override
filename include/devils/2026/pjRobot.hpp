@@ -32,7 +32,7 @@ namespace devils
                 double rightX = mainController.get_analog(ANALOG_RIGHT_X) / 127.0;
                 double rightY = mainController.get_analog(ANALOG_RIGHT_Y) / 127.0;
 
-                bool topOuttakeButton = mainController.get_digital(DIGITAL_R1);
+                bool exitCyclerButton = mainController.get_digital(DIGITAL_R1);
                 bool midOuttakeButton = mainController.get_digital(DIGITAL_R2);
 
                 // Curve Joystick Inputs
@@ -48,8 +48,8 @@ namespace devils
                 double combinedX = JoystickCurve::combine(leftX, rightX);
 
                 // Run Intake/Outtake
-                if (topOuttakeButton)
-                    intake.outtakeTop();
+                if (exitCyclerButton)
+                    intake.exitCycler();
                 else if (midOuttakeButton)
                     intake.outtakeMid();
                 else
@@ -73,15 +73,16 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-16, 17, -18, 20, -19});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {11, -13, 12, -14, 15});
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -20, 19});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 13, -12, 14, -15});
         SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {-1});
-        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10});
-        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-5, -6});
+        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10, 2, -3});
+        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
+        SmartMotorGroup CyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, backIntakeMotors);
+        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, backIntakeMotors, CyclerMotors);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {

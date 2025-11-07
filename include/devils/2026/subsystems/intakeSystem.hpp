@@ -26,14 +26,17 @@ namespace devils
          */
         IntakeSystem(SmartMotorGroup &topIntakeMotors,
                      SmartMotorGroup &bottomIntakeMotors,
-                     SmartMotorGroup &backIntakeMotors)
+                     SmartMotorGroup &backIntakeMotors, 
+                     SmartMotorGroup &CyclerMotors)
             :   topIntakeMotors(topIntakeMotors), 
                 bottomIntakeMotors(bottomIntakeMotors),
-                backIntakeMotors(backIntakeMotors)
+                backIntakeMotors(backIntakeMotors),
+                CyclerMotors(CyclerMotors)
         {
             topIntakeMotors.setPosition(0);
             bottomIntakeMotors.setPosition(0);
             backIntakeMotors.setPosition(0);
+            CyclerMotors.setPosition(0);
         }
 
         /**
@@ -47,6 +50,7 @@ namespace devils
             bottomIntakeMotors.moveVoltage(speed);
             backIntakeMotors.moveVoltage(speed);
             topIntakeMotors.moveVoltage(speed);
+            CyclerMotors.moveVoltage(speed);
         }
 
         /**
@@ -57,6 +61,7 @@ namespace devils
             topIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
             backIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
             bottomIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
+            CyclerMotors.moveVoltage(OUTTAKE_TOP_SPEED);
         }
 
         /**
@@ -75,6 +80,15 @@ namespace devils
             topIntakeMotors.moveVoltage(OUTTAKE_MIDDLE_SPEED);
             backIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
             bottomIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
+            CyclerMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
+        }
+
+        void exitCycler()
+        {
+            topIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
+            backIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
+            bottomIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
+            CyclerMotors.moveVoltage(-OUTTAKE_TOP_SPEED);
         }
 
     private:
@@ -88,5 +102,6 @@ namespace devils
         SmartMotorGroup &topIntakeMotors;
         SmartMotorGroup &bottomIntakeMotors;
         SmartMotorGroup &backIntakeMotors;
+        SmartMotorGroup &CyclerMotors;
     };
 }
