@@ -27,11 +27,14 @@ namespace devils
         IntakeSystem(SmartMotorGroup &topIntakeMotors,
                      SmartMotorGroup &bottomIntakeMotors,
                      SmartMotorGroup &backIntakeMotors, 
-                     SmartMotorGroup &CyclerMotors)
+                     SmartMotorGroup &CyclerMotors,
+                    ADIPneumatic &intakePneumatics)
             :   topIntakeMotors(topIntakeMotors), 
                 bottomIntakeMotors(bottomIntakeMotors),
                 backIntakeMotors(backIntakeMotors),
-                CyclerMotors(CyclerMotors)
+                CyclerMotors(CyclerMotors),
+                intakePneumatics(intakePneumatics)
+
         {
             topIntakeMotors.setPosition(0);
             bottomIntakeMotors.setPosition(0);
@@ -91,6 +94,16 @@ namespace devils
             CyclerMotors.moveVoltage(-OUTTAKE_TOP_SPEED);
         }
 
+        void intakeExtend()
+        {
+            intakePneumatics.extend();
+        }
+
+        void intakeRetract()
+        {
+            intakePneumatics.retract();
+        }
+
     private:
         static constexpr float MAX_SPEED = 1.0;  // %
         static constexpr float MIN_SPEED = -0.6; // %
@@ -103,5 +116,6 @@ namespace devils
         SmartMotorGroup &bottomIntakeMotors;
         SmartMotorGroup &backIntakeMotors;
         SmartMotorGroup &CyclerMotors;
+        ADIPneumatic &intakePneumatics;
     };
 }

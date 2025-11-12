@@ -34,6 +34,7 @@ namespace devils
 
                 bool exitCyclerButton = mainController.get_digital(DIGITAL_R1);
                 bool midOuttakeButton = mainController.get_digital(DIGITAL_R2);
+                bool intakeExtendButton = mainController.get_digital(DIGITAL_L1);
 
                 // Curve Joystick Inputs
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
@@ -54,6 +55,11 @@ namespace devils
                     intake.outtakeMid();
                 else
                     intake.defaultIntake(rightY);
+
+                if (intakeExtendButton)
+                    intake.intakeExtend();
+                else
+                    intake.intakeRetract();
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f);
@@ -79,10 +85,11 @@ namespace devils
         SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10, 2, -3});
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
         SmartMotorGroup CyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+        ADIPneumatic intakePneumatics = ADIPneumatic("IntakePneumatics", 1);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, backIntakeMotors, CyclerMotors);
+        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, backIntakeMotors, CyclerMotors, intakePneumatics);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
