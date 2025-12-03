@@ -28,12 +28,16 @@ namespace devils
                      SmartMotorGroup &bottomIntakeMotors,
                      SmartMotorGroup &backIntakeMotors, 
                      SmartMotorGroup &CyclerMotors,
-                    ADIPneumatic &intakePneumatics)
+                    ADIPneumatic &intakePneumaticsLeft,
+                    ADIPneumatic &intakePneumaticsRight,
+                     ADIPneumatic &hoodPneumatics)
             :   topIntakeMotors(topIntakeMotors), 
                 bottomIntakeMotors(bottomIntakeMotors),
                 backIntakeMotors(backIntakeMotors),
                 CyclerMotors(CyclerMotors),
-                intakePneumatics(intakePneumatics)
+                intakePneumaticsLeft(intakePneumaticsLeft),
+                intakePneumaticsRight(intakePneumaticsRight),
+                hoodPneumatics(hoodPneumatics)
 
         {
             topIntakeMotors.setPosition(0);
@@ -86,6 +90,14 @@ namespace devils
             CyclerMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
         }
 
+        void exitCyclerMid()
+        {
+            topIntakeMotors.moveVoltage(OUTTAKE_MIDDLE_SPEED);
+            backIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
+            bottomIntakeMotors.moveVoltage(-OUTTAKE_MIDDLE_SPEED);
+            CyclerMotors.moveVoltage(-EXIT_CYCLER_SPEED);
+        }
+
         void exitCycler()
         {
             topIntakeMotors.moveVoltage(OUTTAKE_TOP_SPEED);
@@ -96,12 +108,24 @@ namespace devils
 
         void intakeExtend()
         {
-            intakePneumatics.extend();
+            intakePneumaticsLeft.extend();
+            intakePneumaticsRight.extend();
         }
 
         void intakeRetract()
         {
-            intakePneumatics.retract();
+            intakePneumaticsLeft.retract();
+            intakePneumaticsRight.retract();
+        }
+
+        void hoodExtend()
+        {
+            hoodPneumatics.extend();
+        }
+
+        void hoodRetract()
+        {
+            hoodPneumatics.retract();
         }
 
     private:
@@ -110,12 +134,15 @@ namespace devils
 
         static constexpr float OUTTAKE_TOP_SPEED = 0.8;     // %
         static constexpr float OUTTAKE_MIDDLE_SPEED = -0.5; // %
+        static constexpr float EXIT_CYCLER_SPEED = 0.5; // %
 
         // Hardware
         SmartMotorGroup &topIntakeMotors;
         SmartMotorGroup &bottomIntakeMotors;
         SmartMotorGroup &backIntakeMotors;
         SmartMotorGroup &CyclerMotors;
-        ADIPneumatic &intakePneumatics;
+        ADIPneumatic &intakePneumaticsLeft;
+        ADIPneumatic &intakePneumaticsRight;
+        ADIPneumatic &hoodPneumatics;
     };
 }

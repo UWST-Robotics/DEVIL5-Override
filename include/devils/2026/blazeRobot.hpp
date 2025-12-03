@@ -6,9 +6,9 @@
 
 namespace devils
 {
-    struct PJRobot : public Robot
+    struct BlazeRobot : public Robot
     {
-        PJRobot()
+        BlazeRobot()
         {
         }
 
@@ -108,6 +108,6 @@ namespace devils
             {0, "Default", false},
         };
         // Renderer
-        OptionsRenderer optionsRenderer = OptionsRenderer("PepperJack", routines, &autoOptions);
+        OptionsRenderer optionsRenderer = OptionsRenderer("Blaze", routines, &autoOptions);
     };
 }
