@@ -105,6 +105,17 @@ namespace devils
         }
 
         /**
+         * Runs the `AsyncTask` in the current thread.
+         * Blocks the current thead until the task is finished.
+         * @return A shared pointer to the current `AsyncTask` instance.
+         */
+        std::shared_ptr<AsyncTask> startSync()
+        {
+            start();
+            join();
+        }
+
+        /**
          * Blocks the current thread until the task is fully stopped.
          * If the task is already stopped, returns immediately.
          *

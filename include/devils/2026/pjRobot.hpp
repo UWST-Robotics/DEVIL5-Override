@@ -12,8 +12,9 @@ namespace devils
         {
         }
 
-        virtual void autonomous() override
+        void autonomous() override
         {
+            
         }
 
         void opcontrol() override
@@ -94,14 +95,25 @@ namespace devils
         SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {-1});
         SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10, 2, -3});
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
-        SmartMotorGroup CyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+
         ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
 
+        OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 0);
+
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, backIntakeMotors, CyclerMotors, intakePneumaticsLeft, intakePneumaticsRight, hoodPneumatics);
+        IntakeSystem intake = IntakeSystem(
+            topIntakeMotors,
+            bottomIntakeMotors,
+            backIntakeMotors,
+            cyclerMotors,
+            colorSensor,
+            intakePneumaticsLeft,
+            intakePneumaticsRight,
+            hoodPneumatics);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
