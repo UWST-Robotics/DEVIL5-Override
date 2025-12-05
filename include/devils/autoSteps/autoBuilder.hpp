@@ -108,7 +108,7 @@ namespace devils
             double rotation,
             bool isReversed = false,
             double finalVelocity = 0,
-            double strength = 10.0,
+            double strength = 2.0,
             TrajectoryConstraints constraints = {56, 64},
             AutoRamseteStep::Options options = AutoRamseteStep::Options::defaultOptions)
         {

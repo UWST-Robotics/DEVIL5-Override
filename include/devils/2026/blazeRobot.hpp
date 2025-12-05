@@ -32,11 +32,11 @@ namespace devils
                 double rightX = mainController.get_analog(ANALOG_RIGHT_X) / 127.0;
                 double rightY = mainController.get_analog(ANALOG_RIGHT_Y) / 127.0;
 
-                bool exitCyclerButton = mainController.get_digital(DIGITAL_R1); //high goal from basket
-                bool midOuttakeButton = mainController.get_digital(DIGITAL_L2); //mid goal from ground
-                bool intakeExtendButton = mainController.get_digital(DIGITAL_Y); //intake extend/retract
-                bool hoodExtendButton = mainController.get_digital(DIGITAL_L1); //hood extend/retract
-                bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); //mid goal from cycler
+                bool exitCyclerButton = mainController.get_digital(DIGITAL_R1);    // high goal from basket
+                bool midOuttakeButton = mainController.get_digital(DIGITAL_L2);    // mid goal from ground
+                bool intakeExtendButton = mainController.get_digital(DIGITAL_Y);   // intake extend/retract
+                bool hoodExtendButton = mainController.get_digital(DIGITAL_L1);    // hood extend/retract
+                bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); // mid goal from cycler
 
                 // Curve Joystick Inputs
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
@@ -94,14 +94,25 @@ namespace devils
         SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {-1});
         SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10, 2, -3});
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
-        SmartMotorGroup CyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+
         ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
 
+        OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 4);
+
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, backIntakeMotors, CyclerMotors, intakePneumaticsLeft, intakePneumaticsRight, hoodPneumatics);
+        IntakeSystem intake = IntakeSystem(
+            topIntakeMotors,
+            bottomIntakeMotors,
+            backIntakeMotors,
+            cyclerMotors,
+            colorSensor,
+            intakePneumaticsLeft,
+            intakePneumaticsRight,
+            hoodPneumatics);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {

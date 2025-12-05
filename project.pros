@@ -255,7 +255,7 @@
       }
     },
     "upload_options": {
-      "description": "DevilBots 2024-25 VEX-U Robot Code",
+      "description": "DevilBots VEX-U Robot Code",
       "icon": "clawbot",
       "slot": 1
     },

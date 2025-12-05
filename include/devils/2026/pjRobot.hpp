@@ -2,6 +2,7 @@
 
 #include "../devils.h"
 #include "subsystems/intakeSystem.hpp"
+#include "autonomous/pjSkillsAuto.hpp"
 #include "pros/adi.hpp"
 
 namespace devils
@@ -10,11 +11,16 @@ namespace devils
     {
         PJRobot()
         {
+            imu.calibrate();
+
+            odometry.useIMU(&imu);
+            odometry.setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
+            odometry.start();
         }
 
         void autonomous() override
         {
-            
+            PJSkillsAuto::run(chassis, odometry, intake);
         }
 
         void opcontrol() override
@@ -33,11 +39,11 @@ namespace devils
                 double rightX = mainController.get_analog(ANALOG_RIGHT_X) / 127.0;
                 double rightY = mainController.get_analog(ANALOG_RIGHT_Y) / 127.0;
 
-                bool exitCyclerButton = mainController.get_digital(DIGITAL_R1); //high goal from basket
-                bool midOuttakeButton = mainController.get_digital(DIGITAL_L2); //mid goal from ground
-                bool intakeExtendButton = mainController.get_digital(DIGITAL_Y); //intake extend/retract
-                bool hoodExtendButton = mainController.get_digital(DIGITAL_L1); //hood extend/retract
-                bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); //mid goal from cycler
+                bool exitCyclerButton = mainController.get_digital(DIGITAL_R1);    // high goal from basket
+                bool midOuttakeButton = mainController.get_digital(DIGITAL_L2);    // mid goal from ground
+                bool intakeExtendButton = mainController.get_digital(DIGITAL_Y);   // intake extend/retract
+                bool hoodExtendButton = mainController.get_digital(DIGITAL_L1);    // hood extend/retract
+                bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); // mid goal from cycler
 
                 // Curve Joystick Inputs
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
@@ -89,6 +95,10 @@ namespace devils
             AutoStep::stopAll();
         }
 
+        static constexpr double DEAD_WHEEL_RADIUS = 0.991; // in (slightly smaller to account for roller play)
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-0.5, 0);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 1);
+
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
@@ -102,6 +112,9 @@ namespace devils
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
 
         OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 0);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 0);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 0);
+        InertialSensor imu = InertialSensor("IMU", 0);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
@@ -114,6 +127,8 @@ namespace devils
             intakePneumaticsLeft,
             intakePneumaticsRight,
             hoodPneumatics);
+
+        PerpendicularSensorOdometry odometry = PerpendicularSensorOdometry(verticalSensor, horizontalSensor, DEAD_WHEEL_RADIUS);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
