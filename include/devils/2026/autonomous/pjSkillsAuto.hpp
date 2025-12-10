@@ -19,7 +19,7 @@ namespace devils
             AutoRotateToStep::Options::defaultOptions = {
                 rotatePID,
                 0.15, // minSpeed
-                0.6,  // maxSpeed
+                0.4,  // maxSpeed
                 0.1,  // goalDist
             };
             TrajectoryConstraints slowConstraints = {24, 48};
@@ -27,8 +27,9 @@ namespace devils
 
             // Initialize
             AutoBuilder pjRoutine = AutoBuilder(chassis, odometry);
-            pjRoutine.setPose(-48, 0, 180)->start();
+            pjRoutine.setPose(-48, 0, 180)->startSync();
             intake.defaultIntake(1.0f);
+            intake.hoodRetract();
 
             // 1 (Park Zone)
             pjRoutine.driveToTrajectory(-40, 0, 180, true, 0, 1, slowConstraints)->startSync();
@@ -36,18 +37,25 @@ namespace devils
 
             // 2 (N Side Ball)
             pjRoutine.rotateTo(280)->startSync();
-            pjRoutine.driveToTrajectory(-16, -36, 340)->startSync();
-            pjRoutine.driveToTrajectory(-12, -38, 340, false, 0, 1, slowConstraints)->startSync();
+            intake.intakeExtend();
+            pjRoutine.driveToTrajectory(-12, -36, 340, false, 12, 10)->startSync();
+            pjRoutine.driveToTrajectory(-6, -38, 0, false, 0, 1, slowConstraints)->startSync();
             pauseForIntake();
 
             // 3 (NW Side Balls)
             pjRoutine.driveToTrajectory(-16, -36, 340, true)->startSync();
+            intake.intakeRetract();
             pjRoutine.rotateTo(170)->startSync();
-            pjRoutine.driveToTrajectory(-48, -64, 270)->startSync();
+            pjRoutine.driveToTrajectory(-48, -54, 270, false, 12, 12)->startSync();
+            intake.intakeExtend();
+            pjRoutine.driveToTrajectory(-48, -68, 270, false, 0, 3, slowConstraints, true)->startSync();
             pauseForIntake();
+            pauseForIntake();
+            intake.intakeRetract();
+            pjRoutine.pause(999999999)->startSync();
 
             // 4 (Score in Center Goal)
-            pjRoutine.driveToTrajectory(-48, -56, 270, true)->startSync();
+            pjRoutine.driveToTrajectory(-48, -54, 270, true)->startSync();
             pjRoutine.rotateTo(56);
             pjRoutine.driveToTrajectory(-16, -16, 45)->startSync();
             intake.outtakeMid();

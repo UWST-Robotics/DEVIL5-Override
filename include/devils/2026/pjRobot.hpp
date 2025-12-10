@@ -1,9 +1,10 @@
 #pragma once
 
 #include "../devils.h"
-#include "subsystems/intakeSystem.hpp"
-#include "autonomous/pjSkillsAuto.hpp"
+#include "./subsystems/intakeSystem.hpp"
+#include "./autonomous/pjSkillsAuto.hpp"
 #include "pros/adi.hpp"
+#include "../../vexbridge/vexBridge.h"
 
 namespace devils
 {
@@ -12,15 +13,16 @@ namespace devils
         PJRobot()
         {
             imu.calibrate();
+            imu.waitUntilCalibrated();
 
-            odometry.useIMU(&imu);
-            odometry.setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
-            odometry.start();
+            odometry->useIMU(&imu);
+            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
+            odometry->start();
         }
 
         void autonomous() override
         {
-            PJSkillsAuto::run(chassis, odometry, intake);
+            PJSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
         void opcontrol() override
@@ -44,6 +46,22 @@ namespace devils
                 bool intakeExtendButton = mainController.get_digital(DIGITAL_Y);   // intake extend/retract
                 bool hoodExtendButton = mainController.get_digital(DIGITAL_L1);    // hood extend/retract
                 bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); // mid goal from cycler
+
+                bool odomReset = mainController.get_digital_new_press(DIGITAL_B); // reset odometry
+
+                // VEXBridge Odom
+                auto position = odometry->getPose();
+                VEXBridge::VEXBridge::set<double>("_poses/robot/x", position.x);
+                VEXBridge::VEXBridge::set<double>("_poses/robot/y", position.y);
+                VEXBridge::VEXBridge::set<double>("_poses/robot/rotation", Units::radToDeg(position.rotation) - 90);
+                VEXBridge::VEXBridge::set<double>("_poses/robot/width", 12);
+                VEXBridge::VEXBridge::set<double>("_poses/robot/length", 12);
+
+                if (odomReset)
+                {
+                    odometry->setPose(Pose(0, 0, 0));
+                    imu.setHeading(0);
+                }
 
                 // Curve Joystick Inputs
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
@@ -95,9 +113,9 @@ namespace devils
             AutoStep::stopAll();
         }
 
-        static constexpr double DEAD_WHEEL_RADIUS = 0.991; // in (slightly smaller to account for roller play)
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-0.5, 0);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 1);
+        static constexpr double DEAD_WHEEL_RADIUS = 1;
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0, 0);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.34);
 
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
@@ -111,10 +129,10 @@ namespace devils
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
 
-        OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 0);
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 0);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 0);
-        InertialSensor imu = InertialSensor("IMU", 0);
+        OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 7);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 9);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 8);
+        InertialSensor imu = InertialSensor("IMU", 4);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
@@ -128,13 +146,19 @@ namespace devils
             intakePneumaticsRight,
             hoodPneumatics);
 
-        PerpendicularSensorOdometry odometry = PerpendicularSensorOdometry(verticalSensor, horizontalSensor, DEAD_WHEEL_RADIUS);
+        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
+            verticalSensor,
+            horizontalSensor,
+            DEAD_WHEEL_RADIUS);
 
+        // VEXBridge
+        vexbridge::VEXBridge vexBridge;
+
+        // Renderer
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
             {0, "Default", false},
         };
-        // Renderer
         OptionsRenderer optionsRenderer = OptionsRenderer("PepperJack", routines, &autoOptions);
     };
 }

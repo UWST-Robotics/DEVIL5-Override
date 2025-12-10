@@ -112,7 +112,7 @@ namespace devils
         std::shared_ptr<AsyncTask> startSync()
         {
             start();
-            join();
+            return join();
         }
 
         /**

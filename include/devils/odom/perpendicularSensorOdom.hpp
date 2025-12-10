@@ -47,6 +47,7 @@ namespace devils
         void setPose(Pose pose) override
         {
             currentPose = pose;
+            lastRotation = pose.rotation;
 
             if (imu != nullptr)
                 imu->setHeading(pose.rotation);

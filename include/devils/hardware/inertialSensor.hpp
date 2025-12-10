@@ -55,10 +55,10 @@ namespace devils
         }
 
         /**
-         * Gets the current heading of the IMU in radians, unbounded.
+         * Gets the current heading of the IMU in radians, unscaled and without offset.
          * @return The current heading of the IMU in radians or 0 if the operation failed.
          */
-        double getHeading() override
+        double getRawHeading()
         {
             errno = 0;
             double heading = imu.get_rotation();
@@ -69,7 +69,16 @@ namespace devils
             }
 
             // Apply scale/offset
-            return Units::degToRad(heading) * headingScale + headingOffset;
+            return Units::degToRad(heading);
+        }
+
+        /**
+         * Gets the current heading of the IMU in radians, unbounded.
+         * @return The current heading of the IMU in radians or 0 if the operation failed.
+         */
+        double getHeading() override
+        {
+            return getRawHeading() * headingScale + headingOffset;
         }
 
         /**
@@ -123,7 +132,7 @@ namespace devils
          */
         void setHeading(double heading) override
         {
-            headingOffset = heading - getHeading();
+            headingOffset = heading - getRawHeading();
         }
 
         /**

@@ -3,6 +3,9 @@
 #include "../geometry/units.hpp"
 #include "../odom/odomSource.hpp"
 #include "../chassis/chassisBase.hpp"
+#include "../trajectory/trajectoryConstraints.hpp"
+#include "../trajectory/trajectoryGenerator.hpp"
+#include "../path/splinePath.hpp"
 #include "./steps/autoJumpToStep.hpp"
 #include "./steps/autoDriveStep.hpp"
 #include "./steps/autoDriveToStep.hpp"
@@ -99,6 +102,7 @@ namespace devils
          * @param finalVelocity The final velocity to drive at in inches per second. Speed is carried over from the previous step.
          * @param strength The strength of the bezier curve (inches)
          * @param constraints The constraints for the trajectory
+         * @param startFromOdomPose Whether to start from the odometry pose or the theoretical current pose
          * @param options The options for the drive step
          * @returns A pointer to the created step
          */
@@ -110,13 +114,21 @@ namespace devils
             double finalVelocity = 0,
             double strength = 2.0,
             TrajectoryConstraints constraints = {56, 64},
+            bool startFromOdomPose = false,
             AutoRamseteStep::Options options = AutoRamseteStep::Options::defaultOptions)
         {
             // Create a new pose
             Pose targetPose = Pose(x, y, Units::degToRad(rotation));
 
             // Return a new `AutoRamseteStep` with the given pose
-            return driveToTrajectoryPose(targetPose, isReversed, finalVelocity, strength, constraints, options);
+            return driveToTrajectoryPose(
+                targetPose,
+                isReversed,
+                finalVelocity,
+                strength,
+                constraints,
+                startFromOdomPose,
+                options);
         }
 
         /**
@@ -126,6 +138,7 @@ namespace devils
          * @param finalVelocity The final velocity to drive at in inches per second. Speed is carried over from the previous step.
          * @param strength The strength of the bezier curve (inches)
          * @param constraints The constraints for the trajectory
+         * @param startFromOdomPose Whether to start from the odometry pose or the theoretical current pose
          * @param options The options for the drive step
          * @returns A pointer to the created step
          */
@@ -135,10 +148,11 @@ namespace devils
             double finalVelocity = 0,
             double strength = 10.0,
             TrajectoryConstraints constraints = {48, 64},
+            bool startFromOdomPose = false,
             AutoRamseteStep::Options options = AutoRamseteStep::Options::defaultOptions)
         {
             // Transform the pose
-            Pose fromPose = tryTransformPose(this->pose);
+            Pose fromPose = startFromOdomPose ? tryTransformPose(odom.getPose()) : tryTransformPose(this->pose);
             Pose toPose = tryTransformPose(pose);
 
             // Create a new path
@@ -212,6 +226,7 @@ namespace devils
          * Rotates the robot a given amount
          * @param distance The distance to rotate in degrees
          * @param timeout The timeout in milliseconds
+         * @param options The options for the drive step
          * @returns A pointer to the created step
          */
         AutoStepPtr rotate(
@@ -229,7 +244,11 @@ namespace devils
         /**
          * Drives the robot a given distance in closed loop
          * @param distance The distance to drive in inches
-         * @param timeout The timeout in milliseconds
+         * @param isReversed Whether to drive in reverse or not
+         * @param finalVelocity The final velocity to drive at in inches per second. Speed is carried over from the previous step.
+         * @param strength The strength of the bezier curve (inches)
+         * @param constraints The constraints for the trajectory
+         * @param startFromOdomPose Whether to start from the odometry pose or the theoretical current pose
          * @param options The options for the drive step
          */
         AutoStepPtr driveTrajectory(
@@ -238,6 +257,7 @@ namespace devils
             double finalVelocity = 0,
             double strength = 10.0,
             TrajectoryConstraints constraints = {48, 64},
+            bool startFromOdomPose = false,
             AutoRamseteStep::Options options = AutoRamseteStep::Options::defaultOptions)
         {
             // Create a new pose
@@ -246,7 +266,14 @@ namespace devils
                                    pose.rotation);
 
             // Return a new `AutoDriveStep` with the given pose
-            return driveToTrajectoryPose(targetPose, isReversed, finalVelocity, strength, constraints, options);
+            return driveToTrajectoryPose(
+                targetPose,
+                isReversed,
+                finalVelocity,
+                strength,
+                constraints,
+                startFromOdomPose,
+                options);
         }
 
         /**
