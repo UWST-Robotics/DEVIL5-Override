@@ -2,6 +2,7 @@
 #include <string>
 #include "pros/rtos.hpp"
 #include "../autoStep.hpp"
+#include "../../geometry/units.hpp"
 #include "../../utils/math.hpp"
 #include "../../odom/odomSource.hpp"
 #include "../../chassis/chassisBase.hpp"

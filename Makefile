@@ -14,7 +14,7 @@ INCDIR=$(ROOT)/include
 
 WARNFLAGS+=
 EXTRA_CFLAGS=
-EXTRA_CXXFLAGS=
+EXTRA_CXXFLAGS=-Wall -Wextra -Wpedantic -Wdouble-promotion
 
 # Set to 1 to enable hot/cold linking
 USE_PACKAGE:=1

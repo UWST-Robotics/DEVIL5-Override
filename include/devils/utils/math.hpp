@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include "../geometry/vector2.hpp"
 
 namespace devils
 {

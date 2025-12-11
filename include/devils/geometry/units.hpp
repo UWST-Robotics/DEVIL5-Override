@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <sstream>
 #include <cmath>
 
 #ifndef M_PI

@@ -26,15 +26,14 @@ namespace devils
          */
         bool contains(Vector2 &pose)
         {
-            int i, j;
-            bool c = false;
-            for (i = 0, j = points.size() - 1; i < points.size(); j = i++)
+            bool isContained = false;
+            for (size_t i = 0, j = points.size() - 1; i < points.size(); j = i++)
             {
                 if (((points[i].y > pose.y) != (points[j].y > pose.y)) &&
                     (pose.x < (points[j].x - points[i].x) * (pose.y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
-                    c = !c;
+                    isContained = !isContained;
             }
-            return c;
+            return isContained;
         }
 
         /**

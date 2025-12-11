@@ -83,9 +83,6 @@
 #include "display/optionsRenderer.hpp"
 #include "display/eyesRenderer.hpp"
 
-// Led
-#include "lights/ledStrip.hpp"
-
 // VEXBridge
 // TODO: VEXBridge is currently broken
 // #include "../vexbridge/vexbridge.h"

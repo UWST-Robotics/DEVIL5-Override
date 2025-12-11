@@ -23,6 +23,28 @@ namespace devils
     class AutoBuilder
     {
     public:
+        /// @brief The options passed in by the user in autoBuilder
+        struct TrajectoryOptions
+        {
+            /// @brief If true, the robot will drive in reverse. Otherwise, it will drive forward.
+            bool isReversed = false;
+
+            /// @brief If true, the robot will start from the odometry pose. Otherwise, it will start from the theoretical current pose.
+            bool startFromOdomPose = false;
+
+            /// @brief The strength of the bezier curve (inches). Typically about 1/3 the path length.
+            double strength = 2.0;
+
+            /// @brief The expected velocity at the end of the trajectory (inches per second)
+            double finalVelocity = 0;
+
+            /// @brief The constraints for the trajectory
+            TrajectoryConstraints constraints = {56.0f, 64.0f};
+
+            /// @brief The options for the drive step
+            AutoRamseteStep::Options driveOptions = AutoRamseteStep::Options::defaultOptions;
+        };
+
         /**
          * A builder for creating closed-loop autonomous routines w/ a chassis and odometry source.
          * Used to quickly create autonomous routines with a fluent API.
@@ -37,24 +59,11 @@ namespace devils
         {
         }
 
-        void runAfterDelay(uint32_t delay, const std::function<void()> &callback)
-        {
-            // Create PROS task to run the callback after the delay
-            pros::Task([delay, callback]()
-                       {
-                           //
-                           pros::delay(delay);
-                           callback();
-                           //
-                       });
-        }
-
         /**
          * Sets the pose of the robot
          * @param pose The pose to set the robot to
-         * @returns A pointer to the created step
          */
-        AutoStepPtr setPose(Pose pose)
+        void setPose(Pose pose)
         {
             // Set the current pose
             this->pose = pose;
@@ -63,7 +72,7 @@ namespace devils
             Pose transformedPose = tryTransformPose(pose);
 
             // Return a new `AutoJumpToStep` with the given pose
-            return std::make_shared<AutoJumpToStep>(odom, transformedPose);
+            this->odom.setPose(transformedPose);
         }
 
         /**
@@ -71,15 +80,14 @@ namespace devils
          * @param x The x position to set the robot to in inches
          * @param y The y position to set the robot to in inches
          * @param rotation The rotation to set the robot to in degrees
-         * @returns A pointer to the created step
          */
-        AutoStepPtr setPose(double x, double y, double rotation)
+        void setPose(double x, double y, double rotation)
         {
             // Create a new pose
             Pose pose = Pose(x, y, Units::degToRad(rotation));
 
             // Return a new `AutoJumpToStep` with the given pose
-            return setPose(pose);
+            setPose(pose);
         }
 
         /**
@@ -133,6 +141,31 @@ namespace devils
 
         /**
          * Drives the robot to a given pose using a bezier curve, trajectory generation, and ramsete control.
+         * @param x The x position to drive to in inches
+         * @param y The y position to drive to in inches
+         * @param rotation The rotation to drive to in degrees
+         * @param options The options for the drive step
+         */
+        AutoStepPtr driveToTrajectory(
+            double x,
+            double y,
+            double rotation,
+            TrajectoryOptions options)
+        {
+            return driveToTrajectory(
+                x,
+                y,
+                rotation,
+                options.isReversed,
+                options.finalVelocity,
+                options.strength,
+                options.constraints,
+                options.startFromOdomPose,
+                options.driveOptions);
+        }
+
+        /**
+         * Drives the robot to a given pose using a bezier curve, trajectory generation, and ramsete control.
          * @param pose The pose to drive to
          * @param isReversed Whether to drive in reverse or not
          * @param finalVelocity The final velocity to drive at in inches per second. Speed is carried over from the previous step.
@@ -174,52 +207,6 @@ namespace devils
 
             // Make a new `AutoRamseteStep` with the given trajectory
             return std::make_shared<AutoRamseteStep>(chassis, odom, trajectory, options);
-        }
-
-        /**
-         * Drives to a given pose using boomerang control. See `AutoBoomerangStep` for more info.
-         * @param x The x position to drive to in inches
-         * @param y The y position to drive to in inches
-         * @param rotation The rotation to drive to in degrees
-         * @param timeout The timeout in milliseconds
-         * @param options The options for the drive step
-         * @returns A pointer to the created step
-         */
-        AutoStepPtr driveTo(
-            double x,
-            double y,
-            double rotation,
-            uint32_t timeout = 2000,
-            AutoDriveToStep::Options options = AutoDriveToStep::Options::defaultOptions)
-        {
-            // Create a new pose
-            Pose targetPose = Pose(x, y, Units::degToRad(rotation));
-
-            // Return a new `AutoBoomerangStep` with the given pose
-            return driveTo(targetPose, timeout, options);
-        }
-
-        /**
-         * Drives to a given pose using boomerang control. See `AutoBoomerangStep` for more info.
-         * @param pose The pose to drive to
-         * @param timeout The timeout in milliseconds
-         * @param options The options for the drive step
-         * @returns A pointer to the created step
-         */
-        AutoStepPtr driveTo(
-            Pose pose,
-            uint32_t timeout = 2000,
-            AutoDriveToStep::Options options = AutoDriveToStep::Options::defaultOptions)
-        {
-            // Set the current pose
-            this->pose = pose;
-            velocity = 0.0;
-
-            // Transform the pose
-            Pose transformedPose = tryTransformPose(pose);
-
-            // Return a new `AutoBoomerangStep` with the given pose
-            return std::make_shared<AutoTimeoutStep>(std::make_shared<AutoBoomerangStep>(chassis, odom, transformedPose, options), timeout);
         }
 
         /**

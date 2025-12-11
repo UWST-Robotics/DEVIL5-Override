@@ -150,7 +150,7 @@ namespace devils
         static void handleAllianceColorChange(lv_event_t *e)
         {
             lv_obj_t *btn = lv_event_get_target(e);
-            lv_obj_t *label = lv_obj_get_child(btn, NULL);
+            lv_obj_t *label = lv_obj_get_child(btn, 0);
             if (label != NULL)
             {
                 const char *text = lv_label_get_text(label);

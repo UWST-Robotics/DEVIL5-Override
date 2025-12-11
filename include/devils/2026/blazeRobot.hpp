@@ -50,26 +50,19 @@ namespace devils
                 // Combine Left and Right X Joystick Inputs
                 double combinedX = JoystickCurve::combine(leftX, rightX);
 
-                // Run Intake/Outtake
+                // Run Cyclers
                 if (exitCyclerButton)
-                    intake.exitCycler();
+                    intake.setIntakeMode(IntakeMode::SideGoal); // Score Top
                 else if (midOuttakeButton)
-                    intake.outtakeMid();
-
+                    intake.setIntakeMode(IntakeMode::MidBottom); // Score Bottom
                 else if (exitCyclerMidButton)
-                    intake.exitCyclerMid();
-                else
-                    intake.defaultIntake(rightY);
+                    intake.setIntakeMode(IntakeMode::MidTop); // Score Mid
 
-                if (intakeExtendButton)
-                    intake.intakeExtend();
-                else
-                    intake.intakeRetract();
+                bool isScoring = exitCyclerButton || midOuttakeButton || exitCyclerMidButton;
 
-                if (hoodExtendButton)
-                    intake.hoodExtend();
-                else
-                    intake.hoodRetract();
+                intake.runIntake(isScoring ? 1.0f : rightY);
+                intake.setArmsExtended(intakeExtendButton);
+                intake.setHoodExtended(hoodExtendButton);
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f);
@@ -91,10 +84,12 @@ namespace devils
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
-        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {-1});
-        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-10, 2, -3});
+
+        SmartMotorGroup frontBottomIntakeMotors = SmartMotorGroup("FrontBottomIntake", {-1});
+        SmartMotorGroup frontTopIntakeMotors = SmartMotorGroup("FrontTopIntake", {-10});
+        SmartMotorGroup frontIntakeRollers = SmartMotorGroup("FrontIntakeRollers", {2, -3});
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
-        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {5});
 
         ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
@@ -105,8 +100,9 @@ namespace devils
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
         IntakeSystem intake = IntakeSystem(
-            topIntakeMotors,
-            bottomIntakeMotors,
+            frontTopIntakeMotors,
+            frontBottomIntakeMotors,
+            frontIntakeRollers,
             backIntakeMotors,
             cyclerMotors,
             colorSensor,
