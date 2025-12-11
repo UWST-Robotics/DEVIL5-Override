@@ -30,32 +30,31 @@ namespace devils
             pjRoutine.setPose(-48, 0, 180);
             intake.setHoodAutomatic(true);
             intake.setIntakeMode(IntakeMode::Cycler);
+            intake.runIntake(INTAKE_SPEED);
 
-            // 1 (Park Zone)
+            // 1 (W Park Zone)
             pjRoutine.driveToTrajectory(-40, 0, 180, {.isReversed = true, .constraints = slowConstraints})->startSync();
             pauseForIntake(intake, 1000);
 
             // 2 (N Side Ball)
             pjRoutine.rotateTo(280)->startSync();
             intake.setArmsExtended(true);
-            pjRoutine.driveToTrajectory(-16, -36, 340, {.strength = 12, .finalVelocity = 10})->startSync();
-            intake.runIntake(INTAKE_SPEED);
+            pjRoutine.driveToTrajectory(-16, -36, 340, {.strength = 18, .finalVelocity = 10})->startSync();
             pjRoutine.driveToTrajectory(-6, -38, 0, {.constraints = slowConstraints})->startSync();
             pauseForIntake(intake);
 
             // 3 (NW Side Balls)
-            pjRoutine.driveToTrajectory(-12, -34, 340, {.isReversed = true})->startSync();
+            pjRoutine.driveToTrajectory(-26, -32, 340, {.isReversed = true})->startSync();
             intake.setArmsExtended(false);
-            pjRoutine.rotateTo(170)->startSync();
+            pjRoutine.rotateTo(200)->startSync();
             pjRoutine.driveToTrajectory(-45, -60, 270, {.strength = 16, .finalVelocity = 12})->startSync();
-            intake.runIntake(INTAKE_SPEED);
             pjRoutine.driveToTrajectory(-45, -66, 270, {.constraints = slowConstraints})->startSync();
             intake.setArmsExtended(true);
             pauseForIntake(intake, 2500);
             intake.setArmsExtended(false);
 
             // 4 (Score in Center Goal)
-            pjRoutine.driveToTrajectory(-48, -54, 270, {.isReversed = true})->startSync();
+            pjRoutine.driveToTrajectory(-45, -54, 270, {.isReversed = true})->startSync();
             pjRoutine.rotateTo(56)->startSync();
             pjRoutine.driveToTrajectory(-6, -14, 45, {.strength = 12})->startSync();
             intake.setIntakeMode(IntakeMode::MidTop); // << MidBottom actually
@@ -79,10 +78,10 @@ namespace devils
             intake.setIntakeMode(IntakeMode::Cycler);
 
             // 7 (NE Side Balls)
-            pjRoutine.driveToTrajectory(-40, -51, 0, {.isReversed = true})->startSync();
-            pjRoutine.driveToTrajectory(-28, -62, 350, {.finalVelocity = 12, .constraints = slowConstraints})->startSync();
-            pjRoutine.driveToTrajectory(28, -62, 10, {.finalVelocity = 12})->startSync();
-            pjRoutine.driveToTrajectory(54, -48, 45)->startSync();
+            pjRoutine.driveToTrajectory(-46, -46, 300, {.isReversed = true})->startSync();
+            pjRoutine.driveToTrajectory(-28, -62, 350, {.strength = 12, .finalVelocity = 12, .constraints = slowConstraints})->startSync();
+            pjRoutine.driveToTrajectory(28, -62, 10, {.strength = 12, .finalVelocity = 12})->startSync();
+            pjRoutine.driveToTrajectory(54, -48, 45, {.strength = 12})->startSync();
             pjRoutine.rotateTo(270)->startSync();
             intake.runIntake(INTAKE_SPEED);
             pjRoutine.driveToTrajectory(54, -62, 270, {.constraints = slowConstraints})->startSync();
@@ -91,7 +90,7 @@ namespace devils
             intake.setArmsExtended(false);
 
             // 8 (NE Loader)
-            pjRoutine.driveToTrajectory(54, -48, 270, true)->startSync();
+            pjRoutine.driveToTrajectory(54, -48, 270, {.isReversed = true})->startSync();
             pjRoutine.rotateTo(0)->startSync();
             pjRoutine.driveToTrajectory(68, -48, 0)->startSync();
             intake.setArmsExtended(true);
@@ -99,7 +98,7 @@ namespace devils
             intake.setArmsExtended(false);
 
             // 9 (Score in Top Goal)
-            pjRoutine.driveToTrajectory(54, -48, 0, true)->startSync();
+            pjRoutine.driveToTrajectory(54, -48, 0, {.isReversed = true})->startSync();
             pjRoutine.rotateTo(180)->startSync();
             pjRoutine.driveToTrajectory(38, -48, 180)->startSync();
             intake.setIntakeMode(IntakeMode::SideGoal);
@@ -108,11 +107,11 @@ namespace devils
             pjRoutine.pause(999999999)->startSync();
 
             // 10 (Park Zone)
-            pjRoutine.driveToTrajectory(48, -48, 180, true)->startSync();
-            pjRoutine.driveToTrajectory(0, -24, 180, false, 12)->startSync();
-            pjRoutine.driveToTrajectory(-48, -36, 180, false, 12)->startSync();
-            pjRoutine.driveToTrajectory(-64, -18, 90, false, 12)->startSync();
-            pjRoutine.driveToTrajectory(-64, 6, 90, false, 0, 1, fastConstraints)->startSync();
+            pjRoutine.driveToTrajectory(48, -48, 180, {.isReversed = true})->startSync();
+            pjRoutine.driveToTrajectory(0, -24, 180, {.strength = 12, .finalVelocity = 12})->startSync();
+            pjRoutine.driveToTrajectory(-48, -36, 180, {.strength = 12, .finalVelocity = 12})->startSync();
+            pjRoutine.driveToTrajectory(-64, -18, 90, {.strength = 12, .finalVelocity = 12})->startSync();
+            pjRoutine.driveToTrajectory(-64, 6, 90, {.finalVelocity = 0, .constraints = fastConstraints})->startSync();
         }
 
     private:
@@ -120,21 +119,23 @@ namespace devils
             IntakeSystem &intake,
             uint32_t duration = 500)
         {
-            intake.runIntake(INTAKE_SPEED);
             std::make_shared<AutoPauseStep>(duration)->startSync();
-            intake.runIntake(0.0f);
         }
 
         static void pauseForOuttake(
             IntakeSystem &intake,
-            uint32_t duration = 3000)
+            uint32_t slowDuration = 3000,
+            uint32_t fastDuration = 1000)
         {
-            intake.runIntake(OUTTAKE_SPEED);
-            std::make_shared<AutoPauseStep>(duration)->startSync();
+            intake.runIntake(OUTTAKE_SLOW_SPEED);
+            std::make_shared<AutoPauseStep>(slowDuration)->startSync();
+            intake.runIntake(OUTTAKE_FAST_SPEED);
+            std::make_shared<AutoPauseStep>(fastDuration)->startSync();
             intake.runIntake(0.0f);
         }
 
-        static constexpr double INTAKE_SPEED = 0.8;
-        static constexpr double OUTTAKE_SPEED = 0.8;
+        static constexpr double INTAKE_SPEED = 1.0;
+        static constexpr double OUTTAKE_SLOW_SPEED = 0.6; // <-- Slower, avoids ball from overshooting the goal
+        static constexpr double OUTTAKE_FAST_SPEED = 1.0; // <-- Faster, uses existing balls as a backstop
     };
 }

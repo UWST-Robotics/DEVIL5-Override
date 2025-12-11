@@ -2,6 +2,7 @@
 
 #include "../devils.h"
 #include "subsystems/intakeSystem.hpp"
+#include "./autonomous/blazeSkillsAuto.hpp"
 #include "pros/adi.hpp"
 
 namespace devils
@@ -10,10 +11,17 @@ namespace devils
     {
         BlazeRobot()
         {
+            imu.calibrate();
+
+            odometry->useIMU(&imu);
+            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
+            odometry->start();
         }
 
         virtual void autonomous() override
         {
+            imu.waitUntilCalibrated();
+            BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
         void opcontrol() override
@@ -81,6 +89,12 @@ namespace devils
             AutoStep::stopAll();
         }
 
+        // Constants
+        // (Copied from PJRobot)
+        static constexpr double DEAD_WHEEL_RADIUS = 1;
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0, 0);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.34);
+
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
@@ -95,7 +109,10 @@ namespace devils
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
 
-        OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 4);
+        OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 7);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 9);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 8);
+        InertialSensor imu = InertialSensor("IMU", 4);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
@@ -109,6 +126,11 @@ namespace devils
             intakePneumaticsLeft,
             intakePneumaticsRight,
             hoodPneumatics);
+
+        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
+            verticalSensor,
+            horizontalSensor,
+            DEAD_WHEEL_RADIUS);
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {

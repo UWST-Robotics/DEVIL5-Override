@@ -13,7 +13,6 @@ namespace devils
         PJRobot()
         {
             imu.calibrate();
-            imu.waitUntilCalibrated();
 
             odometry->useIMU(&imu);
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
@@ -22,6 +21,7 @@ namespace devils
 
         void autonomous() override
         {
+            imu.waitUntilCalibrated();
             PJSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
@@ -108,6 +108,7 @@ namespace devils
             AutoStep::stopAll();
         }
 
+        // Constants
         static constexpr double DEAD_WHEEL_RADIUS = 1;
         Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0, 0);
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.34);

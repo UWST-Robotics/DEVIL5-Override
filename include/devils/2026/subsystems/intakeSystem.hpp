@@ -87,51 +87,55 @@ namespace devils
          */
         void runIntake(float speed)
         {
+            // Calculate the speeds for each motor
             speed = std::clamp(speed, MIN_SPEED, MAX_SPEED);
+
+            float frontBottomIntakeSpeed = speed * FRONT_BOTTOM_INTAKE_SPEED;
+            float frontTopIntakeSpeed = speed * FRONT_TOP_INTAKE_SPEED;
+            float frontIntakeRollerSpeed = speed * ROLLER_SPEED;
+            float backIntakeSpeed = speed * BACK_INTAKE_SPEED;
+            float cyclerSpeed = speed * CYCLER_SPEED;
 
             switch (intakeMode)
             {
             case IntakeMode::Cycler:
-                frontBottomIntakeMotors.moveVoltage(speed);
-                frontTopIntakeMotors.moveVoltage(speed);
-                frontIntakeRollers.moveVoltage(speed);
-                // Slower speed is due to the diameter of the back intake being larger than the cycler motors
+                frontBottomIntakeMotors.moveVoltage(frontBottomIntakeSpeed);
+                frontTopIntakeMotors.moveVoltage(frontTopIntakeSpeed);
+                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
                 // Absolute value is used to ensure the back intake *always* moves in the same direction
-                backIntakeMotors.moveVoltage(std::fabs(speed * INTAKE_BACK_SPEED));
-                cyclerMotors.moveVoltage(speed);
+                backIntakeMotors.moveVoltage(std::fabs(backIntakeSpeed));
+                cyclerMotors.moveVoltage(cyclerSpeed);
 
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(false);
                 break;
 
             case IntakeMode::SideGoal:
-                frontBottomIntakeMotors.moveVoltage(speed);
-                frontTopIntakeMotors.moveVoltage(speed);
-                frontIntakeRollers.moveVoltage(speed);
-                backIntakeMotors.moveVoltage(speed);
-                cyclerMotors.moveVoltage(-speed);
+                frontBottomIntakeMotors.moveVoltage(frontBottomIntakeSpeed);
+                frontTopIntakeMotors.moveVoltage(frontTopIntakeSpeed);
+                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
+                backIntakeMotors.moveVoltage(backIntakeSpeed);
+                cyclerMotors.moveVoltage(-cyclerSpeed);
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(true);
                 break;
 
             case IntakeMode::MidTop:
-                frontBottomIntakeMotors.moveVoltage(-speed);
-                frontTopIntakeMotors.moveVoltage(speed);
-                frontIntakeRollers.moveVoltage(speed);
-                backIntakeMotors.moveVoltage(speed);
-                cyclerMotors.moveVoltage(-speed);
-
+                frontBottomIntakeMotors.moveVoltage(-frontBottomIntakeSpeed);
+                frontTopIntakeMotors.moveVoltage(frontTopIntakeSpeed);
+                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
+                backIntakeMotors.moveVoltage(backIntakeSpeed);
+                cyclerMotors.moveVoltage(-cyclerSpeed);
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(true);
                 break;
 
             case IntakeMode::MidBottom:
-                frontBottomIntakeMotors.moveVoltage(speed);
-                frontTopIntakeMotors.moveVoltage(-speed);
-                frontIntakeRollers.moveVoltage(speed);
-                backIntakeMotors.moveVoltage(speed);
-                cyclerMotors.moveVoltage(-speed);
-
+                frontBottomIntakeMotors.moveVoltage(frontBottomIntakeSpeed);
+                frontTopIntakeMotors.moveVoltage(-frontTopIntakeSpeed);
+                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
+                backIntakeMotors.moveVoltage(backIntakeSpeed);
+                cyclerMotors.moveVoltage(-cyclerSpeed);
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(true);
                 break;
@@ -233,11 +237,17 @@ namespace devils
         static constexpr float MAX_SPEED = 1.0;  // %
         static constexpr float MIN_SPEED = -0.6; // %
 
-        static constexpr float INTAKE_BACK_SPEED = 0.6; // %
+        // Slightly slower than the other motors to prevent jamming
+        static constexpr float FRONT_BOTTOM_INTAKE_SPEED = 0.7; // %
+        static constexpr float FRONT_TOP_INTAKE_SPEED = 0.7;    // %
 
-        // static constexpr float OUTTAKE_TOP_SPEED = 0.8;     // %
-        // static constexpr float OUTTAKE_MIDDLE_SPEED = -0.5; // %
-        // static constexpr float EXIT_CYCLER_SPEED = 0.5;     // %
+        // Max speed to grab balls from the loaders
+        static constexpr float ROLLER_SPEED = 1.0; // %
+
+        // Must be ~60% slower than cycler since the diameter is larger
+        // Prevents balls from re-cycling through the system
+        static constexpr float BACK_INTAKE_SPEED = 0.6; // %
+        static constexpr float CYCLER_SPEED = 0.8;      // %
 
         // TODO: Get color hue for block
         static constexpr float RED_BLOCK_HUE = 0.0;
