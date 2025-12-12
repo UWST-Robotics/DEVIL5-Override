@@ -47,9 +47,9 @@ namespace devils
                 bool hoodExtendButton = mainController.get_digital(DIGITAL_L1);    // hood extend/retract
                 bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); // mid goal from cycler
 
+                // VEXBridge Odom
                 bool odomReset = mainController.get_digital_new_press(DIGITAL_B); // reset odometry
 
-                // VEXBridge Odom
                 auto position = odometry->getPose();
                 VEXBridge::VEXBridge::set<double>("_poses/robot/x", position.x);
                 VEXBridge::VEXBridge::set<double>("_poses/robot/y", position.y);
@@ -87,7 +87,7 @@ namespace devils
 
                 bool isScoring = exitCyclerButton || midOuttakeButton || exitCyclerMidButton;
 
-                intake.runIntake(isScoring ? 0.5f : rightY);
+                intake.runIntake(isScoring ? 0.8f : rightY);
                 intake.setArmsExtended(intakeExtendButton);
                 intake.setHoodExtended(hoodExtendButton);
 

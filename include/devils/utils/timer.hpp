@@ -13,7 +13,7 @@ namespace devils
          * @param duration The duration of the timer in milliseconds.
          * @return The new instance of Timer.
          */
-        Timer(uint32_t duration) : duration(duration)
+        Timer(int32_t duration) : duration(duration)
         {
         }
 
@@ -21,7 +21,7 @@ namespace devils
          * Sets the duration of the timer.
          * @param duration The duration of the timer in milliseconds.
          */
-        void setDuration(uint32_t duration)
+        void setDuration(int32_t duration)
         {
             this->duration = duration;
         }
@@ -49,7 +49,7 @@ namespace devils
          */
         bool running()
         {
-            return isStarted && pros::millis() - startTime < duration;
+            return isStarted && !finished();
         }
 
         /**
@@ -67,12 +67,14 @@ namespace devils
          */
         double timeRemaining()
         {
+            if (!running())
+                return 0;
             return duration - (pros::millis() - startTime);
         }
 
     private:
         bool isStarted = false;
-        uint32_t startTime = 0;
-        uint32_t duration = 0;
+        int32_t startTime = 0;
+        int32_t duration = 0;
     };
 }

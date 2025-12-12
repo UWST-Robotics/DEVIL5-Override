@@ -87,6 +87,10 @@ namespace devils
          */
         void runIntake(float speed)
         {
+            // Check for stall
+            if (checkForStall())
+                return;
+
             // Calculate the speeds for each motor
             speed = std::clamp(speed, MIN_SPEED, MAX_SPEED);
 
@@ -194,6 +198,48 @@ namespace devils
 
     protected:
         /**
+         * Checks for a stall and handles it if detected.
+         * @return True if a stall is being handled, false otherwise.
+         */
+        bool checkForStall()
+        {
+            // Check if we are reversing because of a stall
+            bool isReversingBecauseStall = reverseBecauseStallTimer.running();
+            if (isReversingBecauseStall)
+            {
+                frontBottomIntakeMotors.moveVoltage(STALL_SPEED);
+                frontTopIntakeMotors.moveVoltage(STALL_SPEED);
+                frontIntakeRollers.moveVoltage(STALL_SPEED);
+                backIntakeMotors.moveVoltage(STALL_SPEED);
+                cyclerMotors.moveVoltage(STALL_SPEED);
+                return true;
+            }
+
+            // Search for stall condition
+            bool isFrontBottomStalled = frontBottomIntakeMotors.getCurrent() > STALL_CURRENT;
+            bool isFrontTopStalled = frontTopIntakeMotors.getCurrent() > STALL_CURRENT;
+            bool isStalled = isFrontBottomStalled || isFrontTopStalled;
+
+            if (isStalled)
+            {
+                // Once the timer is finished, start reversing
+                if (checkForStallTimer.finished())
+                    reverseBecauseStallTimer.start();
+
+                // Start the min stall timer.
+                // This prevents false positives from quick current spikes.
+                if (!checkForStallTimer.running())
+                    checkForStallTimer.start();
+            }
+            else
+            {
+                checkForStallTimer.stop();
+            }
+
+            return false;
+        }
+
+        /**
          * Updates the intake hood to handle color sorting
          */
         void setHoodExtendedBasedOnColorSort()
@@ -234,29 +280,43 @@ namespace devils
         }
 
     private:
+        //     SPEED OPTIONS
+
         static constexpr float MAX_SPEED = 1.0;  // %
-        static constexpr float MIN_SPEED = -0.6; // %
+        static constexpr float MIN_SPEED = -1.0; // %
 
-        // Slightly slower than the other motors to prevent jamming
-        static constexpr float FRONT_BOTTOM_INTAKE_SPEED = 0.7; // %
+        static constexpr float FRONT_BOTTOM_INTAKE_SPEED = 1.0; // %
         static constexpr float FRONT_TOP_INTAKE_SPEED = 0.7;    // %
+        static constexpr float ROLLER_SPEED = 1.0;              // %
+        static constexpr float BACK_INTAKE_SPEED = 0.6;         // %
+        static constexpr float CYCLER_SPEED = 1.0;              // %
 
-        // Max speed to grab balls from the loaders
-        static constexpr float ROLLER_SPEED = 1.0; // %
-
-        // Must be ~60% slower than cycler since the diameter is larger
-        // Prevents balls from re-cycling through the system
-        static constexpr float BACK_INTAKE_SPEED = 0.6; // %
-        static constexpr float CYCLER_SPEED = 0.8;      // %
+        //      COLOR SENSOR OPTIONS
 
         // TODO: Get color hue for block
         static constexpr float RED_BLOCK_HUE = 0.0;
         static constexpr float BLUE_BLOCK_HUE = 0.0;
 
+        //     STALL OPTIONS
+
+        /// @brief The current threshold to detect a stall (in mA).
+        static constexpr double STALL_CURRENT = 1400;
+
+        /// @brief The minimum duration a stall must occur.
+        static constexpr int32_t STALL_MIN_DURATION = 300;
+
+        /// @brief The duration to run backwards when stall is detected.
+        static constexpr int32_t STALL_REVERSE_DURATION = 300;
+
+        /// @brief The speed to run while stalled.
+        static constexpr float STALL_SPEED = -1.0;
+
         // State
         ColorSortingMode sortingMode = ColorSortingMode::DontSort;
         IntakeMode intakeMode = IntakeMode::Cycler;
         bool isHoodAutomatic = true;
+        Timer checkForStallTimer = Timer(STALL_MIN_DURATION);
+        Timer reverseBecauseStallTimer = Timer(STALL_REVERSE_DURATION);
 
         // Hardware
         SmartMotorGroup &frontBottomIntakeMotors;

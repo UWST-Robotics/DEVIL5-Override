@@ -4,6 +4,7 @@
 #include "subsystems/intakeSystem.hpp"
 #include "./autonomous/blazeSkillsAuto.hpp"
 #include "pros/adi.hpp"
+#include "../../vexbridge/vexBridge.h"
 
 namespace devils
 {
@@ -45,6 +46,7 @@ namespace devils
                 bool intakeExtendButton = mainController.get_digital(DIGITAL_Y);   // intake extend/retract
                 bool hoodExtendButton = mainController.get_digital(DIGITAL_L1);    // hood extend/retract
                 bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); // mid goal from cycler
+                bool rakePneumaticsButton = mainController.get_digital(DIGITAL_B); // toggle rake pneumatics
 
                 // Curve Joystick Inputs
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
@@ -65,12 +67,16 @@ namespace devils
                     intake.setIntakeMode(IntakeMode::MidBottom); // Score Bottom
                 else if (exitCyclerMidButton)
                     intake.setIntakeMode(IntakeMode::MidTop); // Score Mid
+                else
+                    intake.setIntakeMode(IntakeMode::Cycler); // Intake to cycler
 
                 bool isScoring = exitCyclerButton || midOuttakeButton || exitCyclerMidButton;
 
                 intake.runIntake(isScoring ? 1.0f : rightY);
                 intake.setArmsExtended(intakeExtendButton);
                 intake.setHoodExtended(hoodExtendButton);
+
+                rakePneumatics.setExtended(rakePneumaticsButton);
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f);
@@ -92,21 +98,22 @@ namespace devils
         // Constants
         // (Copied from PJRobot)
         static constexpr double DEAD_WHEEL_RADIUS = 1;
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0, 0);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.34);
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-0.5, 0);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.4);
 
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
 
-        SmartMotorGroup frontBottomIntakeMotors = SmartMotorGroup("FrontBottomIntake", {-1});
-        SmartMotorGroup frontTopIntakeMotors = SmartMotorGroup("FrontTopIntake", {-10});
+        SmartMotorGroup frontTopIntakeMotors = SmartMotorGroup("FrontTopIntake", {-1});
+        SmartMotorGroup frontBottomIntakeMotors = SmartMotorGroup("FrontBottomIntake", {-10});
         SmartMotorGroup frontIntakeRollers = SmartMotorGroup("FrontIntakeRollers", {2, -3});
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
         SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {5});
 
         ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
+        ADIPneumatic rakePneumatics = ADIPneumatic("RakePneumatics", 5);
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
 
         OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 7);
@@ -131,6 +138,9 @@ namespace devils
             verticalSensor,
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
+
+        // VEXBridge
+        vexbridge::VEXBridge vexBridge;
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {
