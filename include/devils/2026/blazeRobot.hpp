@@ -72,7 +72,7 @@ namespace devils
 
                 bool isScoring = exitCyclerButton || midOuttakeButton || exitCyclerMidButton;
 
-                intake.runIntake(isScoring ? 1.0f : rightY);
+                intake.runIntake(isScoring ? 0.8f : rightY);
                 intake.setArmsExtended(intakeExtendButton);
                 intake.setHoodExtended(hoodExtendButton);
 
@@ -109,7 +109,7 @@ namespace devils
         SmartMotorGroup frontBottomIntakeMotors = SmartMotorGroup("FrontBottomIntake", {-10});
         SmartMotorGroup frontIntakeRollers = SmartMotorGroup("FrontIntakeRollers", {2, -3});
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
-        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {5});
+        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
 
         ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
