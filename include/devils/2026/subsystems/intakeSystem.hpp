@@ -285,7 +285,7 @@ namespace devils
         static constexpr float MAX_SPEED = 1.0;  // %
         static constexpr float MIN_SPEED = -1.0; // %
 
-        static constexpr float FRONT_BOTTOM_INTAKE_SPEED = 1.0; // %
+        static constexpr float FRONT_BOTTOM_INTAKE_SPEED = 0.7; // %
         static constexpr float FRONT_TOP_INTAKE_SPEED = 0.7;    // %
         static constexpr float ROLLER_SPEED = 1.0;              // %
         static constexpr float BACK_INTAKE_SPEED = 0.6;         // %
@@ -300,10 +300,10 @@ namespace devils
         //     STALL OPTIONS
 
         /// @brief The current threshold to detect a stall (in mA).
-        static constexpr double STALL_CURRENT = 1400;
+        static constexpr double STALL_CURRENT = 1600;
 
         /// @brief The minimum duration a stall must occur.
-        static constexpr int32_t STALL_MIN_DURATION = 300;
+        static constexpr int32_t STALL_MIN_DURATION = 600;
 
         /// @brief The duration to run backwards when stall is detected.
         static constexpr int32_t STALL_REVERSE_DURATION = 300;

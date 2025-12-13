@@ -2,6 +2,7 @@
 
 #include "devils/devils.h"
 #include "../subsystems/intakeSystem.hpp"
+#include "../autonomous/autoIntakeStep.hpp"
 
 namespace devils
 {
@@ -27,47 +28,50 @@ namespace devils
 
             // Initialize
             AutoBuilder blazeRoutine = AutoBuilder(chassis, odometry);
-            blazeRoutine.setPose(-48, 16, 270);
+            blazeRoutine.setPose(-48, 19, 270);
             intake.setHoodAutomatic(true);
             intake.setIntakeMode(IntakeMode::Cycler);
-            intake.runIntake(INTAKE_SPEED);
+
+            auto intakeStep = std::make_shared<AutoIntakeStep>(intake, INTAKE_SPEED);
+            intakeStep->start();
 
             // 1 (Pickup Preload)
             intake.setArmsExtended(true);
-            blazeRoutine.driveToTrajectory(-48, 14, 270, {.strength = 0, .constraints = slowConstraints})->startSync();
-            pauseForIntake(intake, 1000);
+            blazeRoutine.driveToTrajectory(-48, 24, 270, {.isReversed = true, .strength = 0})->startSync();
+            pauseForIntake(intakeStep, 1000);
 
             // 2 (SW Loader)
             intake.setArmsExtended(false);
             blazeRoutine.driveToTrajectory(-48, 52, 270, {.isReversed = true})->startSync();
             blazeRoutine.rotateTo(180)->startSync();
-            blazeRoutine.driveToTrajectory(-62, 50, 180)->startSync();
             intake.setArmsExtended(true);
-            pauseForIntake(intake, 3000);
+            blazeRoutine.driveToTrajectory(-63, 50, 180)->startSync();
+            pauseForIntake(intakeStep, 3000);
 
             // 3 (Score in Bottom Goal)
             intake.setArmsExtended(false);
-            blazeRoutine.driveToTrajectory(-48, 50, 180, {.isReversed = true})->startSync();
+            blazeRoutine.driveToTrajectory(-48, 51, 180, {.isReversed = true})->startSync();
             blazeRoutine.rotateTo(0)->startSync();
-            blazeRoutine.driveToTrajectory(-30, 50, 0)->startSync();
+            blazeRoutine.driveToTrajectory(-30, 51, 0)->startSync();
             intake.setIntakeMode(IntakeMode::SideGoal);
-            pauseForOuttake(intake);
+            pauseForOuttake(intakeStep);
             intake.setIntakeMode(IntakeMode::Cycler);
 
             // 4 (Ball underneath Bottom Goal)
             blazeRoutine.driveToTrajectory(-40, 44, 50, {.isReversed = true})->startSync();
-            blazeRoutine.driveToTrajectory(-18, 62, 0, {.strength = 12, .finalVelocity = 12})->startSync();
-            blazeRoutine.driveToTrajectory(-8, 58, -50, {.constraints = slowConstraints})->startSync();
+            blazeRoutine.driveToTrajectory(-20, 64, 0, {.strength = 12, .finalVelocity = 12})->startSync();
+            blazeRoutine.driveToTrajectory(-8, 56, -70, {.constraints = slowConstraints})->startSync();
             intake.setArmsExtended(true);
-            pauseForIntake(intake, 1000);
+            pauseForIntake(intakeStep);
 
             // 5 (SE Loader)
             intake.setArmsExtended(false);
             blazeRoutine.driveToTrajectory(-18, 62, 0, {.isReversed = true})->startSync();
             blazeRoutine.driveToTrajectory(20, 62, 0, {.finalVelocity = 12})->startSync();
             blazeRoutine.driveToTrajectory(60, 52, 0, {.strength = 16})->startSync();
+            blazeRoutine.pause(9999999)->startSync(); // Debug Pause
             intake.setArmsExtended(true);
-            pauseForIntake(intake, 1000);
+            pauseForIntake(intakeStep, 1000);
 
             // 6 (Score in Bottom Goal)
             intake.setArmsExtended(false);
@@ -75,7 +79,7 @@ namespace devils
             blazeRoutine.rotateTo(180)->startSync();
             blazeRoutine.driveToTrajectory(30, 52, 180)->startSync();
             intake.setIntakeMode(IntakeMode::SideGoal);
-            pauseForOuttake(intake);
+            pauseForOuttake(intakeStep);
             intake.setIntakeMode(IntakeMode::Cycler);
 
             // TODO: Finish the rest of the path:
@@ -87,22 +91,20 @@ namespace devils
 
     private:
         static void pauseForIntake(
-            IntakeSystem &intake,
+            std::shared_ptr<AutoIntakeStep> &intake,
             uint32_t duration = 500)
         {
             std::make_shared<AutoPauseStep>(duration)->startSync();
         }
 
         static void pauseForOuttake(
-            IntakeSystem &intake,
-            uint32_t slowDuration = 3000,
-            uint32_t fastDuration = 1000)
+            std::shared_ptr<AutoIntakeStep> &intake,
+            uint32_t outtakeDuration = 5000,
+            float outtakeSpeed = 0.8f)
         {
-            intake.runIntake(OUTTAKE_SLOW_SPEED);
-            std::make_shared<AutoPauseStep>(slowDuration)->startSync();
-            intake.runIntake(OUTTAKE_FAST_SPEED);
-            std::make_shared<AutoPauseStep>(fastDuration)->startSync();
-            intake.runIntake(0.0f);
+            intake->setTargetSpeed(outtakeSpeed);
+            std::make_shared<AutoPauseStep>(outtakeDuration)->startSync();
+            intake->setTargetSpeed(INTAKE_SPEED);
         }
 
         static constexpr double INTAKE_SPEED = 1.0;

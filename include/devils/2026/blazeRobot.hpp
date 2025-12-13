@@ -108,8 +108,8 @@ namespace devils
         SmartMotorGroup frontTopIntakeMotors = SmartMotorGroup("FrontTopIntake", {-1});
         SmartMotorGroup frontBottomIntakeMotors = SmartMotorGroup("FrontBottomIntake", {-10});
         SmartMotorGroup frontIntakeRollers = SmartMotorGroup("FrontIntakeRollers", {2, -3});
-        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
-        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-5});
+        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-6});
 
         ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
@@ -138,9 +138,6 @@ namespace devils
             verticalSensor,
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
-
-        // VEXBridge
-        vexbridge::VEXBridge vexBridge;
 
         RobotAutoOptions autoOptions = RobotAutoOptions();
         std::vector<Routine> routines = {

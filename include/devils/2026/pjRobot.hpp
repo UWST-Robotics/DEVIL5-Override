@@ -27,7 +27,10 @@ namespace devils
 
         void opcontrol() override
         {
-            // Default State
+            // Drop Alignment Jig
+            intake.runIntake(-1.0f);
+            pros::delay(100);
+            intake.runIntake(0.0f);
 
             // Stop autonomous
             AutoStep::stopAll();
@@ -46,22 +49,7 @@ namespace devils
                 bool intakeExtendButton = mainController.get_digital(DIGITAL_Y);   // intake extend/retract
                 bool hoodExtendButton = mainController.get_digital(DIGITAL_L1);    // hood extend/retract
                 bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); // mid goal from cycler
-
-                // VEXBridge Odom
-                bool odomReset = mainController.get_digital_new_press(DIGITAL_B); // reset odometry
-
-                auto position = odometry->getPose();
-                VEXBridge::VEXBridge::set<double>("_poses/robot/x", position.x);
-                VEXBridge::VEXBridge::set<double>("_poses/robot/y", position.y);
-                VEXBridge::VEXBridge::set<double>("_poses/robot/rotation", Units::radToDeg(position.rotation) - 90);
-                VEXBridge::VEXBridge::set<double>("_poses/robot/width", 12);
-                VEXBridge::VEXBridge::set<double>("_poses/robot/length", 12);
-
-                if (odomReset)
-                {
-                    odometry->setPose(Pose(0, 0, 0));
-                    imu.setHeading(0);
-                }
+                bool rakePneumaticsButton = mainController.get_digital(DIGITAL_B); // toggle rake pneumatics
 
                 // Curve Joystick Inputs
                 leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
@@ -90,6 +78,8 @@ namespace devils
                 intake.runIntake(isScoring ? 0.8f : rightY);
                 intake.setArmsExtended(intakeExtendButton);
                 intake.setHoodExtended(hoodExtendButton);
+
+                rakePneumatics.setExtended(rakePneumaticsButton);
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f);
@@ -120,11 +110,12 @@ namespace devils
         SmartMotorGroup frontBottomIntakeMotors = SmartMotorGroup("FrontBottomIntake", {-1});
         SmartMotorGroup frontTopIntakeMotors = SmartMotorGroup("FrontTopIntake", {-10});
         SmartMotorGroup frontIntakeRollers = SmartMotorGroup("FrontIntakeRollers", {2, -3});
-        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-6});
-        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-5});
+        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-5});
+        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-6});
 
         ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
         ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
+        ADIPneumatic rakePneumatics = ADIPneumatic("RakePneumatics", 5);
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
 
         OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 7);
@@ -149,9 +140,6 @@ namespace devils
             verticalSensor,
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
-
-        // VEXBridge
-        vexbridge::VEXBridge vexBridge;
 
         // Renderer
         RobotAutoOptions autoOptions = RobotAutoOptions();
