@@ -13,19 +13,19 @@ namespace devils
         struct Point
         {
             /// @brief The current time in seconds
-            double t;
+            float t = 0;
 
             /// @brief The current position
             Pose pose;
 
             /// @brief The translation velocity in inches per second
-            double velocity;
+            float velocity = 0;
 
             /// @brief The angular acceleration in radians per second squared
-            double angularVelocity;
+            float angularVelocity = 0;
 
             /// @brief The linear acceleration in inches per second squared
-            double acceleration;
+            float acceleration = 0;
         };
 
         /**
@@ -41,7 +41,7 @@ namespace devils
          * Gets the duration of the trajectory in seconds
          * @return The duration of the trajectory in seconds
          */
-        double duration() const
+        float duration() const
         {
             return trajectoryPoints->back().t;
         }
@@ -52,7 +52,7 @@ namespace devils
          * @param t The time in seconds
          * @return The trajectory state at the given time
          */
-        Point getStateAt(const double t)
+        Point getStateAt(const float t) const
         {
             // Check if the trajectory is empty
             if (!trajectoryPoints || trajectoryPoints->empty())
@@ -66,16 +66,16 @@ namespace devils
             for (size_t i = 0; i < trajectoryPoints->size() - 1; i++)
             {
                 // Get the two states
-                auto previousState = trajectoryPoints->at(i);
-                auto nextState = trajectoryPoints->at(i + 1);
+                const auto previousState = trajectoryPoints->at(i);
+                const auto nextState = trajectoryPoints->at(i + 1);
 
                 // Check if the time is between the two states
                 if (t >= previousState.t && t <= nextState.t)
                 {
                     // Calculate the interpolation time
-                    double deltaTime = nextState.t - previousState.t;
-                    double timeBetween = t - previousState.t;
-                    double interpolationTime = timeBetween / deltaTime;
+                    const float deltaTime = nextState.t - previousState.t;
+                    const float timeBetween = t - previousState.t;
+                    const float interpolationTime = timeBetween / deltaTime;
 
                     // Interpolate between the two states
                     return lerpStates(previousState, nextState, interpolationTime);
@@ -94,7 +94,10 @@ namespace devils
          * @param t The time to interpolate (0 to 1)
          * @return The interpolated state
          */
-        Point lerpStates(const Point a, const Point b, const double t) const
+        static Point lerpStates(
+            const Point& a,
+            const Point& b,
+            const float t)
         {
             Point state;
             state.t = t;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include "adiPneumatic.hpp"
 
 namespace devils
@@ -20,12 +21,11 @@ namespace devils
          */
         ADIPneumaticGroup(
             std::string name,
-            std::initializer_list<uint8_t> ports)
-            : name(name),
-              pneumatics()
+            const std::initializer_list<uint8_t> ports)
+            : name(std::move(name))
         {
             pneumatics.reserve(ports.size());
-            for (int8_t port : ports)
+            for (auto port : ports)
                 pneumatics.push_back(std::make_shared<ADIPneumatic>(getPneumaticName(port), port));
         }
 
@@ -33,16 +33,16 @@ namespace devils
          * Sets the state of all the pneumatics in the group.
          * @param isExtended True to extend the pneumatics, false to retract them.
          */
-        void setExtended(bool isExtended)
+        void setExtended(const bool isExtended) const
         {
-            for (auto pneumatic : pneumatics)
+            for (const auto& pneumatic : pneumatics)
                 pneumatic->setExtended(isExtended);
         }
 
         /**
          * Extends all the pneumatics in the group.
          */
-        void extend()
+        void extend() const
         {
             setExtended(true);
         }
@@ -50,7 +50,7 @@ namespace devils
         /**
          * Retracts all the pneumatics in the group.
          */
-        void retract()
+        void retract() const
         {
             setExtended(false);
         }
@@ -59,9 +59,9 @@ namespace devils
          * Checks if all the pneumatics in the group are extended.
          * @return True if all the pneumatics in the group are extended, false otherwise.
          */
-        bool getExtended()
+        bool getExtended() const
         {
-            for (auto pneumatic : pneumatics)
+            for (const auto& pneumatic : pneumatics)
                 if (!pneumatic->getExtended())
                     return false;
             return true;
@@ -71,7 +71,7 @@ namespace devils
          * Gets the pneumatics in the motor group.
          * @return The pneumatics in the motor group.
          */
-        ADIPneumaticList &getPneumatics()
+        ADIPneumaticList& getPneumatics()
         {
             return pneumatics;
         }
@@ -82,7 +82,7 @@ namespace devils
          * @param port The port of the pneumatic
          * @return The name of the pneumatic
          */
-        std::string getPneumaticName(uint32_t port)
+        std::string getPneumaticName(const uint32_t port) const
         {
             return name + "_" + std::to_string(port);
         }

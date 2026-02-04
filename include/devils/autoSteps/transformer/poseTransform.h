@@ -10,6 +10,8 @@ namespace devils
      */
     struct PoseTransform
     {
+        virtual ~PoseTransform() = default;
+
         /**
          * Transforms the pose to another location
          * @param pose - Input Pose

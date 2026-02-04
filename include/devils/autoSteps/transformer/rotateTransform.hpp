@@ -9,10 +9,11 @@ namespace devils
     {
         Pose transform(Pose pose) override
         {
-            return Pose(
+            return {
                 -pose.x,
                 -pose.y,
-                M_PI + pose.rotation);
+                static_cast<float>(M_PI) + pose.rotation
+            };
         }
     };
 }

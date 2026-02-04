@@ -8,9 +8,9 @@
  */
 void initialize()
 {
-	Logger::info("==== Initialize ====");
-	robot = std::make_shared<RobinRobot>(); // <-- Change this to the target robot
-	Logger::info("Robot created");
+    Logger::info("==== Initialize ====");
+    robot = std::make_shared<RobinRobot>(); // <-- Change this to the target robot
+    Logger::info("Robot created");
 }
 
 /**
@@ -20,9 +20,9 @@ void initialize()
  */
 void disabled()
 {
-	Logger::info("==== Disabled ====");
-	robot->disabled();
-	Logger::info("Robot disabled");
+    Logger::info("==== Disabled ====");
+    robot->disabled();
+    Logger::info("Robot disabled");
 }
 
 /**
@@ -36,9 +36,9 @@ void disabled()
  */
 void competition_initialize()
 {
-	Logger::info("==== Competition Initialize ====");
-	robot->competition();
-	Logger::info("Competition initialized");
+    Logger::info("==== Competition Initialize ====");
+    robot->competition();
+    Logger::info("Competition initialized");
 }
 
 /**
@@ -54,9 +54,9 @@ void competition_initialize()
  */
 void autonomous()
 {
-	Logger::info("==== Autonomous ====");
-	robot->autonomous();
-	Logger::info("Autonomous complete");
+    Logger::info("==== Autonomous ====");
+    robot->autonomous();
+    Logger::info("Autonomous complete");
 }
 
 /**
@@ -74,7 +74,7 @@ void autonomous()
  */
 void opcontrol()
 {
-	Logger::info("==== Teleoperated ====");
-	robot->opcontrol();
-	Logger::info("Teleoperated complete");
+    Logger::info("==== Teleoperated ====");
+    robot->opcontrol();
+    Logger::info("Teleoperated complete");
 }

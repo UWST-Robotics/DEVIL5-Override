@@ -1,10 +1,8 @@
 #pragma once
-#include "pros/rtos.hpp"
+
 #include "autoRotateToStep.hpp"
-#include "../autoStep.hpp"
 #include "../../odom/odomSource.hpp"
 #include "../../chassis/chassisBase.hpp"
-#include "../../utils/math.hpp"
 
 namespace devils
 {
@@ -22,10 +20,10 @@ namespace devils
          * @param options The options for the rotational step.
          */
         AutoRotateStep(
-            ChassisBase &chassis,
-            OdomSource &odomSource,
-            double distance,
-            Options options = Options::defaultOptions)
+            ChassisBase& chassis,
+            OdomSource& odomSource,
+            const float distance,
+            const Options& options = Options::defaultOptions)
             : AutoRotateToStep(chassis, odomSource, distance, options),
               distance(distance)
         {
@@ -35,7 +33,7 @@ namespace devils
         void onStart() override
         {
             // Calculate Target Pose
-            Pose startPose = odomSource.getPose();
+            const Pose startPose = odomSource.getPose();
             this->targetAngle = distance + startPose.rotation;
 
             // Do base step
@@ -43,6 +41,6 @@ namespace devils
         }
 
         // Drive Step Variables
-        double distance = 0;
+        float distance = 0;
     };
 }

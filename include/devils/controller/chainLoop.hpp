@@ -1,6 +1,6 @@
 #pragma once
-#include "smartMotorGroup.hpp"
-#include "../utils/math.hpp"
+#include "../hardware/smartMotorGroup.hpp"
+#include "../geometry/math.hpp"
 
 namespace devils
 {
@@ -18,10 +18,10 @@ namespace devils
          * @param length The amount of chain in the loop.
          * @param startingOffset The offset of the first motor in the loop.
          */
-        ChainLoop(SmartMotorGroup &motorGroup,
-                  int sprocketTeeth,
-                  int length,
-                  double startingOffset = 0)
+        ChainLoop(SmartMotorGroup& motorGroup,
+                  const int sprocketTeeth,
+                  const int length,
+                  const float startingOffset = 0)
             : motorGroup(motorGroup),
               sprocketTeeth(sprocketTeeth),
               length(length),
@@ -32,19 +32,22 @@ namespace devils
         /**
          * Gets the position of the loop in chain links.
          */
-        double getPosition()
+        float getPosition()
         {
             // Get the encoder position
-            double encoderPosition = motorGroup.getPosition();
+            const auto encoderPosition = motorGroup.getPosition();
+            if (!encoderPosition.isSuccess())
+                return lastPosition;
 
             // Get the revolutions of the sprocket
-            double revolutions = encoderPosition / ENCODER_TICKS_PER_REVOLUTION;
+            const float revolutions = encoderPosition / ENCODER_TICKS_PER_REVOLUTION;
 
             // Get the final position in chain links
-            double position = revolutions * sprocketTeeth + startingOffset;
+            const float position = revolutions * static_cast<float>(sprocketTeeth) + startingOffset;
 
             // Modulo the position to keep it within the length of the chain loop
-            return Math::signedMod(position, length);
+            lastPosition = Math::signedMod(position, static_cast<float>(length));
+            return lastPosition;
         }
 
         /**
@@ -52,13 +55,13 @@ namespace devils
          * @param targetPosition The target position in chain links.
          * @return The distance to the target position in chain links.
          */
-        double getDistanceToPosition(double targetPosition)
+        float getDistanceToPosition(const float targetPosition)
         {
             // Get the current position of the loop
-            double currentPosition = getPosition();
+            const float currentPosition = getPosition();
 
             // Calculate the distance to the target position
-            double distance = Math::signedMod(targetPosition - currentPosition, length);
+            const float distance = Math::signedMod(targetPosition - currentPosition, static_cast<float>(length));
 
             // Return the distance to the target position
             return distance;
@@ -66,11 +69,13 @@ namespace devils
 
     private:
         /// @brief The amount of encoder ticks per revolution of the conveyor motors.
-        static constexpr double ENCODER_TICKS_PER_REVOLUTION = 300.0;
+        static constexpr float ENCODER_TICKS_PER_REVOLUTION = 300.0;
 
-        SmartMotorGroup &motorGroup;
+        SmartMotorGroup& motorGroup;
         int sprocketTeeth = 0;
         int length = 0;
-        double startingOffset = 0;
+        float startingOffset = 0;
+
+        float lastPosition = 0;
     };
 }

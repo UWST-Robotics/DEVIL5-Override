@@ -2,13 +2,11 @@
 
 #include "pros/imu.hpp"
 #include "pros/error.h"
-#include "../utils/logger.hpp"
-#include "structs/gyro.h"
-#include "structs/hardwareBase.hpp"
+#include "gyroBase.h"
+#include "hardwareBase.hpp"
 #include "../geometry/units.hpp"
 #include "../geometry/vector3.hpp"
 #include "../odom/odomSource.hpp"
-#include "../odom/poseVelocityCalculator.hpp"
 #include <string>
 
 namespace devils
@@ -16,7 +14,7 @@ namespace devils
     /**
      * Represents a V5 inertial measurement unit.
      */
-    class InertialSensor : private HardwareBase, public IGyro
+    class InertialSensor : HardwareBase, public IGyro
     {
     public:
         /**
@@ -25,48 +23,88 @@ namespace devils
          * @param name The name of the IMU (for logging purposes)
          * @param port The port of the IMU (from 1 to 21)
          */
-        InertialSensor(std::string name, uint8_t port)
+        InertialSensor(
+            const std::string& name,
+            const int8_t port)
             : HardwareBase(name, "IMU", port),
               imu(port)
         {
-            if (errno != 0)
-                reportFault("Invalid port");
         }
 
-        InertialSensor(const InertialSensor &) = delete;
-        InertialSensor &operator=(const InertialSensor &) = delete;
+        /**
+         * Sets the current heading of the IMU in radians.
+         * @param heading The heading to set the IMU to in radians.
+         */
+        void setHeading(const float heading) override
+        {
+            const auto rawHeading = getRawHeading();
+            if (!rawHeading.isSuccess())
+                return;
+
+            headingOffset = heading - rawHeading;
+        }
+
+        /**
+         * Scales the heading by a given factor.
+         * Used to fix consistent heading drift after a set rotation.
+         * Can be calculated by rotating the robot exactly 360 degrees and doing `2 * PI / getHeading()`.
+         * @param scale The scale to multiply the heading by.
+         */
+        void setHeadingScale(const float scale)
+        {
+            headingScale = scale;
+        }
+
+        /**
+         * Calibrates the IMU. Robot should be still during calibration.
+         * Run `waitUntilCalibrated` to wait until calibration is finished.
+         */
+        void calibrate() const
+        {
+            const auto status = imu.reset(false);
+            if (status == PROS_ERR)
+                reportError();
+        }
+
+        /**
+         * Waits until the IMU is finished calibrating.
+         * Should be run to avoid movement during calibration.
+         */
+        void waitUntilCalibrated() const
+        {
+            while (imu.is_calibrating())
+                pros::delay(20);
+        }
 
         /**
          * Gets the current acceleration of the IMU in inches per second squared.
          * @return The current acceleration of the IMU in inches per second squared.
          */
-        Vector3 getAccel()
+        HWResult<Vector3> getAccel() const
         {
-            auto accel = imu.get_accel();
-            if (accel.x == PROS_ERR_F)
-            {
-                reportFault("Get IMU acceleration failed");
-                return Vector3(0, 0, 0);
-            }
+            const auto accel = imu.get_accel();
+            const auto x = static_cast<float>(accel.x);
+            const auto y = static_cast<float>(accel.y);
+            const auto z = static_cast<float>(accel.z);
+
+            if (x == PROS_ERR_F)
+                return getStatusCode();
+
             return Vector3(
-                Units::metersToIn(accel.x),
-                Units::metersToIn(accel.y),
-                Units::metersToIn(accel.z));
+                Units::metersToIn(x),
+                Units::metersToIn(y),
+                Units::metersToIn(z));
         }
 
         /**
          * Gets the current heading of the IMU in radians, unscaled and without offset.
          * @return The current heading of the IMU in radians or 0 if the operation failed.
          */
-        double getRawHeading()
+        HWResult<float> getRawHeading() const
         {
-            errno = 0;
-            double heading = imu.get_rotation();
+            const auto heading = static_cast<float>(imu.get_rotation());
             if (heading == PROS_ERR_F)
-            {
-                reportFault("Get IMU heading failed");
-                return 0;
-            }
+                return getStatusCode();
 
             // Apply scale/offset
             return Units::degToRad(heading);
@@ -76,23 +114,24 @@ namespace devils
          * Gets the current heading of the IMU in radians, unbounded.
          * @return The current heading of the IMU in radians or 0 if the operation failed.
          */
-        double getHeading() override
+        HWResult<float> getHeading() override
         {
-            return getRawHeading() * headingScale + headingOffset;
+            const auto rawHeading = getRawHeading();
+            if (!rawHeading.isSuccess())
+                return rawHeading;
+
+            return rawHeading * headingScale + headingOffset;
         }
 
         /**
          * Gets the current pitch of the IMU in radians.
          * @return The current pitch of the IMU in radians or 0 if the operation failed.
          */
-        double getPitch()
+        HWResult<float> getPitch() const
         {
-            double pitch = imu.get_pitch();
+            const auto pitch = static_cast<float>(imu.get_pitch());
             if (pitch == PROS_ERR_F)
-            {
-                reportFault("Get IMU pitch failed");
-                return 0;
-            }
+                return getStatusCode();
             return Units::degToRad(pitch);
         }
 
@@ -100,14 +139,11 @@ namespace devils
          * Gets the current roll of the IMU in radians.
          * @return The current roll of the IMU in radians or 0 if the operation failed.
          */
-        double getRoll()
+        HWResult<float> getRoll() const
         {
-            double roll = imu.get_roll();
+            const auto roll = static_cast<float>(imu.get_roll());
             if (roll == PROS_ERR_F)
-            {
-                reportFault("Get IMU roll failed");
-                return 0;
-            }
+                return getStatusCode();
             return Units::degToRad(roll);
         }
 
@@ -115,59 +151,17 @@ namespace devils
          * Gets the current yaw of the IMU in radians.
          * @return The current yaw of the IMU in radians or 0 if the operation failed.
          */
-        double getYaw()
+        HWResult<float> getYaw() const
         {
-            double yaw = imu.get_yaw();
+            const auto yaw = static_cast<float>(imu.get_yaw());
             if (yaw == PROS_ERR_F)
-            {
-                reportFault("Get IMU yaw failed");
-                return 0;
-            }
+                return getStatusCode();
             return Units::degToRad(yaw);
         }
 
-        /**
-         * Sets the current heading of the IMU in radians.
-         * @param heading The heading to set the IMU to in radians.
-         */
-        void setHeading(double heading) override
-        {
-            headingOffset = heading - getRawHeading();
-        }
-
-        /**
-         * Scales the heading by a given factor.
-         * Used to fix consistent heading drift after a set rotation.
-         * Can be calculated by rotating the robot exactly 360 degrees and doing `2 * PI / getHeading()`.
-         * @param scale The scale to multiply the heading by.
-         */
-        void setHeadingScale(double scale)
-        {
-            headingScale = scale;
-        }
-
-        /**
-         * Calibrates the IMU. Robot should be still during calibration.
-         * Run `waitUntilCalibrated` to wait until calibration is finished.
-         */
-        void calibrate()
-        {
-            imu.reset(false);
-        }
-
-        /**
-         * Waits until the IMU is finished calibrating.
-         * Should be ran to avoid movement during calibration.
-         */
-        void waitUntilCalibrated()
-        {
-            while (imu.is_calibrating())
-                pros::delay(20);
-        }
-
     private:
-        double headingScale = 1;
-        double headingOffset = 0;
+        float headingScale = 1;
+        float headingOffset = 0;
         bool isCalibrating = false;
         bool isErrored = false;
         bool isConnected = false;

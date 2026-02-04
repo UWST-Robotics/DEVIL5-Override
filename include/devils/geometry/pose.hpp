@@ -1,6 +1,6 @@
 #pragma once
+
 #include <string>
-#include <cmath>
 #include "vector2.hpp"
 
 namespace devils
@@ -8,28 +8,30 @@ namespace devils
     /**
      * Represents a pose in 2D space.
      */
-    struct Pose : public Vector2
+    struct Pose : Vector2
     {
         /// @brief The x position of the robot in inches
-        double &x = Vector2::x;
+        float& x = Vector2::x;
 
         /// @brief The y position of the robot in inches
-        double &y = Vector2::y;
+        float& y = Vector2::y;
 
         /// @brief The rotation of the robot in radians
-        double rotation = 0;
+        float rotation = 0;
 
         /**
          * Constructs a pose with all values set to 0
          */
-        Pose() : rotation(0) {}
+        Pose() = default;
 
         /**
          * Constructs a pose with the given x and y
          * @param x The x position of the robot in inches
          * @param y The y position of the robot in inches
          */
-        Pose(double x, double y) : Vector2(x, y), rotation(0) {}
+        Pose(float x, float y) : Vector2(x, y)
+        {
+        }
 
         /**
          * Constructs a pose with the given x, y, and rotation
@@ -37,25 +39,36 @@ namespace devils
          * @param y The y position of the robot in inches
          * @param rotation The rotation of the robot in radians
          */
-        Pose(double x, double y, double rotation) : Vector2(x, y), rotation(rotation) {}
+        Pose(
+            const float x,
+            const float y,
+            const float rotation
+        ) : Vector2(x, y),
+            rotation(rotation)
+        {
+        }
 
         /**
          * Constructs a pose by copying another vector. Sets rotation to 0.
          * @param other The other vector
          */
-        Pose(const Vector2 &other) : Vector2(other.x, other.y), rotation(0) {}
+        Pose(const Vector2& other) : Vector2(other.x, other.y)
+        {
+        }
 
         /**
          * Copy constructor
          * @param other The other pose
          */
-        Pose(const Pose &other) : Vector2(other.x, other.y), rotation(other.rotation) {}
+        Pose(const Pose& other) : Vector2(other.x, other.y), rotation(other.rotation)
+        {
+        }
 
         /**
          * Constructs a pose by copying another pose
          * @param other The other pose
          */
-        Pose operator=(const Pose &other)
+        Pose& operator=(const Pose& other)
         {
             x = other.x;
             y = other.y;
@@ -68,7 +81,7 @@ namespace devils
          * @param other The other pose
          * @return The sum of the two poses
          */
-        Pose operator+(const Pose &other)
+        Pose operator+(const Pose& other) const
         {
             return {x + other.x, y + other.y, rotation + other.rotation};
         }
@@ -78,7 +91,7 @@ namespace devils
          * @param other The other pose
          * @return The difference of the two poses
          */
-        Pose operator-(const Pose &other)
+        Pose operator-(const Pose& other) const
         {
             return {x - other.x, y - other.y, rotation - other.rotation};
         }
@@ -88,7 +101,7 @@ namespace devils
          * @param scalar The scalar to multiply by
          * @return The pose multiplied by the scalar
          */
-        Pose operator*(const double &scalar)
+        Pose operator*(const float& scalar) const
         {
             return {x * scalar, y * scalar, rotation * scalar};
         }
@@ -98,7 +111,7 @@ namespace devils
          * @param other The other pose
          * @return True if the poses are equal, false otherwise
          */
-        bool operator==(const Pose &other)
+        bool operator==(const Pose& other) const
         {
             return x == other.x && y == other.y && rotation == other.rotation;
         }
@@ -108,7 +121,7 @@ namespace devils
          * @param other The other pose
          * @return True if the poses are not equal, false otherwise
          */
-        bool operator!=(const Pose &other)
+        bool operator!=(const Pose& other) const
         {
             return !(*this == other);
         }
@@ -119,7 +132,7 @@ namespace devils
          */
         Pose normalize() const
         {
-            double mag = magnitude();
+            const float mag = magnitude();
             return {x / mag, y / mag, rotation};
         }
 

@@ -7,16 +7,18 @@ namespace devils
      */
     struct IGyro
     {
+        virtual ~IGyro() = default;
+
         /**
          * Gets the current heading of the sensor in radians.
          * @return The current heading of the sensor in radians.
          */
-        virtual double getHeading() = 0;
+        virtual HWResult<float> getHeading() = 0;
 
         /**
          * Sets the current heading of the sensor in radians.
          * @param heading The heading to set the sensor to in radians.
          */
-        virtual void setHeading(double heading) = 0;
+        virtual void setHeading(float heading) = 0;
     };
 }

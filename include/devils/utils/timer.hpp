@@ -1,7 +1,6 @@
 #pragma once
 
 #include "pros/rtos.hpp"
-#include "devils/utils/logger.hpp"
 
 namespace devils
 {
@@ -13,17 +12,17 @@ namespace devils
          * @param duration The duration of the timer in milliseconds.
          * @return The new instance of Timer.
          */
-        Timer(int32_t duration) : duration(duration)
+        Timer(const uint32_t duration) : duration(duration)
         {
         }
 
         /**
          * Sets the duration of the timer.
-         * @param duration The duration of the timer in milliseconds.
+         * @param newDuration The duration of the timer in milliseconds.
          */
-        void setDuration(int32_t duration)
+        void setDuration(const uint32_t newDuration)
         {
-            this->duration = duration;
+            this->duration = newDuration;
         }
 
         /**
@@ -47,7 +46,7 @@ namespace devils
          * Gets whether the timer has started.
          * @return True if the timer has started, false otherwise.
          */
-        bool running()
+        bool running() const
         {
             return isStarted && !finished();
         }
@@ -56,7 +55,7 @@ namespace devils
          * Gets whether the timer has finished.
          * @return True if the timer has finished, false otherwise.
          */
-        bool finished()
+        bool finished() const
         {
             return isStarted && pros::millis() - startTime >= duration;
         }
@@ -65,7 +64,7 @@ namespace devils
          * Gets the time remaining on the timer.
          * @return The time remaining on the timer in milliseconds.
          */
-        double timeRemaining()
+        uint32_t timeRemaining() const
         {
             if (!running())
                 return 0;
@@ -74,7 +73,7 @@ namespace devils
 
     private:
         bool isStarted = false;
-        int32_t startTime = 0;
-        int32_t duration = 0;
+        uint32_t startTime = 0;
+        uint32_t duration = 0;
     };
 }

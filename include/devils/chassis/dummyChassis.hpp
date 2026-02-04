@@ -1,12 +1,9 @@
 #pragma once
+
 #include "chassisBase.hpp"
-#include "../hardware/smartMotorGroup.hpp"
-#include <vector>
-#include <iostream>
-#include "../utils/logger.hpp"
+#include "../utils/backgroundService.hpp"
 #include "../odom/odomSource.hpp"
 #include "../odom/poseVelocityCalculator.hpp"
-#include "../utils/asyncTask.hpp"
 
 namespace devils
 {
@@ -15,79 +12,90 @@ namespace devils
      * This is useful for testing autonomous routines without a physical robot.
      * Can be used as an OdomSource.
      */
-    class DummyChassis : public ChassisBase, public OdomSource, public AsyncTask, public PoseVelocityCalculator
+    class DummyChassis :
+        BackgroundService,
+        public ChassisBase,
+        public OdomSource,
+        public PoseVelocityCalculator
     {
     public:
-        DummyChassis()
+        /**
+         * Moves the robot in a direction using voltage.
+         * @param forward The forward speed of the robot from -1 to 1.
+         * @param turn The turn speed of the robot from -1 to 1.
+         * @param strafe The strafe speed of the robot from -1 to 1.
+         */
+        void move(float forward, float turn, float strafe) override
         {
-            // Run AsyncTask on startup
-            AsyncTask::start();
-        }
-
-        // ChassisBase implementation
-
-        void stop() override
-        {
-            ChassisBase::stop();
-        }
-
-        void move(double forward, double turn, double strafe = 0) override
-        {
-            forward = std::clamp(forward, -1.0, 1.0);
-            turn = std::clamp(turn, -1.0, 1.0);
-            strafe = std::clamp(strafe, -1.0, 1.0);
+            forward = std::clamp(forward, -1.0f, 1.0f);
+            turn = std::clamp(turn, -1.0f, 1.0f);
+            strafe = std::clamp(strafe, -1.0f, 1.0f);
 
             lastForward = forward;
             lastTurn = turn;
             lastStrafe = strafe;
         }
 
-        // OdomSource implementation
-
-        void setPose(Pose pose) override
+        /**
+         * Jumps the robot to a specific pose.
+         * @param pose The pose to set the robot to.
+         */
+        void setPose(const Pose pose) override
         {
             currentPose = pose;
         }
 
+        /**
+         * Gets the current pose of the robot.
+         * @return The current pose of the robot.
+         */
         Pose getPose() override
         {
             return currentPose;
         }
 
+        /**
+         * Gets the current velocity of the robot.
+         * @return Current velocity of the robot.
+         */
         PoseVelocity getVelocity() override
         {
             return PoseVelocityCalculator::getVelocity();
         }
 
     protected:
-        // AsyncTask implementation
-
         void onUpdate() override
         {
             // TODO: Multiply acceleration by delta time
 
             // Calculate Acceleration
-            currentAcceleration.x += (cos(currentPose.rotation) * lastForward + sin(currentPose.rotation) * lastStrafe) * TRANSLATION_ACCEL;
-            currentAcceleration.y += (sin(currentPose.rotation) * lastForward + cos(currentPose.rotation) * lastStrafe) * TRANSLATION_ACCEL;
+            currentAcceleration.x += TRANSLATION_ACCEL * (
+                cosf(currentPose.rotation) * lastForward +
+                sinf(currentPose.rotation) * lastStrafe);
+
+            currentAcceleration.y += TRANSLATION_ACCEL * (
+                sinf(currentPose.rotation) * lastForward +
+                cosf(currentPose.rotation) * lastStrafe);
+
             currentAcceleration.rotation += lastTurn * ROTATION_ACCEL;
             currentAcceleration = currentAcceleration * (1 - DRAG);
 
             // Update Pose
             currentPose = currentPose + currentAcceleration;
-            currentPose.rotation = std::fmod(currentPose.rotation, 2 * M_PI);
+            currentPose.rotation = fmodf(currentPose.rotation, 2 * M_PI);
 
             // Update Velocity
             updateVelocity(currentPose);
         }
 
     private:
-        static constexpr double TRANSLATION_ACCEL = 0.8; // in/s^2
-        static constexpr double ROTATION_ACCEL = 0.1;    // rad/s^2
-        static constexpr double DRAG = 0.35;             // %
+        static constexpr float TRANSLATION_ACCEL = 0.8; // in/s^2
+        static constexpr float ROTATION_ACCEL = 0.1; // rad/s^2
+        static constexpr float DRAG = 0.35; // %
 
-        double lastForward = 0;
-        double lastTurn = 0;
-        double lastStrafe = 0;
+        float lastForward = 0;
+        float lastTurn = 0;
+        float lastStrafe = 0;
         Pose currentAcceleration = Pose();
         Pose currentPose = Pose();
     };

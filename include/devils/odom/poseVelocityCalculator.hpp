@@ -23,11 +23,11 @@ namespace devils
          * Should be run whenever the current `pose` is updated.
          * @param pose The current pose of the robot.
          */
-        void updateVelocity(Pose pose)
+        void updateVelocity(const Pose& pose)
         {
             // Calculate Time Delta
-            uint32_t timestamp = pros::millis();
-            double dt = (timestamp - lastTimestamp) / 1000.0;
+            const uint32_t timestamp = pros::millis();
+            const auto dt = static_cast<float>(timestamp - lastTimestamp) / 1000.0f;
 
             // Initial update
             if (lastTimestamp == 0)
@@ -45,13 +45,13 @@ namespace devils
             lastTimestamp = timestamp;
 
             // Calculate Linear Velocity
-            Vector2 positionDelta = pose - lastPose;
-            double linearVelocityX = positionDelta.x / dt;
-            double linearVelocityY = positionDelta.y / dt;
+            const Vector2 positionDelta = pose - lastPose;
+            const float linearVelocityX = positionDelta.x / dt;
+            const float linearVelocityY = positionDelta.y / dt;
 
             // Calculate Angular Velocity
-            double angleDelta = pose.rotation - lastPose.rotation;
-            double angularVelocity = angleDelta / dt;
+            const float angleDelta = pose.rotation - lastPose.rotation;
+            const float angularVelocity = angleDelta / dt;
 
             // Update Velocity
             currentVelocity = PoseVelocity(linearVelocityX, linearVelocityY, angularVelocity);

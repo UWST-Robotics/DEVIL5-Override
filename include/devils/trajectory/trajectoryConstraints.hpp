@@ -9,12 +9,12 @@ namespace devils
     struct TrajectoryConstraints
     {
         /// @brief The maximum velocity of the robot in inches per second
-        double maxVelocity = 36; // in/s
+        float maxVelocity = 36.0f; // in/s
 
         /// @brief The maximum acceleration of the robot in inches per second squared
-        double maxAcceleration = 48; // in/s^2
+        float maxAcceleration = 48.0f; // in/s^2
 
         /// @brief The maximum deceleration of the robot in inches per second squared
-        double maxDeceleration = 100; // in/s^2
+        float maxDeceleration = 100.0f; // in/s^2
     };
 }

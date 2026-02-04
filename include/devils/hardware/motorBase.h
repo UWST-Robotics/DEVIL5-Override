@@ -1,7 +1,5 @@
 #pragma once
-#include "pros/motors.hpp"
-#include "../../utils/logger.hpp"
-#include <string>
+#include "hardwareBase.hpp"
 
 namespace devils
 {
@@ -10,11 +8,13 @@ namespace devils
      */
     struct IMotor
     {
+        virtual ~IMotor() = default;
+
         /**
-         * Runs the motor in voltage mode.
-         * @param voltage The voltage to run the motor at, from -1 to 1.
+         * Controls the motor speed based on the voltage.
+         * @param speed The speed to run the motor at, from -1 to 1.
          */
-        virtual void moveVoltage(double voltage) = 0;
+        virtual void move(float speed) = 0;
 
         /**
          * Stops the motor.
@@ -25,6 +25,6 @@ namespace devils
          * Gets the current position of the motor in encoder ticks.
          * @return The current position of the motor in encoder ticks.
          */
-        virtual double getPosition() = 0;
+        virtual HWResult<float> getPosition() = 0;
     };
 }

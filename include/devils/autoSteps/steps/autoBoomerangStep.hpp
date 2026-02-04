@@ -46,10 +46,10 @@ namespace devils
             Pose currentPose = odomSource.getPose();
 
             // Get the distance to the target
-            double distance = currentPose.distanceTo(targetPose);
+            float distance = currentPose.distanceTo(targetPose);
 
             // Calculate the dot product
-            double currentDotTarget = cos(currentPose.rotation) * (targetPose.x - currentPose.x) +
+            const float currentDotTarget = cos(currentPose.rotation) * (targetPose.x - currentPose.x) +
                                       sin(currentPose.rotation) * (targetPose.y - currentPose.y);
 
             // Drive in reverse if the goal is behind us
@@ -84,7 +84,7 @@ namespace devils
         }
 
     protected:
-        static constexpr double LEAD_DISTANCE = 0.7; // %
+        static constexpr float LEAD_DISTANCE = 0.7; // %
 
         Pose targetPose;
         OdomSource &odomSource;

@@ -9,9 +9,9 @@ namespace devils
     class PJSkillsAuto
     {
     public:
-        static void run(ChassisBase &chassis,
-                        OdomSource &odometry,
-                        IntakeSystem &intake)
+        static void run(ChassisBase& chassis,
+                        OdomSource& odometry,
+                        IntakeSystem& intake)
         {
             // PID Params
             PIDController::Options rotatePID = {0.7, 0.0, 50.0};
@@ -20,8 +20,8 @@ namespace devils
             AutoRotateToStep::Options::defaultOptions = {
                 rotatePID,
                 0.15, // minSpeed
-                0.4,  // maxSpeed
-                0.1,  // goalDist
+                0.4, // maxSpeed
+                0.1, // goalDist
             };
             TrajectoryConstraints slowConstraints = {12, 48};
             TrajectoryConstraints fastConstraints = {72, 102};
@@ -112,7 +112,9 @@ namespace devils
             pjRoutine.driveToTrajectory(60, -54, 140, {.isReversed = true})->startSync();
             pjRoutine.driveToTrajectory(0, -24, 180, {.strength = 16, .finalVelocity = 16})->startSync();
             pjRoutine.driveToTrajectory(-38, -32, 180, {.strength = 12, .finalVelocity = 16})->startSync();
-            pjRoutine.driveToTrajectory(-60, -18, 90, {.strength = 16, .finalVelocity = 18, .constraints = fastConstraints})->startSync();
+            pjRoutine.driveToTrajectory(-60, -18, 90, {
+                                            .strength = 16, .finalVelocity = 18, .constraints = fastConstraints
+                                        })->startSync();
             pjRoutine.driveToTrajectory(-60, 12, 90, {.finalVelocity = 0, .constraints = fastConstraints})->startSync();
         }
 
@@ -123,7 +125,7 @@ namespace devils
         }
 
         static void pauseForOuttake(
-            std::shared_ptr<AutoIntakeStep> &intake,
+            std::shared_ptr<AutoIntakeStep>& intake,
             uint32_t outtakeDuration = 5000,
             float outtakeSpeed = 0.8f)
         {
@@ -132,6 +134,6 @@ namespace devils
             intake->setTargetSpeed(INTAKE_SPEED);
         }
 
-        static constexpr double INTAKE_SPEED = 1.0;
+        static constexpr float INTAKE_SPEED = 1.0;
     };
 }

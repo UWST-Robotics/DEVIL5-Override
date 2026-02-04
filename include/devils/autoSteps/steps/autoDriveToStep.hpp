@@ -1,12 +1,10 @@
 #pragma once
-#include <string>
-#include "pros/rtos.hpp"
+
 #include "../autoStep.hpp"
-#include "../../utils/math.hpp"
+#include "../../geometry/math.hpp"
 #include "../../odom/odomSource.hpp"
 #include "../../chassis/chassisBase.hpp"
 #include "../../controller/pidController.hpp"
-#include "../../utils/timer.hpp"
 
 namespace devils
 {
@@ -26,19 +24,19 @@ namespace devils
             PIDController::Options rotationPID = {0.05, 0.0, 0.0};
 
             /// @brief THe minimum speed in %
-            double minSpeed = 0.0;
+            float minSpeed = 0.0;
 
             /// @brief The maximum speed in %
-            double maxSpeed = 0.5;
+            float maxSpeed = 0.5;
 
             /// @brief The maximum final distance to the target in inches
-            double goalDist = 6.0;
+            float goalDist = 6.0;
 
-            /// @brief The maximum final speed of the robot in in/s. (Defaults to no limit)
-            double goalSpeed = std::numeric_limits<double>::max();
+            /// @brief The maximum final speed of the robot in inches/s. (Defaults to no limit)
+            float goalSpeed = std::numeric_limits<float>::max();
 
             /// @brief The minimum distance from the target to apply rotation. If we are closer than this, we will not rotate to avoid oscillation.
-            double minDistanceToRotate = 1.0;
+            float minDistanceToRotate = 1.0;
 
             /// @brief The default options for the drive step.
             static Options defaultOptions;
@@ -52,16 +50,16 @@ namespace devils
          * @param options The options for the drive step.
          */
         AutoDriveToStep(
-            ChassisBase &chassis,
-            OdomSource &odomSource,
-            Pose targetPose,
-            Options options = Options::defaultOptions)
+            ChassisBase& chassis,
+            OdomSource& odomSource,
+            const Pose& targetPose,
+            const Options& options = Options::defaultOptions)
             : chassis(chassis),
               odomSource(odomSource),
-              targetPose(targetPose),
-              options(options),
               rotationPID(options.rotationPID),
-              translationPID(options.translationPID)
+              translationPID(options.translationPID),
+              targetPose(targetPose),
+              options(options)
         {
         }
 
@@ -75,46 +73,46 @@ namespace devils
         void onUpdate() override
         {
             // Get Current State
-            Pose currentPose = odomSource.getPose();
-            Vector2 currentVelocity = odomSource.getVelocity();
+            const Pose currentPose = odomSource.getPose();
 
             // Calculate distance to start and target
-            double distanceToTarget = currentPose.distanceTo(targetPose);
+            float distanceToTarget = currentPose.distanceTo(targetPose);
 
             // Calculate target angle
-            double targetAngleRads = std::atan2(
+            float targetAngleRads = std::atan2(
                 targetPose.y - currentPose.y,
                 targetPose.x - currentPose.x);
 
             // Calculate Dot Product
-            double currentDotTarget = cos(currentPose.rotation) *
-                                          (targetPose.x - currentPose.x) +
-                                      sin(currentPose.rotation) *
-                                          (targetPose.y - currentPose.y);
+            const float currentDotTarget =
+                cosf(currentPose.rotation) *
+                (targetPose.x - currentPose.x) +
+                sinf(currentPose.rotation) *
+                (targetPose.y - currentPose.y);
 
             // Drive in reverse if the goal is behind us
             if (currentDotTarget < 0)
             {
                 distanceToTarget = -distanceToTarget;
-                targetAngleRads += M_PI;
+                targetAngleRads += M_PIF;
             }
 
             // Calculate Forward Speed
-            double speed = getSpeed(distanceToTarget);
+            float speed = getSpeed(distanceToTarget);
 
             // Calculate Turn Speed
-            double turnSpeed = 0;
+            float turnSpeed = 0;
             if (std::fabs(distanceToTarget) > options.minDistanceToRotate)
             {
                 // Difference in angle
-                double angleDiff = Math::angleDiff(targetAngleRads, currentPose.rotation);
+                const float angleDiff = Math::angleDiff(targetAngleRads, currentPose.rotation);
 
                 turnSpeed = rotationPID.update(angleDiff);
                 turnSpeed = std::clamp(turnSpeed, -options.maxSpeed, options.maxSpeed);
             }
 
             // Move Chassis
-            chassis.move(speed, turnSpeed);
+            chassis.move(speed, turnSpeed, 0.0f);
         }
 
         void onStop() override
@@ -126,13 +124,13 @@ namespace devils
         bool checkFinished() override
         {
             // Get Current State
-            Pose currentPose = odomSource.getPose();
+            const Pose currentPose = odomSource.getPose();
 
             // Calculate distance to target pose
-            double distanceToTarget = currentPose.distanceTo(targetPose);
+            const float distanceToTarget = currentPose.distanceTo(targetPose);
 
             // Check if we reached the goal
-            return fabs(distanceToTarget) < options.goalDist;
+            return fabsf(distanceToTarget) < options.goalDist;
         }
 
         /**
@@ -140,10 +138,10 @@ namespace devils
          * @param distanceToTarget The distance to the target in inches
          * @returns The target speed in inches per second
          */
-        virtual double getSpeed(double distanceToTarget)
+        virtual float getSpeed(float distanceToTarget)
         {
             // Calculate output speed
-            double outputSpeed = translationPID.update(distanceToTarget);
+            float outputSpeed = translationPID.update(distanceToTarget);
 
             // Apply max speed
             outputSpeed = std::clamp(outputSpeed, -options.maxSpeed, options.maxSpeed);
@@ -156,8 +154,8 @@ namespace devils
         }
 
         // Params
-        ChassisBase &chassis;
-        OdomSource &odomSource;
+        ChassisBase& chassis;
+        OdomSource& odomSource;
         PIDController rotationPID;
         PIDController translationPID;
         Pose targetPose = Pose();

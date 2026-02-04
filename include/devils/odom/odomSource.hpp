@@ -10,6 +10,7 @@ namespace devils
      */
     struct OdomSource
     {
+        virtual ~OdomSource() = default;
         /**
          * Gets the current pose of the robot
          * @return The current pose of the robot

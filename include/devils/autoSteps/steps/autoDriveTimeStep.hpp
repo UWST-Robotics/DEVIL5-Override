@@ -1,8 +1,6 @@
 #pragma once
-#include <string>
-#include "pros/rtos.hpp"
+
 #include "../autoStep.hpp"
-#include "../../utils/math.hpp"
 #include "../../utils/timer.hpp"
 #include "../../chassis/chassisBase.hpp"
 
@@ -23,13 +21,13 @@ namespace devils
          * @param strafeSpeed The strafe speed of the robot from -1 to 1.
          */
         AutoDriveTimeStep(
-            ChassisBase &chassis,
-            uint32_t duration,
-            double forwardSpeed,
-            double turnSpeed,
-            double strafeSpeed = 0)
-            : chassis(chassis),
-              timer(duration),
+            ChassisBase& chassis,
+            const int32_t duration,
+            const float forwardSpeed,
+            const float turnSpeed,
+            const float strafeSpeed = 0)
+            : timer(duration),
+              chassis(chassis),
               forwardSpeed(forwardSpeed),
               turnSpeed(turnSpeed),
               strafeSpeed(strafeSpeed)
@@ -64,9 +62,9 @@ namespace devils
         Timer timer;
 
         // Params
-        ChassisBase &chassis;
-        double forwardSpeed = 0;
-        double turnSpeed = 0;
-        double strafeSpeed = 0;
+        ChassisBase& chassis;
+        float forwardSpeed = 0;
+        float turnSpeed = 0;
+        float strafeSpeed = 0;
     };
 }

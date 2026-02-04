@@ -1,8 +1,7 @@
 #pragma once
-#include "pros/rtos.hpp"
+
 #include "../autoStep.hpp"
 #include "../../utils/timer.hpp"
-#include "../../chassis/chassisBase.hpp"
 
 namespace devils
 {
@@ -16,7 +15,7 @@ namespace devils
          * Pauses the autonomous routine for a given duration.
          * @param duration The duration to pause in milliseconds.
          */
-        AutoPauseStep(uint32_t duration)
+        AutoPauseStep(const uint32_t duration)
             : timer(duration)
         {
         }

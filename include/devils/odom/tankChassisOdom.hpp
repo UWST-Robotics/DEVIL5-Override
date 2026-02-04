@@ -1,8 +1,7 @@
 #pragma once
 #include "differentialWheelOdom.hpp"
-#include "../utils/asyncTask.hpp"
-#include "../hardware/structs/gyro.h"
-#include "poseVelocityCalculator.hpp"
+#include "../utils/backgroundService.hpp"
+#include "../hardware/gyroBase.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -11,7 +10,9 @@ namespace devils
     /**
      * Represents an odometry system using a tank chassis.
      */
-    class TankChassisOdom : public DifferentialWheelOdom, public AsyncTask
+    class TankChassisOdom :
+        BackgroundService,
+        public DifferentialWheelOdom
     {
     public:
         /**
@@ -21,38 +22,39 @@ namespace devils
          * @param wheelRadius The radius of the wheels in inches.
          * @param wheelBase The distance between the wheels in inches.
          */
-        TankChassisOdom(TankChassis &chassis,
-                        const double wheelRadius,
-                        const double wheelBase)
-            : chassis(chassis),
-              DifferentialWheelOdom(wheelRadius, wheelBase)
+        TankChassisOdom(TankChassis& chassis,
+                        const float wheelRadius,
+                        const float wheelBase)
+            : DifferentialWheelOdom(wheelRadius, wheelBase),
+              chassis(chassis)
         {
         }
 
         /**
          * Sets the number of encoder ticks per full revolution of the wheels.
+         * @param newTicksPerRevolution The new ticks per revolution.
          */
-        void setTicksPerRevolution(double ticksPerRevolution)
+        void setTicksPerRevolution(const float newTicksPerRevolution)
         {
-            this->ticksPerRevolution = ticksPerRevolution;
+            this->ticksPerRevolution = newTicksPerRevolution;
         }
 
         /**
          * Sets the IMU to use for odometry.
-         * @param imu The IMU to use.
+         * @param newIMU The new IMU to use.
          */
-        void useIMU(IGyro *imu)
+        void useIMU(IGyro* newIMU)
         {
-            this->imu = imu;
+            this->imu = newIMU;
         }
 
     protected:
         void onUpdate() override
         {
             // Process differential odometry
-            double leftPosition = chassis.getLeftMotors().getPosition() / ticksPerRevolution;
-            double rightPosition = chassis.getRightMotors().getPosition() / ticksPerRevolution;
-            DifferentialWheelOdom::update(leftPosition, rightPosition);
+            const float leftPosition = chassis.getLeftMotors().getPosition() / ticksPerRevolution;
+            const float rightPosition = chassis.getRightMotors().getPosition() / ticksPerRevolution;
+            update(leftPosition, rightPosition);
 
             // Apply IMU
             if (imu != nullptr)
@@ -64,8 +66,8 @@ namespace devils
         }
 
     private:
-        double ticksPerRevolution = 300.0 * (48.0 / 36.0); // ticks
-        TankChassis &chassis;
-        IGyro *imu = nullptr;
+        float ticksPerRevolution = 300.0 * (48.0 / 36.0); // ticks
+        TankChassis& chassis;
+        IGyro* imu = nullptr;
     };
 }

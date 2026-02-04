@@ -1,9 +1,10 @@
 #pragma once
-#include <string>
+
+#include <utility>
 #include "pros/rtos.hpp"
 #include "../autoStep.hpp"
 #include "../../geometry/units.hpp"
-#include "../../utils/math.hpp"
+#include "../../geometry/math.hpp"
 #include "../../odom/odomSource.hpp"
 #include "../../chassis/chassisBase.hpp"
 #include "../../trajectory/trajectory.hpp"
@@ -20,25 +21,25 @@ namespace devils
         struct Options
         {
             /// @brief The minimum speed in %
-            double minSpeed = 0.0;
+            float minSpeed = 0.0;
 
             /// @brief The maximum speed in %
-            double maxSpeed = 1.0;
+            float maxSpeed = 1.0;
 
             /// @brief A proportional constant. Must be greater than 0. Larger values will result in more aggressive control.
-            double proportionGain = 0.01;
+            float proportionGain = 0.01;
 
             /// @brief A damping coefficient. Must be between 0 and 1. Larger values will result in increased damping.
-            double dampingCoefficient = 0.75;
+            float dampingCoefficient = 0.75;
 
             /// @brief Proportion (P in PID) between translational velocity and motor voltage
-            double translationP = 0.012;
+            float translationP = 0.012;
 
             /// @brief Proportion (P in PID) between rotational velocity and motor voltage
-            double rotationP = 0.1;
+            float rotationP = 0.1;
 
             /// @brief Time in seconds of odometry latency. This is the time it takes for the odometry to update after the robot moves.
-            double sensorLatency = 0.2;
+            float sensorLatency = 0.2;
 
             /// @brief The default options for the drive step.
             static Options defaultOptions;
@@ -52,13 +53,13 @@ namespace devils
          * @param options The options for the drive step.
          */
         AutoRamseteStep(
-            ChassisBase &chassis,
-            OdomSource &odomSource,
+            ChassisBase& chassis,
+            OdomSource& odomSource,
             std::shared_ptr<Trajectory> trajectory,
-            Options options = Options::defaultOptions)
-            : trajectory(trajectory),
-              chassis(chassis),
+            const Options& options = Options::defaultOptions)
+            : chassis(chassis),
               odomSource(odomSource),
+              trajectory(std::move(trajectory)),
               options(options)
         {
         }
@@ -73,49 +74,49 @@ namespace devils
         void onUpdate() override
         {
             // Get the current time
-            double t = pros::millis() - startTime;
-            t /= 1000.0; // Convert to seconds
+            auto t = static_cast<float>(pros::millis() - startTime);
+            t /= 1000.0f; // Convert to seconds
 
             // Get current setpoint
-            auto setpoint = trajectory->getStateAt(t);
-            auto feedbackSetpoint = trajectory->getStateAt(t - options.sensorLatency);
+            const auto setpoint = trajectory->getStateAt(t);
+            const auto feedbackSetpoint = trajectory->getStateAt(t - options.sensorLatency);
 
             // Get current position
-            auto currentPosition = odomSource.getPose();
+            const auto currentPosition = odomSource.getPose();
 
             // Calculate error to setpoint
-            auto error = feedbackSetpoint.pose - currentPosition;
+            const auto error = feedbackSetpoint.pose - currentPosition;
 
             // Calculate local error
             // This is the error relative to the robot's current rotation
             // such that localError.x is aligned with the front of the robot and
             // localError.y is aligned with the side of the robot.
-            auto localError = Pose(
-                error.x * cos(currentPosition.rotation) + error.y * sin(currentPosition.rotation),
-                -error.x * sin(currentPosition.rotation) + error.y * cos(currentPosition.rotation),
+            const auto localError = Pose(
+                error.x * cosf(currentPosition.rotation) + error.y * sinf(currentPosition.rotation),
+                -error.x * sinf(currentPosition.rotation) + error.y * cosf(currentPosition.rotation),
                 Units::diffRad(feedbackSetpoint.pose.rotation, currentPosition.rotation));
 
             // Calculate controller gain
             // k = 2 * zeta * sqrt(w^2 + b * v^2)
-            double controllerGain = std::pow(setpoint.angularVelocity, 2) +
-                                    options.proportionGain * std::pow(setpoint.velocity, 2);
+            float controllerGain = setpoint.angularVelocity * setpoint.angularVelocity +
+                options.proportionGain * setpoint.velocity * setpoint.velocity;
             controllerGain = 2 * options.dampingCoefficient * std::sqrt(controllerGain);
 
             // Calculate sinc (sin(x) / x)
-            double sinc = sin(localError.rotation) / localError.rotation;
+            float sinc = sinf(localError.rotation) / localError.rotation;
             if (std::isnan(sinc))
                 sinc = 1.0; // Handle the case where localError.rotation is 0
 
             // Calculate translation output
             // v = v_d * cos(e_r) + k * e_x
-            double translationOutput = setpoint.velocity * cos(localError.rotation) +
-                                       controllerGain * localError.x;
+            float translationOutput = setpoint.velocity * cosf(localError.rotation) +
+                controllerGain * localError.x;
 
             // Calculate rotation output
             // w = w_d + k * e_r + b * v * sinc(e_r) * e_y
-            double rotationOutput = setpoint.angularVelocity +
-                                    controllerGain * localError.rotation +
-                                    options.proportionGain * setpoint.velocity * sinc * localError.y;
+            float rotationOutput = setpoint.angularVelocity +
+                controllerGain * localError.rotation +
+                options.proportionGain * setpoint.velocity * sinc * localError.y;
 
             // Multiply by translation and rotation P values
             translationOutput *= options.translationP;
@@ -126,7 +127,7 @@ namespace devils
             rotationOutput = std::clamp(rotationOutput, -options.maxSpeed, options.maxSpeed);
 
             // Set the chassis output
-            chassis.move(translationOutput, rotationOutput);
+            chassis.move(translationOutput, rotationOutput, 0.0f);
         }
 
         void onStop() override
@@ -138,14 +139,14 @@ namespace devils
         bool checkFinished() override
         {
             // Get the current time
-            auto t = pros::millis() - startTime;
+            const auto t = static_cast<float>(pros::millis() - startTime);
 
             // Check if the trajectory is finished
             return trajectory->duration() * 1000 <= t;
         }
 
-        ChassisBase &chassis;
-        OdomSource &odomSource;
+        ChassisBase& chassis;
+        OdomSource& odomSource;
         std::shared_ptr<Trajectory> trajectory;
         Options options;
 
@@ -154,4 +155,4 @@ namespace devils
 }
 
 // Define the default options
-devils::AutoRamseteStep::Options devils::AutoRamseteStep::Options::defaultOptions = devils::AutoRamseteStep::Options();
+devils::AutoRamseteStep::Options devils::AutoRamseteStep::Options::defaultOptions = Options();

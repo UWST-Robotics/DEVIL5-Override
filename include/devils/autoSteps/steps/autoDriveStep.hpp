@@ -2,7 +2,7 @@
 #include <string>
 #include "pros/rtos.hpp"
 #include "../autoStep.hpp"
-#include "../../utils/math.hpp"
+#include "../../geometry/math.hpp"
 #include "../../odom/odomSource.hpp"
 #include "../../chassis/chassisBase.hpp"
 #include "autoDriveToStep.hpp"
@@ -23,9 +23,9 @@ namespace devils
          * @param options The options for the drive step.
          */
         AutoDriveStep(
-            ChassisBase &chassis,
-            OdomSource &odomSource,
-            double distance,
+            ChassisBase& chassis,
+            OdomSource& odomSource,
+            float distance,
             Options options = Options::defaultOptions)
             : AutoDriveToStep(chassis, odomSource, Pose(0, 0, 0), options),
               distance(distance)
@@ -36,7 +36,7 @@ namespace devils
         void onStart() override
         {
             // Calculate Target Pose
-            Pose startPose = odomSource.getPose();
+            const Pose startPose = odomSource.getPose();
             this->targetPose = Pose(
                 startPose.x + distance * std::cos(startPose.rotation),
                 startPose.y + distance * std::sin(startPose.rotation),
@@ -47,6 +47,6 @@ namespace devils
         }
 
         // Drive Step Variables
-        double distance = 0;
+        float distance = 0;
     };
 }

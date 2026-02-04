@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../utils/asyncTask.hpp"
-#include <type_traits>
 #include <memory>
 
 namespace devils
@@ -10,9 +9,15 @@ namespace devils
     {
     public:
         // Allows inheritance by running `AsyncTask` constructor/destructor
-        AutoStep() : AsyncTask("AutoStep") {}
-        AutoStep(const std::string &debugName) : AsyncTask(debugName) {}
-        virtual ~AutoStep() = default;
+        AutoStep() : AsyncTask("AutoStep")
+        {
+        }
+
+        AutoStep(const std::string& debugName) : AsyncTask(debugName)
+        {
+        }
+
+        ~AutoStep() override = default;
 
         /**
          * Stops all running `AutoStep` instance.
@@ -20,13 +25,13 @@ namespace devils
          */
         static void stopAll()
         {
-            auto allRunningInstances = AsyncTask::getAllRunningInstances();
+            const auto allRunningInstances = getAllRunningInstances();
 
             // Check each instance to see if it's an AutoStep and stop it if so
-            for (auto &instance : allRunningInstances)
+            for (auto& instance : allRunningInstances)
             {
                 // Use dynamic_pointer_cast to check if the instance is an AutoStep
-                if (auto autoStepInstance = std::dynamic_pointer_cast<AutoStep>(instance))
+                if (const auto autoStepInstance = std::dynamic_pointer_cast<AutoStep>(instance))
                     autoStepInstance->stop();
             }
         }

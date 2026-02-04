@@ -9,25 +9,28 @@ namespace devils
      */
     struct JoystickCurve
     {
+        // Prevent instantiation
+        JoystickCurve() = delete;
+
         /**
          * Applies a deadzone to a joystick input.
          * @param deadzone The deadzone of the joystick.
          * @param val The value of the joystick. Must be between -1 and 1.
          * @return Value between deadzone and 1. Negative values are preserved.
          */
-        static double deadzone(
-            double deadzone,
-            double val)
+        static float deadzone(
+            float deadzone,
+            float val)
         {
             // Check if the value is within the deadzone
-            double absVal = std::abs(val);
+            const float absVal = std::abs(val);
             if (absVal < deadzone)
                 return 0;
             if (absVal > 1)
-                return std::copysign(1, val);
+                return std::copysign(1.0f, val);
 
             // Correct the value so it starts at 0 instead of deadzone
-            double correctedVal = (absVal - deadzone) / (1 - deadzone);
+            float correctedVal = (absVal - deadzone) / (1 - deadzone);
 
             // Apply the sign back to the value
             return std::copysign(correctedVal, val);
@@ -38,10 +41,10 @@ namespace devils
          * @param val The value of the joystick. Must be between -1 and 1.
          * @param power The power of the curve.
          */
-        static double pow(double val, double power)
+        static float pow(float val, float power)
         {
-            double absVal = std::abs(val);
-            double exponent = std::pow(absVal, power);
+            const float absVal = std::abs(val);
+            const float exponent = std::pow(absVal, power);
             return std::copysign(exponent, val);
         }
 
@@ -52,10 +55,10 @@ namespace devils
          * @param val The value to lerp.
          * @return The lerped value. If val is negative, the result will be negative.
          */
-        static double lerp(double min, double max, double val)
+        static float lerp(float min, float max, float val)
         {
-            double absVal = std::fabs(val);
-            double lerpVal = std::lerp(min, max, absVal);
+            const float absVal = std::fabs(val);
+            const float lerpVal = std::lerp(min, max, absVal);
             return std::copysign(lerpVal, val);
         }
 
@@ -67,25 +70,25 @@ namespace devils
          * @param min The minimum output value
          * @param max The maximum output value
          */
-        static double curve(
-            double val,
-            double power,
-            double deadzone,
-            double min = 0.0,
-            double max = 1.0)
+        static float curve(
+            const float val,
+            const float power,
+            const float deadzone,
+            const float min = 0.0,
+            const float max = 1.0)
         {
             // Deadzone
-            double newVal = JoystickCurve::deadzone(deadzone, val);
+            float newVal = JoystickCurve::deadzone(deadzone, val);
 
             // Avoid remaining calculations if the value is 0
             if (newVal == 0)
                 return 0;
 
             // Apply curve
-            newVal = JoystickCurve::pow(newVal, power);
+            newVal = pow(newVal, power);
 
             // Lerp
-            return JoystickCurve::lerp(min, max, newVal);
+            return lerp(min, max, newVal);
         }
 
         /**
@@ -94,17 +97,13 @@ namespace devils
          * @param valueB The second value.
          * @return The combined value.
          */
-        static double combine(
-            double valueA,
-            double valueB)
+        static float combine(
+            const float valueA,
+            const float valueB)
         {
             if (std::fabs(valueA) > std::fabs(valueB))
                 return valueA;
             return valueB;
         }
-
-    private:
-        // Prevent instantiation
-        JoystickCurve() = delete;
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
+
 #include <string>
+#include <utility>
 #include "pros/rtos.hpp"
 #include "../autoStep.hpp"
 #include "../../utils/timer.hpp"
@@ -19,8 +21,8 @@ namespace devils
          */
         AutoTimeoutStep(
             AutoStepPtr autoStep,
-            uint32_t duration)
-            : autoStep(autoStep),
+            const uint32_t duration)
+            : autoStep(std::move(autoStep)),
               timer(duration)
         {
         }

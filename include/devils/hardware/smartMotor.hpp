@@ -1,17 +1,19 @@
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <cmath>
+#include <utility>
 #include "pros/motors.hpp"
 #include "pros/error.h"
-#include "../utils/logger.hpp"
-#include "structs/motor.h"
-#include "structs/hardwareBase.hpp"
+#include "motorBase.h"
+#include "hardwareBase.hpp"
 
 namespace devils
 {
     /**
-     * Represents a motor object. All events are logged.
+     * Represents a single VEX V5 SmartMotor.
+     * Use `MotorGroup` to control multiple motors as one.
      */
     class SmartMotor : public IMotor, protected HardwareBase
     {
@@ -20,102 +22,52 @@ namespace devils
          * Creates a motor object.
          * @param name The name of the motor (for logging purposes)
          * @param port The port of the motor (from 1 to 21)
-         * @throws std::runtime_error if the motor could not be created, likely due to an invalid port.
          */
-        SmartMotor(std::string name, int8_t port)
-            : HardwareBase(name, "SmartMotor", port),
+        SmartMotor(
+            std::string name,
+            const int8_t port)
+            : HardwareBase(std::move(name), "SmartMotor", port),
               motor(port)
         {
-            if (errno != 0)
-                reportFault("Invalid Port");
         }
 
         /**
          * Runs the motor in voltage mode.
-         * @param voltage The voltage to run the motor at, from -1 to 1.
-         * @throws std::runtime_error if the motor could not be moved.
+         * @param speed The speed to run the motor at, from -1 to 1.
+         * @return HWStatus indicating success or failure.
          */
-        void moveVoltage(double voltage) override
+        void move(const float speed) override
         {
-            // Move Motor
-            int32_t status = motor.move(voltage * 127);
-            if (status != 1)
-                reportFault("Move Voltage Failed");
+            // Convert -1 to 1 range to -127 to 127 range
+            const auto voltage = std::clamp(static_cast<int>(speed * 127), -127, 127);
+
+            // Pass voltage to motor
+            const auto status = motor.move(voltage);
+            if (status == PROS_ERR)
+                reportError();
         }
 
         /**
          * Stops the motor.
-         * @throws std::runtime_error if the motor could not be stopped.
+         * @return HWStatus indicating success or failure.
          */
         void stop() override
         {
-            int32_t status = motor.brake();
-            if (status != 1)
-                reportFault("Stop Failed");
-        }
-
-        /**
-         * Gets the current position of the motor in encoder ticks.
-         *
-         * \note
-         * 1800 ticks/rev with 36:1 gears (red cartridge),
-         * 900 ticks/rev with 18:1 gears (green cartridge),
-         * 300 ticks/rev with 6:1 gears (blue cartridge)
-         *
-         * @return The current position of the motor in encoder ticks or `PROS_ERR_F` if the position could not be retrieved.
-         * @throws std::runtime_error if the position could not be retrieved.
-         */
-        double getPosition() override
-        {
-            double position = motor.get_position();
-            if (position == PROS_ERR_F)
-                reportFault("Get Position Failed");
-            return position;
+            const auto status = motor.brake();
+            if (status == PROS_ERR)
+                reportError();
         }
 
         /**
          * Sets the position of the motor in encoder ticks.
          * @param position The position to set the motor to in encoder ticks.
+         * @return HWStatus indicating success or failure.
          */
-        void setPosition(double position)
+        void setPosition(const float position) const
         {
-            motor.set_zero_position(position);
-        }
-
-        /**
-         * Returns the current speed of the motor in RPM.
-         * @return The current speed of the motor in RPM or `PROS_ERR_F` if the speed could not be retrieved.
-         */
-        double getVelocity()
-        {
-            double velocity = motor.get_actual_velocity();
-            if (velocity == PROS_ERR_F)
-                reportFault("Get Velocity Failed");
-            return velocity;
-        }
-
-        /**
-         * Gets the current temperature of the motor in celsius.
-         * @return The current temperature of the motor in celsius or `PROS_ERR_F` if the temperature could not be retrieved.
-         */
-        double getTemperature()
-        {
-            double temperature = motor.get_temperature();
-            if (temperature == PROS_ERR_F)
-                reportFault("Get Temperature Failed");
-            return temperature;
-        }
-
-        /**
-         * Gets the current current draw of the motor in mA.
-         * @return The current current draw of the motor in mA or `PROS_ERR` if the current could not be retrieved.
-         */
-        double getCurrent()
-        {
-            double current = motor.get_current_draw();
-            if (current == PROS_ERR)
-                reportFault("Get Current Failed");
-            return current;
+            const auto status = motor.set_zero_position(position);
+            if (status == PROS_ERR)
+                reportError();
         }
 
         /**
@@ -126,26 +78,70 @@ namespace devils
          * Coast mode will allow the motor to coast to a stop when `stop()` is called.
          *
          * @param useBrakeMode True to use brake mode, false to coast mode.
-         * @throws std::runtime_error if the brake mode could not be set.
          */
-        void setBrakeMode(bool useBrakeMode)
+        void setBrakeMode(const bool useBrakeMode) const
         {
-            int32_t status = motor.set_brake_mode(useBrakeMode ? pros::E_MOTOR_BRAKE_BRAKE : pros::E_MOTOR_BRAKE_COAST);
-            if (status != 1)
-                reportFault("Set Brake Mode Failed");
+            const auto prosBrakeMode = useBrakeMode ? pros::E_MOTOR_BRAKE_BRAKE : pros::E_MOTOR_BRAKE_COAST;
+            const auto status = motor.set_brake_mode(prosBrakeMode);;
+            if (status == PROS_ERR)
+                reportError();
+        }
+
+        /**
+         * Gets the current position of the motor in encoder ticks.
+         *
+         * \note
+         * 1800 ticks/rev with 36:1 gears (red cartridge),
+         * 900 ticks/rev with 18:1 gears (green cartridge),
+         * 300 ticks/rev with 6:1 gears (blue cartridge)
+         *
+         * @return The current position of the motor in encoder ticks
+         */
+        HWResult<float> getPosition() override
+        {
+            const auto position = static_cast<float>(motor.get_position());
+            if (position == PROS_ERR_F)
+                return getStatusCode();
+            return position;
+        }
+
+        /**
+         * Returns the current speed of the motor in RPM.
+         * @return The current speed of the motor in RPM,
+         */
+        HWResult<float> getVelocity() const
+        {
+            const auto velocity = static_cast<float>(motor.get_actual_velocity());
+            if (velocity == PROS_ERR_F)
+                return getStatusCode();
+            return velocity;
+        }
+
+        /**
+         * Gets the current temperature of the motor in Celsius.
+         * @return The current temperature of the motor in Celsius.
+         */
+        HWResult<float> getTemperature() const
+        {
+            const auto temperature = static_cast<float>(motor.get_temperature());
+            if (temperature == PROS_ERR_F)
+                return getStatusCode();
+            return temperature;
+        }
+
+        /**
+         * Gets the current draw of the motor in mA.
+         * @return The current draw of the motor in mA.
+         */
+        HWResult<int> getCurrent() const
+        {
+            const auto current = motor.get_current_draw();
+            if (current == PROS_ERR)
+                return getStatusCode();
+            return current;
         }
 
     private:
-        // Hardware
         pros::Motor motor;
-
-        // Motor State
-        bool isPortOutOfRange = false;
-        bool isPortTaken = false;
-        bool isOverTemp = false;
-        bool isDriverFault = false;
-        bool isOverCurrent = false;
-        bool isDriverOverCurrent = false;
-        bool isConnected = true;
     };
 }

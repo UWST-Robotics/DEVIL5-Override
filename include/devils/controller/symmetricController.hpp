@@ -1,7 +1,6 @@
 #pragma once
 
-#include "smartMotorGroup.hpp"
-#include "vexbridge/vexBridge.h"
+#include "../hardware/smartMotorGroup.hpp"
 
 namespace devils
 {
@@ -14,7 +13,8 @@ namespace devils
     {
     public:
         SymmetricControl(SmartMotorGroup &leftMotors, SmartMotorGroup &rightMotors)
-            : leftMotors(leftMotors), rightMotors(rightMotors)
+            : leftMotors(leftMotors),
+			  rightMotors(rightMotors)
         {
         }
 
@@ -31,7 +31,7 @@ namespace devils
          * Drives the motors in a symmetric manner.
          * @param speed The speed to drive the motors at, from -1 to 1.
          */
-        void drive(double speed, double horizontalSpeed)
+        void drive(float speed, float horizontalSpeed)
         {
             // Clamp the speed to the range [-1, 1]
             speed = std::clamp(speed, -1.0, 1.0);
@@ -46,8 +46,8 @@ namespace devils
             rightOffset += horizontalSpeed * HORIZONTAL_ENCODER_SPEED;
 
             // Fetch the encoder values and subtract the offsets
-            double leftEncoder = leftMotors.getPosition() - leftOffset;
-            double rightEncoder = rightMotors.getPosition() - rightOffset;
+            float leftEncoder = leftMotors.getPosition() - leftOffset;
+            float rightEncoder = rightMotors.getPosition() - rightOffset;
 
             // Check which motor is behind
             bool leftMotorBehind = leftEncoder < rightEncoder;
@@ -56,15 +56,15 @@ namespace devils
                 leftMotorBehind = !leftMotorBehind;
 
             // Calculate the speed scaling factor
-            double behindEncoder = leftMotorBehind ? leftEncoder : rightEncoder;
-            double aheadEncoder = leftMotorBehind ? rightEncoder : leftEncoder;
-            double deltaEncoder = leftEncoder - rightEncoder;
+            float behindEncoder = leftMotorBehind ? leftEncoder : rightEncoder;
+            float aheadEncoder = leftMotorBehind ? rightEncoder : leftEncoder;
+            float deltaEncoder = leftEncoder - rightEncoder;
 
-            double speedScale = 1.0 - (std::abs(deltaEncoder) / ENCODER_MAX_OFFSET);
+            float speedScale = 1.0 - (std::abs(deltaEncoder) / ENCODER_MAX_OFFSET);
             speedScale = std::clamp(speedScale, 0.0, 1.0);
 
             // Calculate the horizontal speed scaling factor
-            double horizontalScale = deltaEncoder *
+            float horizontalScale = deltaEncoder *
                                      HORIZONTAL_MULTIPLIER *
                                      std::abs(horizontalSpeed);
 
@@ -82,16 +82,16 @@ namespace devils
         }
 
     private:
-        static constexpr double HORIZONTAL_DEADZONE = 0.5;     // deadzone for the joystick
-        static constexpr double HORIZONTAL_MULTIPLIER = 0.005; // %
-        static constexpr double HORIZONTAL_ENCODER_SPEED = 2;  // ticks per iteration
-        static constexpr double ENCODER_MAX_OFFSET = 100;      // ticks
+        static constexpr float HORIZONTAL_DEADZONE = 0.5f;     // deadzone for the joystick
+        static constexpr float HORIZONTAL_MULTIPLIER = 0.005f; // %
+        static constexpr float HORIZONTAL_ENCODER_SPEED = 2.0f;  // ticks per iteration
+        static constexpr float ENCODER_MAX_OFFSET = 100;      // ticks
         static constexpr bool IS_REVERSED = true;              // true if the motors are reversed
 
         SmartMotorGroup &leftMotors;
         SmartMotorGroup &rightMotors;
 
-        double leftOffset = 0.0;
-        double rightOffset = 0.0;
+        float leftOffset = 0.0;
+        float rightOffset = 0.0;
     };
 }

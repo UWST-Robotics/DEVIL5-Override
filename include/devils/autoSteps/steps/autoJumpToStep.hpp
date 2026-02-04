@@ -1,5 +1,5 @@
 #pragma once
-#include "pros/rtos.hpp"
+
 #include "../autoStep.hpp"
 #include "../../odom/odomSource.hpp"
 
@@ -13,12 +13,16 @@ namespace devils
     public:
         /**
          * Jumps the odometry state to a given pose. Usually ran at the start of an auto routine.
-         * @param chassis The chassis to control.
+         * @param odom The odometry source to use.
          * @param x The x position to jump to in inches.
          * @param y The y position to jump to in inches.
          * @param heading The heading to jump to in radians.
          */
-        AutoJumpToStep(OdomSource &odom, double x, double y, double heading)
+        AutoJumpToStep(
+            OdomSource& odom,
+            const float x,
+            const float y,
+            const float heading)
             : odom(odom),
               targetPose(x, y, heading)
         {
@@ -26,10 +30,10 @@ namespace devils
 
         /**
          * Jumps the odometry state to a given pose. Usually ran at the start of an auto routine.
-         * @param chassis The chassis to control.
+         * @param odom The odometry source to use.
          * @param pose The pose to jump to.
          */
-        AutoJumpToStep(OdomSource &odom, Pose pose)
+        AutoJumpToStep(OdomSource& odom, const Pose& pose)
             : odom(odom),
               targetPose(pose)
         {
@@ -47,7 +51,7 @@ namespace devils
         }
 
         // Params
-        OdomSource &odom;
+        OdomSource& odom;
         Pose targetPose;
     };
 }

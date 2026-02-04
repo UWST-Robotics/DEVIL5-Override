@@ -1,8 +1,7 @@
 #pragma once
 #include "pros/rotation.hpp"
-#include "../utils/logger.hpp"
 #include "../geometry/units.hpp"
-#include "structs/hardwareBase.hpp"
+#include "hardwareBase.hpp"
 #include <string>
 
 namespace devils
@@ -10,7 +9,7 @@ namespace devils
     /**
      * Represents a V5 rotational sensor.
      */
-    class RotationSensor : private HardwareBase
+    class RotationSensor : HardwareBase
     {
     public:
         /**
@@ -19,63 +18,46 @@ namespace devils
          * @param port The port of the rotational sensor (from 1 to 21). Negative ports are reversed.
          */
         RotationSensor(
-            const std::string name,
+            const std::string& name,
             const int8_t port)
             : HardwareBase(name, "RotationSensor", port),
               rotationSensor(port)
         {
-            rotationSensor.set_position(0);
-            if (errno != 0)
-                reportFault("Invalid port");
-        }
-
-        /**
-         * Gets the absolute angle of the sensor in radians.
-         * @return The absolute angle of the sensor in radians.
-         */
-        double getAngle()
-        {
-            errno = 0;
-            double angle = rotationSensor.get_position();
-            if (angle == PROS_ERR)
-            {
-                reportFault("Get rotation sensor angle failed");
-                return 0;
-            }
-            return Units::centidegToRad(angle);
-        }
-
-        /**
-         * Gets the velocity of the sensor in radians per second.
-         * @return The velocity of the sensor in radians per second.
-         */
-        double getVelocity()
-        {
-            double velocity = rotationSensor.get_velocity();
-            if (velocity == PROS_ERR_F)
-            {
-                reportFault("Get rotation sensor velocity failed");
-                return 0;
-            }
-            return Units::centidegToRad(velocity);
-        }
-
-        /**
-         * Checks if the sensor is still connected.
-         * @return True if the sensor is still connected, false otherwise.
-         */
-        bool isConnected()
-        {
-            return rotationSensor.is_installed();
         }
 
         /**
          * Sets the position of the sensor in centidegrees.
          * @param position The position to set the sensor to.
          */
-        void setPosition(uint32_t position)
+        void setPosition(const uint32_t position) const
         {
-            rotationSensor.set_position(position);
+            const auto status = rotationSensor.set_position(position);
+            if (status == PROS_ERR)
+                reportError();
+        }
+
+        /**
+         * Gets the absolute angle of the sensor in radians.
+         * @return The absolute angle of the sensor in radians.
+         */
+        HWResult<float> getAngle() const
+        {
+            const auto angle = rotationSensor.get_position();
+            if (angle == PROS_ERR)
+                return getStatusCode();
+            return Units::centidegToRad(static_cast<float>(angle));
+        }
+
+        /**
+         * Gets the velocity of the sensor in radians per second.
+         * @return The velocity of the sensor in radians per second.
+         */
+        HWResult<float> getVelocity() const
+        {
+            const auto velocity = rotationSensor.get_velocity();
+            if (velocity == PROS_ERR)
+                return getStatusCode();
+            return Units::centidegToRad(static_cast<float>(velocity));
         }
 
     private:

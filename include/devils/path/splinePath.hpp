@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 #include "path.hpp"
 #include "splinePose.hpp"
@@ -19,9 +20,11 @@ namespace devils
          * @param isReversed True if the path is reversed
          * @return The spline path
          */
-        SplinePath(std::vector<SplinePose> poses, bool isReversed = false)
+        SplinePath(
+            std::vector<SplinePose> poses,
+            const bool isReversed = false)
             : isReversed(isReversed),
-              poses(poses)
+              poses(std::move(poses))
         {
         }
 
@@ -33,15 +36,19 @@ namespace devils
          * @param isReversed True if the path is reversed
          * @return The spline path
          */
-        static SplinePath makeArc(Pose from, Pose to, double delta = 18.0, bool isReversed = false)
+        static SplinePath makeArc(
+            const Pose& from,
+            const Pose& to,
+            float delta = 18.0,
+            bool isReversed = false)
         {
             if (isReversed)
                 delta *= -1;
 
             std::vector<SplinePose> poses;
-            poses.push_back(SplinePose(from.x, from.y, from.rotation, delta, delta));
-            poses.push_back(SplinePose(to.x, to.y, to.rotation, delta, delta));
-            return SplinePath(poses, isReversed);
+            poses.emplace_back(from.x, from.y, from.rotation, delta, delta);
+            poses.emplace_back(to.x, to.y, to.rotation, delta, delta);
+            return {poses, isReversed};
         }
 
         /**
@@ -49,13 +56,13 @@ namespace devils
          * @param index The index to get the pose at. Interpolate between indices.
          * @return The pose at the index
          */
-        Pose getPoseAt(double index) override
+        Pose getPoseAt(float index) override
         {
             // Check OOB
             if (index <= 0)
-                return poses.front();
+                return static_cast<Pose>(poses.front());
             if (index >= poses.size() - 1)
-                return poses.back();
+                return static_cast<Pose>(poses.back());
 
             // Get the two poses to interpolate between
             int prevIndex = (int)index;
@@ -67,7 +74,7 @@ namespace devils
 
             // Calculate dt between the two poses
             // This is the percentage of the way between the two poses
-            double dt = index - prevIndex;
+            float dt = index - prevIndex;
 
             // Interpolate between the two poses
             // using cubic interpolation
@@ -87,14 +94,14 @@ namespace devils
 
             // Calculate rotation
             // This is the instantaneous derivative of the pose at the given index
-            double rotation = std::atan2(
+            float rotation = std::atan2(
                 interpolatedPosePrime.y - interpolatedPose.y,
                 interpolatedPosePrime.x - interpolatedPose.x);
             interpolatedPose.rotation = rotation;
 
             // Reverse the rotation if the path is reversed
             if (isReversed)
-                interpolatedPose.rotation = Units::normalizeRadians(interpolatedPose.rotation + M_PI);
+                interpolatedPose.rotation = Units::normalizeRadians(interpolatedPose.rotation + M_PIF);
 
             return interpolatedPose;
         }
@@ -103,14 +110,14 @@ namespace devils
          * Gets the length of the path
          * @return The length of the path in control points
          */
-        double getLength() override
+        float getLength() override
         {
             return poses.size();
         }
 
     private:
         /// @brief Step size used to calculate pose rotation
-        static constexpr double DELTA_INDEX = 0.0001;
+        static constexpr float DELTA_INDEX = 0.0001;
 
         /// @brief True if the path is reversed
         bool isReversed = false;

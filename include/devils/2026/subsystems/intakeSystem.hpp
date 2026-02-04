@@ -50,15 +50,15 @@ namespace devils
     class IntakeSystem
     {
     public:
-        IntakeSystem(SmartMotorGroup &frontBottomIntakeMotors,
-                     SmartMotorGroup &frontTopIntakeMotors,
-                     SmartMotorGroup &frontIntakeRollers,
-                     SmartMotorGroup &backIntakeMotors,
-                     SmartMotorGroup &cyclerMotors,
-                     OpticalSensor &colorSensor,
-                     ADIPneumatic &intakePneumaticsLeft,
-                     ADIPneumatic &intakePneumaticsRight,
-                     ADIPneumatic &hoodPneumatics)
+        IntakeSystem(SmartMotorGroup& frontBottomIntakeMotors,
+                     SmartMotorGroup& frontTopIntakeMotors,
+                     SmartMotorGroup& frontIntakeRollers,
+                     SmartMotorGroup& backIntakeMotors,
+                     SmartMotorGroup& cyclerMotors,
+                     OpticalSensor& colorSensor,
+                     ADIPneumatic& intakePneumaticsLeft,
+                     ADIPneumatic& intakePneumaticsRight,
+                     ADIPneumatic& hoodPneumatics)
             : frontBottomIntakeMotors(frontBottomIntakeMotors),
               frontTopIntakeMotors(frontTopIntakeMotors),
               frontIntakeRollers(frontIntakeRollers),
@@ -78,7 +78,7 @@ namespace devils
             cyclerMotors.setPosition(0);
 
             // Max Brightness
-            colorSensor.setLEDBrightness(100);
+            colorSensor.setLEDBrightness(1);
         }
 
         /**
@@ -102,44 +102,44 @@ namespace devils
 
             switch (intakeMode)
             {
-            case IntakeMode::Cycler:
-                frontBottomIntakeMotors.moveVoltage(frontBottomIntakeSpeed);
-                frontTopIntakeMotors.moveVoltage(frontTopIntakeSpeed);
-                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
+            case Cycler:
+                frontBottomIntakeMotors.move(frontBottomIntakeSpeed);
+                frontTopIntakeMotors.move(frontTopIntakeSpeed);
+                frontIntakeRollers.move(frontIntakeRollerSpeed);
                 // Absolute value is used to ensure the back intake *always* moves in the same direction
-                backIntakeMotors.moveVoltage(std::fabs(backIntakeSpeed));
-                cyclerMotors.moveVoltage(cyclerSpeed);
+                backIntakeMotors.move(std::fabs(backIntakeSpeed));
+                cyclerMotors.move(cyclerSpeed);
 
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(false);
                 break;
 
-            case IntakeMode::SideGoal:
-                frontBottomIntakeMotors.moveVoltage(frontBottomIntakeSpeed);
-                frontTopIntakeMotors.moveVoltage(frontTopIntakeSpeed);
-                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
-                backIntakeMotors.moveVoltage(backIntakeSpeed);
-                cyclerMotors.moveVoltage(-cyclerSpeed);
+            case SideGoal:
+                frontBottomIntakeMotors.move(frontBottomIntakeSpeed);
+                frontTopIntakeMotors.move(frontTopIntakeSpeed);
+                frontIntakeRollers.move(frontIntakeRollerSpeed);
+                backIntakeMotors.move(backIntakeSpeed);
+                cyclerMotors.move(-cyclerSpeed);
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(true);
                 break;
 
-            case IntakeMode::MidTop:
-                frontBottomIntakeMotors.moveVoltage(-frontBottomIntakeSpeed);
-                frontTopIntakeMotors.moveVoltage(frontTopIntakeSpeed);
-                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
-                backIntakeMotors.moveVoltage(backIntakeSpeed);
-                cyclerMotors.moveVoltage(-cyclerSpeed);
+            case MidTop:
+                frontBottomIntakeMotors.move(-frontBottomIntakeSpeed);
+                frontTopIntakeMotors.move(frontTopIntakeSpeed);
+                frontIntakeRollers.move(frontIntakeRollerSpeed);
+                backIntakeMotors.move(backIntakeSpeed);
+                cyclerMotors.move(-cyclerSpeed);
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(true);
                 break;
 
-            case IntakeMode::MidBottom:
-                frontBottomIntakeMotors.moveVoltage(frontBottomIntakeSpeed);
-                frontTopIntakeMotors.moveVoltage(-frontTopIntakeSpeed);
-                frontIntakeRollers.moveVoltage(frontIntakeRollerSpeed);
-                backIntakeMotors.moveVoltage(backIntakeSpeed);
-                cyclerMotors.moveVoltage(-cyclerSpeed);
+            case MidBottom:
+                frontBottomIntakeMotors.move(frontBottomIntakeSpeed);
+                frontTopIntakeMotors.move(-frontTopIntakeSpeed);
+                frontIntakeRollers.move(frontIntakeRollerSpeed);
+                backIntakeMotors.move(backIntakeSpeed);
+                cyclerMotors.move(-cyclerSpeed);
                 if (isHoodAutomatic)
                     hoodPneumatics.setExtended(true);
                 break;
@@ -150,7 +150,7 @@ namespace devils
          * Extends/retracts the intake arms
          * @param extended - Whether the arms should be extended
          */
-        void setArmsExtended(bool extended)
+        void setArmsExtended(const bool extended) const
         {
             intakePneumaticsLeft.setExtended(extended);
             intakePneumaticsRight.setExtended(extended);
@@ -207,11 +207,11 @@ namespace devils
             bool isReversingBecauseStall = reverseBecauseStallTimer.running();
             if (isReversingBecauseStall)
             {
-                frontBottomIntakeMotors.moveVoltage(STALL_SPEED);
-                frontTopIntakeMotors.moveVoltage(STALL_SPEED);
-                frontIntakeRollers.moveVoltage(STALL_SPEED);
-                backIntakeMotors.moveVoltage(STALL_SPEED);
-                cyclerMotors.moveVoltage(STALL_SPEED);
+                frontBottomIntakeMotors.move(STALL_SPEED);
+                frontTopIntakeMotors.move(STALL_SPEED);
+                frontIntakeRollers.move(STALL_SPEED);
+                backIntakeMotors.move(STALL_SPEED);
+                cyclerMotors.move(STALL_SPEED);
                 return true;
             }
 
@@ -244,21 +244,21 @@ namespace devils
          */
         void setHoodExtendedBasedOnColorSort()
         {
-            if (sortingMode == ColorSortingMode::DontSort)
+            if (sortingMode == DontSort)
                 return;
 
-            BlockColor currentBlockColor = getCurrentBlockColor();
+            const BlockColor currentBlockColor = getCurrentBlockColor();
 
             // Check if we can score either color
-            bool canScoreBlue = currentBlockColor == BlockColor::Blue &&
-                                sortingMode == ColorSortingMode::ScoreBlueOnly;
+            const bool canScoreBlue = currentBlockColor == Blue &&
+                sortingMode == ScoreBlueOnly;
 
-            bool canScoreRed = currentBlockColor == BlockColor::Blue &&
-                               sortingMode == ColorSortingMode::ScoreRedOnly;
+            const bool canScoreRed = currentBlockColor == Blue &&
+                sortingMode == ScoreRedOnly;
 
             // If we can score, retract the hood
             // Otherwise, extend the hood
-            bool isCorrectSorting = canScoreBlue || canScoreBlue;
+            const bool isCorrectSorting = canScoreBlue || canScoreRed;
             hoodPneumatics.setExtended(!isCorrectSorting);
         }
 
@@ -266,30 +266,30 @@ namespace devils
          * Gets the current color of the block in the intake.
          * @return The current color of the block in the intake.
          */
-        BlockColor getCurrentBlockColor()
+        BlockColor getCurrentBlockColor() const
         {
             // Gets the current hue of the color sensor
-            double hue = colorSensor.getHue();
+            const float hue = colorSensor.getHue();
 
             // Calculate distance to the color hue (in degrees)
-            double redDist = std::abs(hue - RED_BLOCK_HUE);
-            double blueDist = std::abs(hue - BLUE_BLOCK_HUE);
+            const float redDist = std::abs(hue - RED_BLOCK_HUE);
+            const float blueDist = std::abs(hue - BLUE_BLOCK_HUE);
 
             // Gets the block color of the closest hue
-            return redDist > blueDist ? BlockColor::Blue : BlockColor::Red;
+            return redDist > blueDist ? Blue : Red;
         }
 
     private:
         //     SPEED OPTIONS
 
-        static constexpr float MAX_SPEED = 1.0;  // %
+        static constexpr float MAX_SPEED = 1.0; // %
         static constexpr float MIN_SPEED = -1.0; // %
 
         static constexpr float FRONT_BOTTOM_INTAKE_SPEED = 0.7; // %
-        static constexpr float FRONT_TOP_INTAKE_SPEED = 0.7;    // %
-        static constexpr float ROLLER_SPEED = 1.0;              // %
-        static constexpr float BACK_INTAKE_SPEED = 0.6;         // %
-        static constexpr float CYCLER_SPEED = 1.0;              // %
+        static constexpr float FRONT_TOP_INTAKE_SPEED = 0.7; // %
+        static constexpr float ROLLER_SPEED = 1.0; // %
+        static constexpr float BACK_INTAKE_SPEED = 0.6; // %
+        static constexpr float CYCLER_SPEED = 1.0; // %
 
         //      COLOR SENSOR OPTIONS
 
@@ -300,7 +300,7 @@ namespace devils
         //     STALL OPTIONS
 
         /// @brief The current threshold to detect a stall (in mA).
-        static constexpr double STALL_CURRENT = 1600;
+        static constexpr float STALL_CURRENT = 1600;
 
         /// @brief The minimum duration a stall must occur.
         static constexpr int32_t STALL_MIN_DURATION = 600;
@@ -312,23 +312,23 @@ namespace devils
         static constexpr float STALL_SPEED = -1.0;
 
         // State
-        ColorSortingMode sortingMode = ColorSortingMode::DontSort;
-        IntakeMode intakeMode = IntakeMode::Cycler;
+        ColorSortingMode sortingMode = DontSort;
+        IntakeMode intakeMode = Cycler;
         bool isHoodAutomatic = true;
         Timer checkForStallTimer = Timer(STALL_MIN_DURATION);
         Timer reverseBecauseStallTimer = Timer(STALL_REVERSE_DURATION);
 
         // Hardware
-        SmartMotorGroup &frontBottomIntakeMotors;
-        SmartMotorGroup &frontTopIntakeMotors;
-        SmartMotorGroup &frontIntakeRollers;
-        SmartMotorGroup &backIntakeMotors;
-        SmartMotorGroup &cyclerMotors;
+        SmartMotorGroup& frontBottomIntakeMotors;
+        SmartMotorGroup& frontTopIntakeMotors;
+        SmartMotorGroup& frontIntakeRollers;
+        SmartMotorGroup& backIntakeMotors;
+        SmartMotorGroup& cyclerMotors;
 
-        OpticalSensor &colorSensor;
+        OpticalSensor& colorSensor;
 
-        ADIPneumatic &intakePneumaticsLeft;
-        ADIPneumatic &intakePneumaticsRight;
-        ADIPneumatic &hoodPneumatics;
+        ADIPneumatic& intakePneumaticsLeft;
+        ADIPneumatic& intakePneumaticsRight;
+        ADIPneumatic& hoodPneumatics;
     };
 }

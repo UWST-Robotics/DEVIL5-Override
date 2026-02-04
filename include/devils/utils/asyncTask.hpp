@@ -33,12 +33,13 @@ namespace devils
     {
     public:
         AsyncTask() = default;
-        AsyncTask(const std::string &debugName) : AsyncTask()
+
+        AsyncTask(const std::string& debugName) : AsyncTask()
         {
             setDebugName(debugName);
         }
 
-        ~AsyncTask()
+        virtual ~AsyncTask()
         {
             stop();
         }
@@ -149,13 +150,19 @@ namespace devils
 
     protected:
         /// @brief Called before the task starts.
-        virtual void onStart() {}
+        virtual void onStart()
+        {
+        }
 
         /// @brief Called every 20ms to update the task state.
-        virtual void onUpdate() {};
+        virtual void onUpdate()
+        {
+        };
 
         /// @brief Called before the task stops.
-        virtual void onStop() {};
+        virtual void onStop()
+        {
+        };
 
         /// @brief Called every update to check if the task is finished. If so, `stop()` is called automatically. Default implementation always returns false.
         /// @return True if the task is finished, false otherwise.
@@ -168,7 +175,7 @@ namespace devils
         }
 
         /// @brief Sets the debug name of the task.
-        void setDebugName(const std::string &name)
+        void setDebugName(const std::string& name)
         {
             debugName = name;
         }
@@ -187,10 +194,10 @@ namespace devils
             {
                 // Iterate over all tasks and call their onUpdate method if they are running
                 allRunningInstancesMutex.take();
-                for (int i = 0; i < allRunningInstances.size(); i++)
+                for (size_t i = 0; i < allRunningInstances.size(); i++)
                 {
                     // Get a shared pointer from the weak pointer
-                    auto instance = allRunningInstances[i];
+                    const auto instance = allRunningInstances[i];
 
                     try
                     {
@@ -212,7 +219,7 @@ namespace devils
                     }
 
                     // Catch any exceptions to prevent the background task from crashing
-                    catch (const std::exception &e)
+                    catch (const std::exception& e)
                     {
                         Logger::error("An error occurred in AsyncTask: " + std::string(e.what()));
                     }
@@ -228,7 +235,8 @@ namespace devils
 
         // List of all running instances
         static pros::Mutex allRunningInstancesMutex;
-        static std::vector<std::shared_ptr<AsyncTask>> allRunningInstances; // <-- Using shared_ptr to ensure instances stay alive while running
+        static std::vector<std::shared_ptr<AsyncTask>> allRunningInstances;
+        // <-- Using shared_ptr to ensure instances stay alive while running
 
         // Background task to update all AsyncTask instances
         static std::unique_ptr<pros::Task> backgroundTask;

@@ -22,6 +22,8 @@ namespace devils
             odometry.useIMU(&imu);
             odometry.setTicksPerRevolution(300);
             odometry.runAsync();
+
+            t();
         }
 
         void autonomous() override

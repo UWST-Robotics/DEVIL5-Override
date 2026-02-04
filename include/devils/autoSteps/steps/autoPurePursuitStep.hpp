@@ -1,6 +1,5 @@
 #pragma once
-#include "pros/rtos.hpp"
-#include "../autoStep.hpp"
+
 #include "../../chassis/chassisBase.hpp"
 #include "../../odom/odomSource.hpp"
 #include "../../path/path.hpp"
@@ -19,11 +18,12 @@ namespace devils
          * @param chassis The chassis to control.
          * @param odomSource The odometry source to use.
          * @param path The path to follow.
+         * @param options The options for the drive step.
          */
         AutoPurePursuitStep(
-            ChassisBase &chassis,
-            OdomSource &odomSource,
-            Path *path,
+            ChassisBase& chassis,
+            OdomSource& odomSource,
+            Path* path,
             Options options = Options::defaultOptions)
             : AutoDriveToStep(chassis, odomSource, Pose(0, 0, 0), options),
               odomSource(odomSource),
@@ -41,16 +41,16 @@ namespace devils
         void onUpdate() override
         {
             // Get the current pose
-            Pose currentPose = odomSource.getPose();
+            const Pose currentPose = odomSource.getPose();
 
             // Find the closest index on the path
-            double closestIndex = 0;
-            double closestDistance = std::numeric_limits<double>::infinity();
-            for (double i = 0; i < path->getLength(); i += DELTA_T)
+            float closestIndex = 0;
+            float closestDistance = std::numeric_limits<float>::infinity();
+            for (float i = 0; i < path->getLength(); i += DELTA_T)
             {
                 // Get the distance to the path at i
                 Pose pathPose = path->getPoseAt(i);
-                double distance = currentPose.distanceTo(pathPose);
+                const float distance = currentPose.distanceTo(pathPose);
 
                 // Check if this is the closest point
                 if (distance < closestDistance)
@@ -61,16 +61,16 @@ namespace devils
             }
 
             // Get the lookahead index
-            double lookaheadIndex = closestIndex;
+            float lookaheadIndex = closestIndex;
             while (lookaheadIndex < path->getLength() &&
-                   currentPose.distanceTo(path->getPoseAt(lookaheadIndex)) < LOOKAHEAD_DIST)
+                currentPose.distanceTo(path->getPoseAt(lookaheadIndex)) < LOOKAHEAD_DIST)
             {
                 lookaheadIndex += DELTA_T;
             }
 
             // Set the target pose
-            Pose lookaheadPose = path->getPoseAt(lookaheadIndex);
-            AutoDriveToStep::targetPose = lookaheadPose;
+            const Pose lookaheadPose = path->getPoseAt(lookaheadIndex);
+            targetPose = lookaheadPose;
 
             // Update the drive step
             AutoDriveToStep::onUpdate();
@@ -85,15 +85,15 @@ namespace devils
         bool checkFinished() override
         {
             // Check against the target pose, not the lookahead pose
-            AutoDriveToStep::targetPose = path->getPoseAt(path->getLength() - 1);
+            targetPose = path->getPoseAt(path->getLength() - 1);
 
             return AutoDriveToStep::checkFinished();
         }
 
-        static constexpr double DELTA_T = 0.01;       // indices
-        static constexpr double LOOKAHEAD_DIST = 8.0; // inches
+        static constexpr float DELTA_T = 0.01; // indices
+        static constexpr float LOOKAHEAD_DIST = 8.0; // inches
 
-        OdomSource &odomSource;
-        Path *path;
+        OdomSource& odomSource;
+        Path* path;
     };
 }

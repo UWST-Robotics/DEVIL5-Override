@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 namespace devils
 {
@@ -11,7 +12,8 @@ namespace devils
         NONE_ALLIANCE = 2
     };
 
-    struct Routine{
+    struct Routine
+    {
         uint8_t id;
         std::string displayName;
         bool requiresAllianceColor = false;
@@ -22,7 +24,4 @@ namespace devils
         AllianceColor allianceColor = NONE_ALLIANCE;
         Routine routine = {0, "None", false};
     };
-
-    
-
 }

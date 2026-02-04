@@ -9,25 +9,24 @@ namespace devils
     class BlazeSkillsAuto
     {
     public:
-        static void run(ChassisBase &chassis,
-                        OdomSource &odometry,
-                        IntakeSystem &intake)
+        static void run(ChassisBase& chassis,
+                        OdomSource& odometry,
+                        IntakeSystem& intake)
         {
             // PID Params
-            PIDController::Options rotatePID = {0.7, 0.0, 50.0};
+            const PIDController::Options rotatePID = {0.7, 0.0, 50.0};
 
             // Default Options
             AutoRotateToStep::Options::defaultOptions = {
                 rotatePID,
                 0.15, // minSpeed
-                0.4,  // maxSpeed
-                0.1,  // goalDist
+                0.4, // maxSpeed
+                0.1, // goalDist
             };
-            TrajectoryConstraints slowConstraints = {12, 48};
-            TrajectoryConstraints fastConstraints = {64, 92};
+            const TrajectoryConstraints slowConstraints = {12, 48};
 
             // Initialize
-            AutoBuilder blazeRoutine = AutoBuilder(chassis, odometry);
+            auto blazeRoutine = AutoBuilder(chassis, odometry);
             blazeRoutine.setPose(-48, 19, 270);
             intake.setHoodAutomatic(true);
             intake.setIntakeMode(IntakeMode::Cycler);
@@ -91,16 +90,16 @@ namespace devils
 
     private:
         static void pauseForIntake(
-            std::shared_ptr<AutoIntakeStep> &intake,
+            std::shared_ptr<AutoIntakeStep>& intake,
             uint32_t duration = 500)
         {
             std::make_shared<AutoPauseStep>(duration)->startSync();
         }
 
         static void pauseForOuttake(
-            std::shared_ptr<AutoIntakeStep> &intake,
-            uint32_t outtakeDuration = 5000,
-            float outtakeSpeed = 0.8f)
+            const std::shared_ptr<AutoIntakeStep>& intake,
+            const int32_t outtakeDuration = 5000,
+            const float outtakeSpeed = 0.8f)
         {
             intake->setTargetSpeed(outtakeSpeed);
             std::make_shared<AutoPauseStep>(outtakeDuration)->startSync();

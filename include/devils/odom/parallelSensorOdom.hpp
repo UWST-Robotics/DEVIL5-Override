@@ -2,9 +2,6 @@
 
 #include "differentialWheelOdom.hpp"
 #include "../utils/asyncTask.hpp"
-#include "poseVelocityCalculator.hpp"
-
-#define M_PI 3.14159265358979323846
 
 namespace devils
 {
@@ -22,34 +19,35 @@ namespace devils
          * @param wheelRadius The radius of the wheels in inches.
          * @param wheelBase The distance between the wheels in inches.
          */
-        ParallelSensorOdometry(RotationSensor &leftSensor,
-                               RotationSensor &rightSensor,
-                               const double wheelRadius,
-                               const double wheelBase)
-            : leftSensor(leftSensor),
-              rightSensor(rightSensor),
-              DifferentialWheelOdom(wheelRadius, wheelBase)
+        ParallelSensorOdometry(RotationSensor& leftSensor,
+                               RotationSensor& rightSensor,
+                               const float wheelRadius,
+                               const float wheelBase)
+            : DifferentialWheelOdom(wheelRadius, wheelBase),
+              leftSensor(leftSensor),
+              rightSensor(rightSensor)
         {
         }
 
         void onUpdate() override
         {
-            double leftPosition = (leftSensor.getAngle() / (2 * M_PI)) / ticksPerRevolution;
-            double rightPosition = (rightSensor.getAngle() / (2 * M_PI)) / ticksPerRevolution;
-            DifferentialWheelOdom::update(leftPosition, rightPosition);
+            const float leftPosition = leftSensor.getAngle() / (2 * M_PIF) / ticksPerRevolution;
+            const float rightPosition = rightSensor.getAngle() / (2 * M_PIF) / ticksPerRevolution;
+            update(leftPosition, rightPosition);
         }
 
         /**
          * Sets the number of encoder ticks per full revolution of the wheels.
+         * @param newTicksPerRevolution The new ticks per revolution.
          */
-        void setTicksPerRevolution(double ticksPerRevolution)
+        void setTicksPerRevolution(const float newTicksPerRevolution)
         {
-            this->ticksPerRevolution = ticksPerRevolution;
+            this->ticksPerRevolution = newTicksPerRevolution;
         }
 
     private:
-        double ticksPerRevolution = 300.0 * (48.0 / 36.0); // ticks
-        RotationSensor &leftSensor;
-        RotationSensor &rightSensor;
+        float ticksPerRevolution = 300.0 * (48.0 / 36.0); // ticks
+        RotationSensor& leftSensor;
+        RotationSensor& rightSensor;
     };
 }

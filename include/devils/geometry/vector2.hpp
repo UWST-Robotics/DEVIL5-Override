@@ -10,45 +10,42 @@ namespace devils
     struct Vector2
     {
         /// @brief The x position.
-        double x = 0;
+        float x = 0;
         /// @brief The y position.
-        double y = 0;
+        float y = 0;
 
         /**
          * Constructs a 3D vector with all values set to 0
          */
-        Vector2() : x(0), y(0) {}
+        Vector2() = default;
 
         /**
          * Constructs a vector with the given x, and y
          * @param x The x position
          * @param y The y position
          */
-        Vector2(double x, double y) : x(x), y(y) {}
+        Vector2(const float x, const float y) : x(x), y(y)
+        {
+        }
 
         /**
          * Copy constructor
          * @param other The other vector
          */
-        Vector2(const Vector2 &other) : x(other.x), y(other.y) {}
+        Vector2(const Vector2& other) = default;
 
         /**
          * Constructs a vector by copying another vector
          * @param other The other vector
          */
-        Vector2 operator=(const Vector2 &other)
-        {
-            x = other.x;
-            y = other.y;
-            return *this;
-        }
+        Vector2& operator=(const Vector2& other) = default;
 
         /**
          * Adds two vectors together
          * @param other The other vector
          * @return The sum of the two vectors
          */
-        Vector2 operator+(const Vector2 &other)
+        Vector2 operator+(const Vector2& other) const
         {
             return {x + other.x, y + other.y};
         }
@@ -58,7 +55,7 @@ namespace devils
          * @param other The other vector
          * @return The difference of the two vectors
          */
-        Vector2 operator-(const Vector2 &other)
+        Vector2 operator-(const Vector2& other) const
         {
             return {x - other.x, y - other.y};
         }
@@ -68,7 +65,7 @@ namespace devils
          * @param scalar The scalar to multiply by
          * @return The vector multiplied by the scalar
          */
-        Vector2 operator*(const double &scalar)
+        Vector2 operator*(const float& scalar) const
         {
             return {x * scalar, y * scalar};
         }
@@ -78,7 +75,7 @@ namespace devils
          * @param other The other vector
          * @return True if the vectors are equal, false otherwise
          */
-        bool operator==(const Vector2 &other)
+        bool operator==(const Vector2& other) const
         {
             return x == other.x && y == other.y;
         }
@@ -88,7 +85,7 @@ namespace devils
          * @param other The other vector
          * @return True if the vectors are not equal, false otherwise
          */
-        bool operator!=(const Vector2 &other)
+        bool operator!=(const Vector2& other) const
         {
             return !(*this == other);
         }
@@ -98,7 +95,7 @@ namespace devils
          * @param other The other vector
          * @return The dot product of the two vectors
          */
-        double dot(const Vector2 &other) const
+        float dot(const Vector2& other) const
         {
             return x * other.x + y * other.y;
         }
@@ -108,18 +105,25 @@ namespace devils
          * @param other The other vector
          * @return The distance between the two vectors
          */
-        double distanceTo(const Vector2 &other) const
+        float distanceTo(const Vector2& other) const
         {
-            return std::sqrt(std::pow(other.x - x, 2) + std::pow(other.y - y, 2));
+            const float deltaX = x - other.x;
+            const float deltaY = y - other.y;
+
+            return std::sqrtf(
+                deltaX * deltaX +
+                deltaY * deltaY);
         }
 
         /**
          * Calculates the magnitude of the vector
          * @return The magnitude of the vector
          */
-        double magnitude() const
+        float magnitude() const
         {
-            return std::sqrt(std::pow(x, 2) + std::pow(y, 2));
+            return std::sqrtf(
+                x * x +
+                y * y);
         }
 
         /**
@@ -128,7 +132,7 @@ namespace devils
          */
         Vector2 normalize() const
         {
-            double mag = magnitude();
+            const float mag = magnitude();
             return {x / mag, y / mag};
         }
 

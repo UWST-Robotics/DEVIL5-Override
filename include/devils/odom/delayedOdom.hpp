@@ -4,7 +4,6 @@
 #include "../utils/asyncTask.hpp"
 #include "pros/rtos.hpp"
 #include <queue>
-#include <algorithm>
 
 namespace devils
 {
@@ -21,11 +20,11 @@ namespace devils
          * @param delay The delay in milliseconds
          */
         DelayedOdom(
-            OdomSource &baseOdom,
-            double delay)
-            : baseOdom(baseOdom),
-              maxQueueSize(delay / INTERVAL_DELAY),
-              AsyncTask()
+            OdomSource& baseOdom,
+            const float delay)
+            : AsyncTask(),
+              baseOdom(baseOdom),
+              maxQueueSize(static_cast<size_t>(delay / INTERVAL_DELAY))
         {
             // Ensure the queue size is at least 1
             if (maxQueueSize < 1)
@@ -56,7 +55,7 @@ namespace devils
             return velocityQueue.front();
         }
 
-        void setPose(Pose pose) override
+        void setPose(const Pose pose) override
         {
             baseOdom.setPose(pose);
         }
@@ -65,8 +64,8 @@ namespace devils
         void onUpdate() override
         {
             // Get the current pose from the base odometry source
-            auto pose = baseOdom.getPose();
-            auto velocity = baseOdom.getVelocity();
+            const auto pose = baseOdom.getPose();
+            const auto velocity = baseOdom.getVelocity();
 
             // Push the pose to the queue
             poseQueue.push(pose);
@@ -90,7 +89,7 @@ namespace devils
         std::queue<Pose> poseQueue;
         std::queue<PoseVelocity> velocityQueue;
 
-        OdomSource &baseOdom;
+        OdomSource& baseOdom;
         size_t maxQueueSize;
     };
 }

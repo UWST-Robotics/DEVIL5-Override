@@ -3,7 +3,7 @@
 #include "../utils/asyncTask.hpp"
 #include "../odom/odomSource.hpp"
 #include "../hardware/rotationSensor.hpp"
-#include "../hardware/structs/gyro.h"
+#include "../hardware/gyroBase.h"
 #include "poseVelocityCalculator.hpp"
 
 namespace devils
@@ -12,7 +12,10 @@ namespace devils
      * Represents an odometry system using a set of perpendicular rotation sensors.
      * If the sensors are parallel, use `ParallelSensorOdometry` instead.
      */
-    class PerpendicularSensorOdometry : public OdomSource, public AsyncTask, public PoseVelocityCalculator
+    class PerpendicularSensorOdometry :
+        public OdomSource,
+        public AsyncTask,
+        public PoseVelocityCalculator
     {
     public:
         /**
@@ -22,12 +25,12 @@ namespace devils
          * @param wheelRadius The radius of the wheels in inches.
          */
         PerpendicularSensorOdometry(
-            RotationSensor &verticalSensor,
-            RotationSensor &horizontalSensor,
-            const double wheelRadius)
-            : verticalSensor(verticalSensor),
-              horizontalSensor(horizontalSensor),
-              wheelRadius(wheelRadius)
+            RotationSensor& verticalSensor,
+            RotationSensor& horizontalSensor,
+            const float wheelRadius)
+            : wheelRadius(wheelRadius),
+              verticalSensor(verticalSensor),
+              horizontalSensor(horizontalSensor)
         {
             lastUpdateTimestamp = pros::millis();
         }
@@ -44,7 +47,7 @@ namespace devils
          * Sets the current pose of the robot.
          * @param pose The pose to set the robot to.
          */
-        void setPose(Pose pose) override
+        void setPose(const Pose pose) override
         {
             currentPose = pose;
             lastRotation = pose.rotation;
@@ -55,24 +58,24 @@ namespace devils
 
         /**
          * Sets the IMU to use for odometry.
-         * @param imu The IMU to use for odometry.
+         * @param newIMU The new IMU to use for odometry.
          */
-        void useIMU(IGyro *imu)
+        void useIMU(IGyro* newIMU)
         {
-            this->imu = imu;
+            this->imu = newIMU;
         }
 
         /**
          * Sets the sensor offsets for the odometry system.
          * Accounts for the difference in sensor placement on the robot.
-         * @param verticalSensorOffset The offset for the vertical sensor relative to the robot's center of rotation.
-         * @param horizontalSensorOffset The offset for the horizontal sensor relative to the robot's center of rotation.
+         * @param newVerticalSensorOffset The offset for the vertical sensor relative to the robot's center of rotation.
+         * @param newHorizontalSensorOffset The offset for the horizontal sensor relative to the robot's center of rotation.
          */
-        void setSensorOffsets(Vector2 &verticalSensorOffset,
-                              Vector2 &horizontalSensorOffset)
+        void setSensorOffsets(Vector2& newVerticalSensorOffset,
+                              Vector2& newHorizontalSensorOffset)
         {
-            this->verticalSensorOffset = &verticalSensorOffset;
-            this->horizontalSensorOffset = &horizontalSensorOffset;
+            this->verticalSensorOffset = &newVerticalSensorOffset;
+            this->horizontalSensorOffset = &newHorizontalSensorOffset;
         }
 
         PoseVelocity getVelocity() override
@@ -87,28 +90,27 @@ namespace devils
         void onUpdate() override
         {
             // Get Sensor Angles in Degrees
-            double verticalAngle = verticalSensor.getAngle();
-            bool isVerticalSensorError = (errno != 0);
+            const float verticalAngle = verticalSensor.getAngle();
+            const bool isVerticalSensorError = errno != 0;
 
-            double horizontalAngle = horizontalSensor.getAngle();
-            bool isHorizontalSensorError = (errno != 0);
+            const float horizontalAngle = horizontalSensor.getAngle();
+            const bool isHorizontalSensorError = errno != 0;
 
             // Get Delta Time
-            uint32_t deltaT = lastUpdateTimestamp - pros::millis();
             lastUpdateTimestamp = pros::millis();
 
             // Calculate arc length
-            // Arc Length = r * theta
-            double vertical = verticalAngle * wheelRadius;
-            double horizontal = horizontalAngle * wheelRadius;
+            // r * theta
+            const float vertical = verticalAngle * wheelRadius;
+            const float horizontal = horizontalAngle * wheelRadius;
 
             // Update IMU
             // Also calculate the change in rotation
-            double deltaRotation = 0;
+            float deltaRotation = 0;
             if (imu != nullptr)
             {
-                double heading = imu->getHeading();
-                if (errno == 0)
+                const auto heading = imu->getHeading();
+                if (heading.isSuccess())
                 {
                     deltaRotation = heading - lastRotation;
                     lastRotation = heading;
@@ -117,8 +119,8 @@ namespace devils
             }
 
             // Get Delta Distance
-            double deltaVertical = vertical - lastVertical;
-            double deltaHorizontal = horizontal - lastHorizontal;
+            float deltaVertical = vertical - lastVertical;
+            float deltaHorizontal = horizontal - lastHorizontal;
 
             // Check for sensor errors
             if (!isVerticalSensorError)
@@ -132,13 +134,13 @@ namespace devils
             {
                 // Calculate radius of rotation for each sensor
                 // We only care about the x and y components since the sensors are perpendicular to the other axis
-                double verticalOffsetRadius = verticalSensorOffset->x;
-                double horizontalOffsetRadius = horizontalSensorOffset->y;
+                const float verticalOffsetRadius = verticalSensorOffset->x;
+                const float horizontalOffsetRadius = horizontalSensorOffset->y;
 
                 // Calculate Arc Length
                 // Arc Length = r * theta
-                double verticalArcLength = verticalOffsetRadius * deltaRotation;
-                double horizontalArcLength = horizontalOffsetRadius * deltaRotation;
+                const float verticalArcLength = verticalOffsetRadius * deltaRotation;
+                const float horizontalArcLength = horizontalOffsetRadius * deltaRotation;
 
                 // Subtract Arc Length
                 deltaVertical -= verticalArcLength;
@@ -152,36 +154,36 @@ namespace devils
                 deltaHorizontal = 0;
 
             // Calculate trigonometric values
-            double rotation = currentPose.rotation;
-            double sin = std::sin(rotation);
-            double cos = std::cos(rotation);
+            const float rotation = currentPose.rotation;
+            const float sin = std::sin(rotation);
+            const float cos = std::cos(rotation);
 
-            double deltaX = deltaVertical * cos + deltaHorizontal * sin;
-            double deltaY = deltaVertical * sin - deltaHorizontal * cos;
+            const float deltaX = deltaVertical * cos + deltaHorizontal * sin;
+            const float deltaY = deltaVertical * sin - deltaHorizontal * cos;
 
             // Update Pose
             currentPose.x += deltaX;
             currentPose.y += deltaY;
 
             // Update Velocity
-            PoseVelocityCalculator::updateVelocity(currentPose);
+            updateVelocity(currentPose);
         }
 
     private:
-        const double wheelRadius;
-        RotationSensor &verticalSensor;
-        RotationSensor &horizontalSensor;
+        const float wheelRadius;
+        RotationSensor& verticalSensor;
+        RotationSensor& horizontalSensor;
 
-        IGyro *imu = nullptr;
+        IGyro* imu = nullptr;
 
         Pose currentPose = Pose();
         uint32_t lastUpdateTimestamp = 0;
 
-        double lastVertical = 0;
-        double lastHorizontal = 0;
-        double lastRotation = 0;
+        float lastVertical = 0;
+        float lastHorizontal = 0;
+        float lastRotation = 0;
 
-        Vector2 *verticalSensorOffset = nullptr;
-        Vector2 *horizontalSensorOffset = nullptr;
+        Vector2* verticalSensorOffset = nullptr;
+        Vector2* horizontalSensorOffset = nullptr;
     };
 }

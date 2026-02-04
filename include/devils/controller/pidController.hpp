@@ -1,27 +1,26 @@
 #pragma once
 
 #include "pros/rtos.hpp"
-#include "devils/controller/controllerBase.h"
 
 namespace devils
 {
     /**
      * Represents a feedback controller that uses a PID algorithm.
      */
-    class PIDController : public ControllerBase
+    class PIDController
     {
     public:
         /// @brief The options for the PID controller.
         struct Options
         {
             /// @brief Proportional gain (p * error)
-            double pGain = 0.0;
+            float pGain = 0.0;
 
             /// @brief Integral gain (i * integral)
-            double iGain = 0.0;
+            float iGain = 0.0;
 
             /// @brief Derivative gain (d * derivative)
-            double dGain = 0.0;
+            float dGain = 0.0;
         };
 
         /**
@@ -31,9 +30,9 @@ namespace devils
          * @param dGain The derivative gain of the controller (d * derivative)
          */
         PIDController(
-            double pGain,
-            double iGain,
-            double dGain)
+            float pGain,
+            float iGain,
+            float dGain)
             : pGain(pGain),
               iGain(iGain),
               dGain(dGain)
@@ -44,7 +43,7 @@ namespace devils
          * Creates a new PID controller with the given options.
          * @param options The options for the PID controller.
          */
-        PIDController(Options options)
+        PIDController(const Options& options)
             : pGain(options.pGain),
               iGain(options.iGain),
               dGain(options.dGain)
@@ -68,25 +67,25 @@ namespace devils
         /**
          * Updates the PID controller with a new error value.
          * Should be called every control loop iteration.
-         * @param currentError The current error value.
+         * @param error The current error value.
          * @return The current output value of the PID controller.
          */
-        double update(double currentError) override
+        float update(const float error)
         {
             // Get Delta Time
-            double dt = pros::millis() - lastUpdateTimestamp;
+            const auto dt = static_cast<float>(pros::millis() - lastUpdateTimestamp);
             lastUpdateTimestamp = pros::millis();
 
             // Update Error
-            this->currentError = currentError;
+            this->currentError = error;
 
             // Update Integral
-            currentIntegral += currentError * dt;
+            currentIntegral += error * dt;
 
             // Update Derivative
             if (dt > 0)
-                currentDerivative = (currentError - lastError) / dt;
-            lastError = currentError;
+                currentDerivative = (error - lastError) / dt;
+            lastError = error;
 
             // Return Value
             return getValue();
@@ -96,29 +95,28 @@ namespace devils
          * Gets the last output value of the PID controller without updating it.
          * @return The last output value of the PID controller.
          */
-        double getValue()
+        float getValue() const
         {
-            double p = pGain * currentError;
-            double i = iGain * currentIntegral;
-            double d = dGain * currentDerivative;
+            const float p = pGain * currentError;
+            const float i = iGain * currentIntegral;
+            const float d = dGain * currentDerivative;
 
             return p + i + d;
         }
 
     private:
         // Feedback
-        double currentError = 0;
-        double currentIntegral = 0;
-        double currentDerivative = 0;
+        float currentError = 0;
+        float currentIntegral = 0;
+        float currentDerivative = 0;
 
         // Last Values
-        double lastError = 0;
-        double lastUpdateTimestamp = 0;
+        float lastError = 0;
+        uint32_t lastUpdateTimestamp = 0;
 
         // PID Variables
-        double pGain;
-        double iGain;
-        double dGain;
+        float pGain;
+        float iGain;
+        float dGain;
     };
-
 }

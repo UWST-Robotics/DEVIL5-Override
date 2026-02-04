@@ -3,12 +3,10 @@
 #include "../devils.h"
 #include "subsystems/intakeSystem.hpp"
 #include "./autonomous/blazeSkillsAuto.hpp"
-#include "pros/adi.hpp"
-#include "../../vexbridge/vexBridge.h"
 
 namespace devils
 {
-    struct BlazeRobot : public Robot
+    struct BlazeRobot : Robot
     {
         BlazeRobot()
         {
@@ -19,7 +17,7 @@ namespace devils
             odometry->start();
         }
 
-        virtual void autonomous() override
+        void autonomous() override
         {
             imu.waitUntilCalibrated();
             BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
@@ -36,29 +34,20 @@ namespace devils
             while (true)
             {
                 // Take Controller Inputs
-                double leftY = mainController.get_analog(ANALOG_LEFT_Y) / 127.0;
-                double leftX = mainController.get_analog(ANALOG_LEFT_X) / 127.0;
-                double rightX = mainController.get_analog(ANALOG_RIGHT_X) / 127.0;
-                double rightY = mainController.get_analog(ANALOG_RIGHT_Y) / 127.0;
+                const float leftY = mainController.leftY;
+                const float leftX = mainController.leftX;
+                const float rightY = mainController.rightY;
+                const float rightX = mainController.rightX * 0.5f;
 
-                bool exitCyclerButton = mainController.get_digital(DIGITAL_R1);    // high goal from basket
-                bool midOuttakeButton = mainController.get_digital(DIGITAL_L2);    // mid goal from ground
-                bool intakeExtendButton = mainController.get_digital(DIGITAL_Y);   // intake extend/retract
-                bool hoodExtendButton = mainController.get_digital(DIGITAL_L1);    // hood extend/retract
-                bool exitCyclerMidButton = mainController.get_digital(DIGITAL_R2); // mid goal from cycler
-                bool rakePneumaticsButton = mainController.get_digital(DIGITAL_B); // toggle rake pneumatics
-
-                // Curve Joystick Inputs
-                leftY = JoystickCurve::curve(leftY, 3.0, 0.1, 0.15);
-                leftX = JoystickCurve::curve(leftX, 3.0, 0.05, 0.2);
-                rightX = JoystickCurve::curve(rightX, 3.0, 0.1, 0.2);
-                rightY = JoystickCurve::curve(rightY, 3.0, 0.1, 0.15);
-
-                // Decrease turning speed for improved control
-                rightX *= 0.5;
+                const bool exitCyclerButton = mainController.r1; // high goal from basket
+                const bool midOuttakeButton = mainController.r2; // mid goal from ground
+                const bool intakeExtendButton = mainController.y; // intake extend/retract
+                const bool hoodExtendButton = mainController.l1; // hood extend/retract
+                const bool exitCyclerMidButton = mainController.l2; // mid goal from cycler
+                const bool rakePneumaticsButton = mainController.b; // toggle rake pneumatics
 
                 // Combine Left and Right X Joystick Inputs
-                double combinedX = JoystickCurve::combine(leftX, rightX);
+                float combinedX = JoystickCurve::combine(leftX, rightX);
 
                 // Run Cyclers
                 if (exitCyclerButton)
@@ -97,7 +86,7 @@ namespace devils
 
         // Constants
         // (Copied from PJRobot)
-        static constexpr double DEAD_WHEEL_RADIUS = 1;
+        static constexpr float DEAD_WHEEL_RADIUS = 1;
         Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-0.5, 0);
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.4);
 
@@ -139,11 +128,11 @@ namespace devils
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
 
-        RobotAutoOptions autoOptions = RobotAutoOptions();
-        std::vector<Routine> routines = {
-            {0, "Default", false},
-        };
-        // Renderer
-        OptionsRenderer optionsRenderer = OptionsRenderer("Blaze", routines, &autoOptions);
+        // RobotAutoOptions autoOptions = RobotAutoOptions();
+        // std::vector<Routine> routines = {
+        //     {0, "Default", false},
+        // };
+        // // Renderer
+        // OptionsRenderer optionsRenderer = OptionsRenderer("Blaze", routines, &autoOptions);
     };
 }

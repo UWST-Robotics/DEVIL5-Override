@@ -1,11 +1,8 @@
 #pragma once
-#include "pros/misc.hpp"
-#include "pros/llemu.hpp"
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <map>
+#include <format>
 
 namespace devils
 {
@@ -29,7 +26,9 @@ namespace devils
          * @param message The message to log.
          * @param level The log level.
          */
-        static void log(std::string message, LogLevel level)
+        static void log(
+            const std::string& message,
+            const LogLevel level)
         {
             // ANSI escape codes (prefix colors)
             if (level == LogLevel::INFO)
@@ -42,10 +41,10 @@ namespace devils
                 std::cout << "\033[1;90m";
 
             // Timestamp
-            auto time = pros::millis();
-            auto milliseconds = time % 1000;
-            auto seconds = time / 1000;
-            auto minutes = seconds / 60;
+            const auto time = pros::millis();
+            const auto milliseconds = time % 1000;
+            const auto seconds = time / 1000;
+            const auto minutes = seconds / 60;
             std::cout << std::format("{:02}:{:02}.{:03}", minutes, seconds % 60, milliseconds) << " |";
 
             // Log level

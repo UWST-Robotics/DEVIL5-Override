@@ -1,9 +1,7 @@
 #pragma once
-#include <vector>
-#include <iostream>
+
 #include "chassisBase.hpp"
 #include "../hardware/smartMotorGroup.hpp"
-#include "../utils/logger.hpp"
 
 namespace devils
 {
@@ -15,13 +13,12 @@ namespace devils
     public:
         /**
          * Creates a new tank chassis.
-         * @param name The name of the chassis (for logging purposes)
-         * @param leftMotorPorts The ports of the left motors. Negative ports are reversed.
-         * @param rightMotorPorts The ports of the right motors. Negative ports are reversed.
+         * @param leftMotors The motor group for the left side of the chassis.
+         * @param rightMotors The motor group for the right side of the chassis.
          */
         TankChassis(
-            SmartMotorGroup &leftMotors,
-            SmartMotorGroup &rightMotors)
+            SmartMotorGroup& leftMotors,
+            SmartMotorGroup& rightMotors)
             : leftMotors(leftMotors),
               rightMotors(rightMotors)
         {
@@ -34,35 +31,42 @@ namespace devils
          * Runs the chassis in voltage mode.
          * @param forward The forward speed of the robot from -1 to 1.
          * @param turn The turn speed of the robot from -1 to 1.
+         * @param strafe The strafe speed of the robot from -1 to 1. (Ignored for tank chassis)
          */
-        void move(double forward, double turn, double strafe = 0) override
+        void move(
+            const float forward,
+            const float turn,
+            const float strafe) override
         {
-            double fixedForward = std::clamp(forward, -1.0, 1.0);
-            double fixedTurn = std::clamp(turn, -1.0, 1.0);
-            double fixedStrafe = std::clamp(strafe, -1.0, 1.0);
-
             moveTank(forward + turn, forward - turn);
         }
 
         /**
-         * Runs the chassis in voltage mode with individual control of the left and right sides.
-         * @param left The speed to run the left side of the chassis from -1 to 1.
-         * @param right The speed to run the right side of the chassis from -1 to 1.
+         * Runs the chassis in voltage mode.
+         * @param forward The forward speed of the robot from -1 to 1.
+         * @param turn The turn speed of the robot from -1 to 1.
          */
-        void moveTank(double left, double right)
+        void move(const float forward, const float turn)
         {
-            double fixedLeft = std::clamp(left, -1.0, 1.0);
-            double fixedRight = std::clamp(right, -1.0, 1.0);
+            move(forward, turn, 0.0f);
+        }
 
-            leftMotors.moveVoltage(fixedLeft);
-            rightMotors.moveVoltage(fixedRight);
+        /**
+         * Runs the chassis in voltage mode with individual control of the left and right sides.
+         * @param leftSpeed The speed to run the left side of the chassis from -1 to 1.
+         * @param rightSpeed The speed to run the right side of the chassis from -1 to 1.
+         */
+        void moveTank(const float leftSpeed, const float rightSpeed) const
+        {
+            leftMotors.move(leftSpeed);
+            rightMotors.move(rightSpeed);
         }
 
         /**
          * Gets the left motor group.
          * @return The left motor group.
          */
-        SmartMotorGroup &getLeftMotors()
+        SmartMotorGroup& getLeftMotors() const
         {
             return leftMotors;
         }
@@ -71,7 +75,7 @@ namespace devils
          * Gets the right motor group.
          * @return The right motor group.
          */
-        SmartMotorGroup &getRightMotors()
+        SmartMotorGroup& getRightMotors() const
         {
             return rightMotors;
         }
@@ -86,7 +90,7 @@ namespace devils
         }
 
     private:
-        SmartMotorGroup &leftMotors;
-        SmartMotorGroup &rightMotors;
+        SmartMotorGroup& leftMotors;
+        SmartMotorGroup& rightMotors;
     };
 }

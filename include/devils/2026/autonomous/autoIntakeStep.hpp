@@ -1,12 +1,15 @@
 #pragma once
-#include "../subsystems/IntakeSystem.hpp"
+
+#include "../subsystems/intakeSystem.hpp"
 
 namespace devils
 {
     class AutoIntakeStep : public AutoStep
     {
     public:
-        AutoIntakeStep(IntakeSystem &intake, float targetSpeed = 1.0)
+        AutoIntakeStep(
+            IntakeSystem& intake,
+            const float targetSpeed = 1.0)
             : intake(intake),
               targetSpeed(targetSpeed)
         {
@@ -21,13 +24,13 @@ namespace devils
          * Sets the target speed of the intake.
          * @param speed The target speed of the intake.
          */
-        void setTargetSpeed(double speed)
+        void setTargetSpeed(const float speed)
         {
             targetSpeed = speed;
         }
 
     private:
-        IntakeSystem &intake;
-        double targetSpeed = 1.0;
+        IntakeSystem& intake;
+        float targetSpeed = 1.0;
     };
 }

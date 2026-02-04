@@ -1,5 +1,4 @@
 #pragma once
-#include <algorithm>
 
 namespace devils
 {
@@ -8,13 +7,15 @@ namespace devils
      */
     struct ChassisBase
     {
+        virtual ~ChassisBase() = default;
+
         /**
          * Moves the robot in a direction using voltage.
          * @param forward The forward speed of the robot from -1 to 1.
          * @param turn The turn speed of the robot from -1 to 1.
          * @param strafe The strafe speed of the robot from -1 to 1.
          */
-        virtual void move(double forward, double turn, double strafe = 0) = 0;
+        virtual void move(float forward, float turn, float strafe) = 0;
 
         /**
          * Stops the robot.

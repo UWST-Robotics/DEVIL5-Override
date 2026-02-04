@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pros/misc.hpp"
+#include "../hardware/controller.hpp"
 
 namespace devils
 {
@@ -11,30 +12,40 @@ namespace devils
      */
     struct Robot
     {
-        /**
-         * Ran when the FMS is connected.
-         */
-        virtual void competition() {}
+        virtual ~Robot() = default;
 
         /**
-         * Ran when the robot is disabled with the FMS connected.
+         * Ran when field control is connected.
          */
-        virtual void disabled() {}
+        virtual void competition()
+        {
+        }
+
+        /**
+         * Ran when the robot is disabled
+         */
+        virtual void disabled()
+        {
+        }
 
         /**
          * Ran at the start of the Autonomous period.
          */
-        virtual void autonomous() {}
+        virtual void autonomous()
+        {
+        }
 
         /**
          * Ran at the start of the Teleoperated period.
          */
-        virtual void opcontrol() {}
+        virtual void opcontrol()
+        {
+        }
 
         /// @brief The main game controller.
-        pros::Controller mainController = pros::Controller(pros::E_CONTROLLER_MASTER);
+        Controller mainController = Controller("Main Controller", pros::E_CONTROLLER_MASTER);
 
         /// @brief The partner game controller.
-        pros::Controller partnerController = pros::Controller(pros::E_CONTROLLER_PARTNER);
+        Controller partnerController = Controller("Partner Controller", pros::E_CONTROLLER_PARTNER);
     };
 }
