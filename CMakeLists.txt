@@ -21,16 +21,14 @@ file(GLOB_RECURSE SOURCES
 )
 
 # Dummy build target for Intellisense purposes
-if (NOT CMAKE_CROSSCOMPILING)
-    add_executable(dummy_index ${SOURCES})
-    set_target_properties(dummy_index PROPERTIES
-            LINKER_LANGUAGE CXX
-            EXCLUDE_FROM_ALL TRUE
-            CXX_STANDARD 20
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS NO
-    )
-endif ()
+add_executable(dummy_index ${SOURCES})
+set_target_properties(dummy_index PROPERTIES
+        LINKER_LANGUAGE CXX
+        EXCLUDE_FROM_ALL TRUE
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO
+)
 
 # Actual build target that points to PROS's Makefile
 add_custom_target(vex_build ALL

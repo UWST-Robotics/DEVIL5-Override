@@ -3,8 +3,8 @@ set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
 # Compilers
-set(CMAKE_C_COMPILER "C:/Users/kuglera2948/pros-toolchain/usr/bin/arm-none-eabi-gcc.exe")
-set(CMAKE_CXX_COMPILER "C:/Users/kuglera2948/pros-toolchain/usr/bin/arm-none-eabi-g++.exe")
+set(CMAKE_C_COMPILER "$ENV{PROS_TOOLCHAIN}/bin/arm-none-eabi-gcc.exe")
+set(CMAKE_CXX_COMPILER "$ENV{PROS_TOOLCHAIN}/bin/arm-none-eabi-g++.exe")
 
 # Disable trying to compile test programs for the host
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)

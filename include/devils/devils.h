@@ -10,6 +10,10 @@
 // Chassis
 #include "chassis/chassisBase.hpp"
 #include "chassis/tankChassis.hpp"
+#include "chassis/mecanumChassis.hpp"
+#include "chassis/hDriveChassis.hpp"
+#include "chassis/xDriveChassis.hpp"
+#include "chassis/swerveChassis.hpp"
 #include "chassis/dummyChassis.hpp"
 
 // Hardware
@@ -18,6 +22,7 @@
 #include "hardware/legacyVisionSensor.hpp"
 #include "hardware/adiPneumatic.hpp"
 #include "hardware/adiDigitalInput.hpp"
+#include "hardware/adiAnalogInput.hpp"
 #include "hardware/adiPneumaticGroup.hpp"
 #include "controller/chainLoop.hpp"
 
@@ -54,6 +59,7 @@
 #include "controller/armFeedforward.hpp"
 #include "controller/elevatorFeedforward.hpp"
 #include "controller/motorFeedforward.hpp"
+#include "controller/trapezoidMotionProfile.hpp"
 
 // AutoSteps
 #include "autoSteps/autoBuilder.hpp"

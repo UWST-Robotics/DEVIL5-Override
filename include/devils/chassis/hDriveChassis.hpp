@@ -6,25 +6,30 @@
 namespace devils
 {
     /**
-     * Represents a chassis driven by the differential of two sets of wheels.
+     * Represents a chassis driven by the differential of two sets of wheels along with a horizontal set of wheels for strafing.
+     * This chassis is holonomic, allowing for omnidirectional movement and strafing.
      */
-    class TankChassis : public ChassisBase
+    class HDriveChassis : public ChassisBase
     {
     public:
         /**
          * Creates a new tank chassis.
          * @param leftMotors The motor group for the left side of the chassis.
          * @param rightMotors The motor group for the right side of the chassis.
+         * @param horizontalMotors The motor group for the horizontal wheels of the chassis.
          */
-        TankChassis(
+        HDriveChassis(
             SmartMotorGroup& leftMotors,
-            SmartMotorGroup& rightMotors)
+            SmartMotorGroup& rightMotors,
+            SmartMotorGroup& horizontalMotors)
             : leftMotors(leftMotors),
-              rightMotors(rightMotors)
+              rightMotors(rightMotors),
+              horizontalMotors(horizontalMotors)
         {
             // Disable brake mode by default to prevent overheating
             leftMotors.setBrakeMode(false);
             rightMotors.setBrakeMode(false);
+            horizontalMotors.setBrakeMode(false);
         }
 
         /**
@@ -38,18 +43,26 @@ namespace devils
             const float turn,
             const float strafe) override
         {
-            moveTank(forward + turn, forward - turn);
+            moveTank(
+                forward + turn,
+                forward - turn,
+                strafe);
         }
 
         /**
          * Runs the chassis in voltage mode with individual control of the left and right sides.
          * @param leftSpeed The speed to run the left side of the chassis from -1 to 1.
          * @param rightSpeed The speed to run the right side of the chassis from -1 to 1.
+         * @param horizontalSpeed The speed to run the horizontal wheels of the chassis from -1 to 1.
          */
-        void moveTank(const float leftSpeed, const float rightSpeed) const
+        void moveTank(
+            const float leftSpeed,
+            const float rightSpeed,
+            const float horizontalSpeed = 0) const
         {
             leftMotors.move(leftSpeed);
             rightMotors.move(rightSpeed);
+            horizontalMotors.move(horizontalSpeed);
         }
 
         /**
@@ -63,7 +76,7 @@ namespace devils
 
         /**
          * Checks if the chassis is holonomic, meaning it can strafe in any direction.
-         * @return False, since a tank chassis can't strafe.
+         * @return True, since an H-Drive chassis can strafe.
          */
         bool isHolonomic() const override
         {
@@ -73,5 +86,6 @@ namespace devils
     protected:
         SmartMotorGroup& leftMotors;
         SmartMotorGroup& rightMotors;
+        SmartMotorGroup& horizontalMotors;
     };
 }
