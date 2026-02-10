@@ -1,3 +1,6 @@
+# CLion
+.idea/
+
 # Compiled Object files
 *.o
 *.obj
@@ -9,7 +12,6 @@
 # PROS
 bin/
 .vscode/
-.idea/
 .cache/
 compile_commands.json
 temp.log
