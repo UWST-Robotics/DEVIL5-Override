@@ -69,6 +69,24 @@ namespace devils
         {
             return true;
         }
+        
+        /**
+         * Gets the motor group for the left side of the chassis.
+         * @return The motor group for the left side of the chassis.
+         */
+        SmartMotorGroup& getLeftMotors() const
+        {
+            return leftMotors;
+        }
+        
+        /**
+         * Gets the motor group for the right side of the chassis.
+         * @return The motor group for the right side of the chassis.
+         */
+        SmartMotorGroup& getRightMotors() const
+        {
+            return rightMotors;
+        }
 
     protected:
         SmartMotorGroup& leftMotors;

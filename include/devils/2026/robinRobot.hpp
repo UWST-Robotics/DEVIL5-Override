@@ -61,7 +61,7 @@ namespace devils
                 const float combinedX = JoystickCurve::combine(leftX, rightX);
 
                 // Drive normally
-                chassis.move(leftY, combinedX * 0.5f);
+                chassis.move(leftY, combinedX * 0.5f, 0);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);

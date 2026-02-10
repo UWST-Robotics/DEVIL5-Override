@@ -10,21 +10,24 @@ namespace devils
      * Represents a non-V5 pneumatic valve controlled by ADI ports.
      * See https://github.com/msoe-vex/pcb-design/tree/main/VEX%20Solenoid%20Driver%20V2%20Complete
      */
-    class ADIPneumatic : HardwareBase
+    class ADIPneumatic : ADIHardwareBase
     {
     public:
         /**
          * Creates a new pneumatic controlled by an ADI port.
          * @param name The name of the pneumatic (for logging purposes)
-         * @param port The ADI port of the motor controller (from 1 to 8)
+         * @param port The ADI port (from 'A' to 'H').
+         * @param isInverted True if the pneumatic should be inverted, false otherwise.
          */
         ADIPneumatic(
             const std::string& name,
-            const int8_t port)
-            : HardwareBase(name, "ADIPneumatic", port),
-              controller(abs(port)),
-              isInverted(port < 0)
+            const char port,
+            const bool isInverted = false)
+            : ADIHardwareBase(name, "ADIPneumatic", port),
+              isInverted(isInverted)
         {
+            // ADI Ports need to be configured before they can be used
+            executeWithErrorCheck<int32_t>(pros::c::adi_port_set_config, port, pros::E_ADI_DIGITAL_OUT);
         }
 
         /**
@@ -38,10 +41,8 @@ namespace devils
                 extended = !extended;
             this->isExtended = extended;
 
-            // Set the value and check for errors
-            const auto status = controller.set_value(extended);
-            if (status == PROS_ERR)
-                reportError();
+            // Write the value to the ADI port
+            executeWithErrorCheck<int32_t>(pros::c::adi_digital_write, port, extended);
         }
 
         /**
@@ -70,8 +71,6 @@ namespace devils
         }
 
     private:
-        const pros::adi::DigitalOut controller;
-
         bool isExtended = false;
         bool isInverted = false;
     };

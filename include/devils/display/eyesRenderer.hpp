@@ -60,7 +60,7 @@ namespace devils
         void destroy()
         {
             stop();
-            lv_obj_del(fullScreenContainer);
+            lv_obj_delete(fullScreenContainer);
         }
 
     private:
@@ -92,7 +92,7 @@ namespace devils
             lv_obj_set_style_border_width(eyebrow, 0, 0);
             lv_obj_set_style_transform_pivot_x(eyebrow, size / 2, 0);
             lv_obj_set_style_transform_pivot_y(eyebrow, size, 0);
-            lv_obj_set_style_transform_angle(eyebrow, angle, 0);
+            lv_obj_set_style_transform_rotation(eyebrow, angle, 0);
 
             lv_obj_align(eyebrow, LV_ALIGN_CENTER, 0, 0);
             lv_obj_set_pos(eyebrow, x, y);
@@ -111,7 +111,7 @@ namespace devils
         {
             if (obj != nullptr)
             {
-                lv_obj_del(obj);
+                lv_obj_delete(obj);
                 obj = nullptr;
             }
         }

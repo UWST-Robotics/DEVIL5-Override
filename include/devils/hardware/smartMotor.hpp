@@ -5,7 +5,6 @@
 #include <cmath>
 #include <utility>
 #include "pros/motors.hpp"
-#include "pros/error.h"
 #include "motorBase.h"
 #include "hardwareBase.hpp"
 
@@ -15,7 +14,7 @@ namespace devils
      * Represents a single VEX V5 SmartMotor.
      * Use `MotorGroup` to control multiple motors as one.
      */
-    class SmartMotor : public IMotor, protected HardwareBase
+    class SmartMotor : public IMotor, V5HardwareBase
     {
     public:
         /**
@@ -26,8 +25,8 @@ namespace devils
         SmartMotor(
             std::string name,
             const int8_t port)
-            : HardwareBase(std::move(name), "SmartMotor", port),
-              motor(port)
+            : V5HardwareBase(std::move(name), "SmartMotor", abs(port)),
+              isInverted(port < 0)
         {
         }
 
@@ -39,12 +38,14 @@ namespace devils
         void move(const float speed) override
         {
             // Convert -1 to 1 range to -127 to 127 range
-            const auto voltage = std::clamp(static_cast<int>(speed * 127), -127, 127);
+            auto voltage = std::clamp(static_cast<int>(speed * 127), -127, 127);
+
+            // Invert voltage if necessary
+            if (isInverted)
+                voltage = -voltage;
 
             // Pass voltage to motor
-            const auto status = motor.move(voltage);
-            if (status == PROS_ERR)
-                reportError();
+            executeWithErrorCheck<int32_t>(pros::c::motor_move_voltage, port, voltage);
         }
 
         /**
@@ -53,9 +54,7 @@ namespace devils
          */
         void stop() override
         {
-            const auto status = motor.brake();
-            if (status == PROS_ERR)
-                reportError();
+            executeWithErrorCheck<int32_t>(pros::c::motor_brake, port);
         }
 
         /**
@@ -63,11 +62,13 @@ namespace devils
          * @param position The position to set the motor to in encoder ticks.
          * @return HWStatus indicating success or failure.
          */
-        void setPosition(const float position) const
+        void setPosition(const float position)
         {
-            const auto status = motor.set_zero_position(position);
-            if (status == PROS_ERR)
-                reportError();
+            // Convert position to a double
+            const auto positionDouble = static_cast<double>(position);
+            
+            // Pass position to motor
+            executeWithErrorCheck<int32_t>(pros::c::motor_set_zero_position, port, positionDouble);
         }
 
         /**
@@ -79,12 +80,13 @@ namespace devils
          *
          * @param useBrakeMode True to use brake mode, false to coast mode.
          */
-        void setBrakeMode(const bool useBrakeMode) const
+        void setBrakeMode(const bool useBrakeMode)
         {
+            // Convert to PROS status
             const auto prosBrakeMode = useBrakeMode ? pros::E_MOTOR_BRAKE_BRAKE : pros::E_MOTOR_BRAKE_COAST;
-            const auto status = motor.set_brake_mode(prosBrakeMode);;
-            if (status == PROS_ERR)
-                reportError();
+
+            // Pass brake mode to motor
+            executeWithErrorCheck<int32_t>(pros::c::motor_set_brake_mode, port, prosBrakeMode);
         }
 
         /**
@@ -99,21 +101,35 @@ namespace devils
          */
         HWResult<float> getPosition() override
         {
-            const auto position = static_cast<float>(motor.get_position());
-            if (position == PROS_ERR_F)
-                return getStatusCode();
+            // Get the position from the motor
+            const auto result = executeWithErrorCheck<double>(pros::c::motor_get_position, port);
+            if (!result.isSuccess())
+                return result.status;
+            
+            // Invert the position if necessary
+            auto position = static_cast<float>(result.value);
+            if (isInverted)
+                position = -position;
+            
             return position;
         }
 
         /**
          * Returns the current speed of the motor in RPM.
-         * @return The current speed of the motor in RPM,
+         * @return The current speed of the motor in RPM.
          */
-        HWResult<float> getVelocity() const
+        HWResult<float> getVelocity()
         {
-            const auto velocity = static_cast<float>(motor.get_actual_velocity());
-            if (velocity == PROS_ERR_F)
-                return getStatusCode();
+            // Get the velocity from the motor
+            const auto result = executeWithErrorCheck<double>(pros::c::motor_get_actual_velocity, port);
+            if (!result.isSuccess())
+                return result.status;
+            
+            // Invert the velocity if necessary
+            auto velocity = static_cast<float>(result.value);
+            if (isInverted)
+                velocity = -velocity;
+            
             return velocity;
         }
 
@@ -121,27 +137,32 @@ namespace devils
          * Gets the current temperature of the motor in Celsius.
          * @return The current temperature of the motor in Celsius.
          */
-        HWResult<float> getTemperature() const
+        HWResult<float> getTemperature()
         {
-            const auto temperature = static_cast<float>(motor.get_temperature());
-            if (temperature == PROS_ERR_F)
-                return getStatusCode();
-            return temperature;
+            // Get the temperature from the motor
+            const auto result = executeWithErrorCheck<double>(pros::c::motor_get_temperature, port);
+            if (!result.isSuccess())
+                return result.status;
+            
+            return static_cast<float>(result.value);
         }
 
         /**
-         * Gets the current draw of the motor in mA.
-         * @return The current draw of the motor in mA.
+         * Gets the current draw of the motor in amps.
+         * @return The current draw of the motor in amps.
          */
-        HWResult<int> getCurrent() const
+        HWResult<float> getCurrent()
         {
-            const auto current = motor.get_current_draw();
-            if (current == PROS_ERR)
-                return getStatusCode();
-            return current;
+            // Get the current from the motor
+            const auto result = executeWithErrorCheck<int32_t>(pros::c::motor_get_current_draw, port);
+            if (!result.isSuccess())
+                return result.status;
+            
+            // Convert from milliamps to amps
+            return static_cast<float>(result.value) / 1000.0f;
         }
 
-    private:
-        pros::Motor motor;
+    protected:
+        bool isInverted = false;
     };
 }

@@ -129,15 +129,14 @@ namespace devils
          */
         bool getValue()
         {
-            pros::Controller controller(port);
             switch (mode)
             {
             case PRESSED:
-                return controller.get_digital(button);
+                return pros::c::controller_get_digital(port, button) & 1;
             case JUST_PRESSED:
-                return controller.get_digital_new_press(button);
+                return pros::c::controller_get_digital_new_press(port, button) & 1;
             case TOGGLED:
-                if (controller.get_digital_new_press(button))
+                if (pros::c::controller_get_digital_new_press(port, button) & 1)
                     toggledState = !toggledState;
                 return toggledState;
             default:
@@ -165,10 +164,11 @@ namespace devils
     /**
      * Represents a VEX V5 controller.
      */
-    struct Controller : HardwareBase
+    class Controller : HardwareBase
     {
+    public:
         Controller(const std::string& name, const pros::controller_id_e_t port)
-            : HardwareBase(name, "Controller", port),
+            : HardwareBase(name, "Controller", controllerPortToString(port)),
 
               a(port, pros::E_CONTROLLER_DIGITAL_A),
               b(port, pros::E_CONTROLLER_DIGITAL_B),
@@ -211,5 +211,19 @@ namespace devils
         ControllerAxis leftX;
         ControllerAxis rightY;
         ControllerAxis rightX;
+
+    private:
+        static std::string controllerPortToString(const pros::controller_id_e_t port)
+        {
+            switch (port)
+            {
+            case pros::E_CONTROLLER_MASTER:
+                return "Master";
+            case pros::E_CONTROLLER_PARTNER:
+                return "Partner";
+            default:
+                return "Unknown";
+            }
+        }
     };
 }

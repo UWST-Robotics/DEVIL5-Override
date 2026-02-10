@@ -24,5 +24,14 @@ namespace devils
         {
             move(0, 0, 0);
         };
+
+        /**
+         * Checks if the chassis is holonomic, meaning it can strafe in any direction.
+         * @return True if the chassis is holonomic, false otherwise.
+         */
+        virtual bool isHolonomic() const
+        {
+            return false;
+        }
     };
 }

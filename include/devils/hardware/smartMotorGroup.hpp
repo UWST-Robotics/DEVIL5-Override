@@ -10,7 +10,7 @@ namespace devils
     /**
      * Represents a set of smart motors grouped together.
      */
-    class SmartMotorGroup : public IMotor, protected HardwareBase
+    class SmartMotorGroup : public IMotor
     {
     public:
         /**
@@ -21,7 +21,6 @@ namespace devils
         SmartMotorGroup(
             std::string name,
             const std::initializer_list<int8_t> ports)
-            : HardwareBase(std::move(name), "SmartMotorGroup", 0)
         {
             motors.reserve(ports.size());
             for (int8_t port : ports)
@@ -203,7 +202,7 @@ namespace devils
          */
         std::string getMotorName(const int32_t port) const
         {
-            return name + "_" + std::to_string(port);
+            return name + "_" + std::to_string(abs(port));
         }
 
     private:

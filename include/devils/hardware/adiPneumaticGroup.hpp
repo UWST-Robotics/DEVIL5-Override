@@ -21,7 +21,7 @@ namespace devils
          */
         ADIPneumaticGroup(
             std::string name,
-            const std::initializer_list<uint8_t> ports)
+            const std::initializer_list<int8_t> ports)
             : name(std::move(name))
         {
             pneumatics.reserve(ports.size());
@@ -82,9 +82,9 @@ namespace devils
          * @param port The port of the pneumatic
          * @return The name of the pneumatic
          */
-        std::string getPneumaticName(const uint32_t port) const
+        std::string getPneumaticName(const int32_t port) const
         {
-            return name + "_" + std::to_string(port);
+            return name + "_" + std::to_string(abs(port));
         }
 
         const std::string name;

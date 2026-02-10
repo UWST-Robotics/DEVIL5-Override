@@ -4,6 +4,7 @@
 #include "../utils/backgroundService.hpp"
 #include "../odom/odomSource.hpp"
 #include "../odom/poseVelocityCalculator.hpp"
+#include "../geometry/math.hpp"
 
 namespace devils
 {
@@ -63,26 +64,47 @@ namespace devils
             return PoseVelocityCalculator::getVelocity();
         }
 
+        /**
+         * Checks if the chassis is holonomic, meaning it can strafe in any direction.
+         * @return True if the chassis is holonomic, false otherwise.
+         */
+        bool isHolonomic() const override
+        {
+            return holonomicEnabled;
+        }
+
+        /**
+         * Sets whether the chassis is holonomic, meaning it can strafe in any direction.
+         * @param holonomic True if the chassis should be holonomic, false otherwise.
+         */
+        void setHolonomic(const bool holonomic)
+        {
+            holonomicEnabled = holonomic;
+        }
+
     protected:
         void onUpdate() override
         {
             // TODO: Multiply acceleration by delta time
 
+            // Get Strafe Input
+            const float strafeInput = holonomicEnabled ? lastStrafe : 0;
+
             // Calculate Acceleration
             currentAcceleration.x += TRANSLATION_ACCEL * (
                 cosf(currentPose.rotation) * lastForward +
-                sinf(currentPose.rotation) * lastStrafe);
+                sinf(currentPose.rotation) * strafeInput);
 
             currentAcceleration.y += TRANSLATION_ACCEL * (
                 sinf(currentPose.rotation) * lastForward +
-                cosf(currentPose.rotation) * lastStrafe);
+                cosf(currentPose.rotation) * strafeInput);
 
             currentAcceleration.rotation += lastTurn * ROTATION_ACCEL;
             currentAcceleration = currentAcceleration * (1 - DRAG);
 
             // Update Pose
             currentPose = currentPose + currentAcceleration;
-            currentPose.rotation = fmodf(currentPose.rotation, 2 * M_PI);
+            currentPose.rotation = fmodf(currentPose.rotation, 2 * M_PIF);
 
             // Update Velocity
             updateVelocity(currentPose);
@@ -98,5 +120,6 @@ namespace devils
         float lastStrafe = 0;
         Pose currentAcceleration = Pose();
         Pose currentPose = Pose();
+        bool holonomicEnabled = true;
     };
 }

@@ -64,6 +64,26 @@ namespace devils
         }
 
         /**
+         * Converts centidegrees to degrees.
+         * @param centidegrees The centidegrees to convert.
+         * @return The centidegrees in degrees.
+         */
+        static float centidegToDeg(const float centidegrees)
+        {
+            return centidegrees / 100.0f;
+        }
+
+        /**
+         * Converts degrees to centidegrees.
+         * @param degrees The degrees to convert.
+         * @return The degrees in centidegrees.
+         */
+        static float degToCentideg(const float degrees)
+        {
+            return degrees * 100.0f;
+        }
+
+        /**
          * Modulus function that also works with negative numbers.
          * @param a The number to mod.
          * @param b The modulus.

@@ -3,14 +3,13 @@
 #include "pros/adi.hpp"
 #include "hardwareBase.hpp"
 #include <string>
-#include <utility>
 
 namespace devils
 {
     /**
-     * Represents a digital (on/off) input from the ADI ports.
+     * Represents an analog (0% - 100%) input from the ADI ports.
      */
-    class ADIDigitalInput : ADIHardwareBase
+    class ADIAnalogInput : ADIHardwareBase
     {
     public:
         /**
@@ -19,36 +18,38 @@ namespace devils
          * @param port The ADI port (from 'A' to 'H').
          * @param isInverted True if the input should be inverted, false otherwise.
          */
-        ADIDigitalInput(
+        ADIAnalogInput(
             const std::string& name,
             const char port,
             const bool isInverted = false)
-            : ADIHardwareBase(name, "ADIDigitalInput", port),
+            : ADIHardwareBase(name, "ADIAnalogInput", port),
               isInverted(isInverted)
         {
             // ADI Ports need to be configured before they can be used
-            executeWithErrorCheck<int32_t>(pros::c::adi_port_set_config, port, pros::E_ADI_DIGITAL_IN);
+            executeWithErrorCheck<int32_t>(pros::c::adi_port_set_config, port, pros::E_ADI_ANALOG_IN);
         }
 
         /**
-         * Gets the state of the digital input.
-         * @return True if the input is high, false if the input is low.
+         * Gets the state of the analog input.
+         * @return 1.0f if the input is active, 0.0f if it is not. If the input is inverted, the values are flipped.
          */
-        HWResult<bool> getValue()
+        HWResult<float> getValue()
         {
             // Read the value from the ADI port
-            const auto result = executeWithErrorCheck<bool>(pros::c::adi_digital_read, port);
+            const auto result = executeWithErrorCheck<int32_t>(pros::c::adi_analog_read, port);
             if (!result.isSuccess()) return result.status;
 
             // Invert the value if necessary
-            bool value = result.value;
+            auto value = static_cast<float>(result.value) / MAX_ANALOG_VALUE;
             if (isInverted)
-                value = !value;
+                value = 1.0f - value;
 
             return value;
         }
 
     private:
+        constexpr static int32_t MAX_ANALOG_VALUE = 4095; // 12-bit maximum value
+
         bool isInverted = false;
     };
 }

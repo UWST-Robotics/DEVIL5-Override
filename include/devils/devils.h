@@ -13,13 +13,11 @@
 #include "chassis/mecanumChassis.hpp"
 #include "chassis/hDriveChassis.hpp"
 #include "chassis/xDriveChassis.hpp"
-#include "chassis/swerveChassis.hpp"
 #include "chassis/dummyChassis.hpp"
 
 // Hardware
 #include "hardware/inertialSensor.hpp"
 #include "hardware/opticalSensor.hpp"
-#include "hardware/legacyVisionSensor.hpp"
 #include "hardware/adiPneumatic.hpp"
 #include "hardware/adiDigitalInput.hpp"
 #include "hardware/adiAnalogInput.hpp"

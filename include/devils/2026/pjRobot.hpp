@@ -14,24 +14,23 @@ namespace devils
 
             odometry->useIMU(&imu);
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
-            odometry->start();
         }
 
         void autonomous() override
         {
-            imu.waitUntilCalibrated();
+            imu.waitUntilDoneCalibrated();
             PJSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
         void opcontrol() override
         {
             // Drop Alignment Jig
-            intake.runIntake(-1.0f);
-            pros::delay(100);
-            intake.runIntake(0.0f);
+            // intake.runIntake(-1.0f);
+            // pros::delay(100);
+            // intake.runIntake(0.0f);
 
             // Stop autonomous
-            AutoStep::stopAll();
+            // AutoStep::stopAll();
 
             // Loop
             while (true)
@@ -54,13 +53,13 @@ namespace devils
 
                 // Run Cyclers
                 if (exitCyclerButton)
-                    intake.setIntakeMode(IntakeMode::SideGoal); // Score Top
+                    intake.setIntakeMode(SideGoal); // Score Top
                 else if (midOuttakeButton)
-                    intake.setIntakeMode(IntakeMode::MidBottom); // Score Bottom
+                    intake.setIntakeMode(MidBottom); // Score Bottom
                 else if (exitCyclerMidButton)
-                    intake.setIntakeMode(IntakeMode::MidTop); // Score Mid
+                    intake.setIntakeMode(MidTop); // Score Mid
                 else
-                    intake.setIntakeMode(IntakeMode::Cycler); // Intake to cycler
+                    intake.setIntakeMode(Cycler); // Intake to cycler
 
                 bool isScoring = exitCyclerButton || midOuttakeButton || exitCyclerMidButton;
 
@@ -102,10 +101,10 @@ namespace devils
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-5});
         SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-6});
 
-        ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
-        ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
-        ADIPneumatic rakePneumatics = ADIPneumatic("RakePneumatics", 5);
-        ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
+        ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 'A');
+        ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 'B');
+        ADIPneumatic rakePneumatics = ADIPneumatic("RakePneumatics", 'E');
+        ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'H', true);
 
         OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 7);
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", 9);

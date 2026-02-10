@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <format>
+#include "pros/rtos.hpp"
 
 namespace devils
 {
@@ -31,13 +32,13 @@ namespace devils
             const LogLevel level)
         {
             // ANSI escape codes (prefix colors)
-            if (level == LogLevel::INFO)
+            if (level == INFO)
                 std::cout << "\033[1;94m";
-            else if (level == LogLevel::WARN)
+            else if (level == WARN)
                 std::cout << "\033[38;5;11m";
-            else if (level == LogLevel::ERROR)
+            else if (level == ERROR)
                 std::cout << "\033[38;5;160m";
-            else if (level == LogLevel::DEBUG)
+            else if (level == DEBUG)
                 std::cout << "\033[1;90m";
 
             // Timestamp
@@ -48,27 +49,23 @@ namespace devils
             std::cout << std::format("{:02}:{:02}.{:03}", minutes, seconds % 60, milliseconds) << " |";
 
             // Log level
-            if (level == LogLevel::INFO)
+            if (level == INFO)
                 std::cout << " INFO : ";
-            else if (level == LogLevel::WARN)
+            else if (level == WARN)
                 std::cout << " WARN : ";
-            else if (level == LogLevel::ERROR)
+            else if (level == ERROR)
                 std::cout << " ERROR : ";
-            else if (level == LogLevel::DEBUG)
+            else if (level == DEBUG)
                 std::cout << " DEBUG : ";
-
+            
             // ANSI escape codes (message colors)
-            std::cout << "\033[0m";
-            if (level == LogLevel::WARN)
+            if (level == WARN)
                 std::cout << "\033[38;5;11m";
-            else if (level == LogLevel::ERROR)
+            else if (level == ERROR)
                 std::cout << "\033[38;5;160m";
 
             // Message
-            std::cout << message << std::endl;
-
-            // Reset color
-            std::cout << "\033[0m";
+            std::cout << message << "\033[0m" << std::endl;
         }
 
         /**
@@ -77,7 +74,7 @@ namespace devils
          */
         static void info(std::string message)
         {
-            log(message, LogLevel::INFO);
+            log(message, INFO);
         }
 
         /**
@@ -86,7 +83,7 @@ namespace devils
          */
         static void warn(std::string message)
         {
-            log(message, LogLevel::WARN);
+            log(message, WARN);
         }
 
         /**
@@ -95,7 +92,7 @@ namespace devils
          */
         static void error(std::string message)
         {
-            log(message, LogLevel::ERROR);
+            log(message, ERROR);
         }
 
         /**
@@ -104,7 +101,7 @@ namespace devils
          */
         static void debug(std::string message)
         {
-            log(message, LogLevel::DEBUG);
+            log(message, DEBUG);
         }
 
     private:

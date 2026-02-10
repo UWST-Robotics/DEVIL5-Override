@@ -14,7 +14,7 @@ namespace devils
     /**
      * Represents a V5 inertial measurement unit.
      */
-    class InertialSensor : HardwareBase, public IGyro
+    class InertialSensor : V5HardwareBase, public IGyro
     {
     public:
         /**
@@ -25,9 +25,8 @@ namespace devils
          */
         InertialSensor(
             const std::string& name,
-            const int8_t port)
-            : HardwareBase(name, "IMU", port),
-              imu(port)
+            const uint8_t port)
+            : V5HardwareBase(name, "IMU", port)
         {
         }
 
@@ -59,33 +58,47 @@ namespace devils
          * Calibrates the IMU. Robot should be still during calibration.
          * Run `waitUntilCalibrated` to wait until calibration is finished.
          */
-        void calibrate() const
+        void calibrate()
         {
-            const auto status = imu.reset(false);
-            if (status == PROS_ERR)
-                reportError();
+            executeWithErrorCheck<int32_t>(pros::c::imu_reset, port);
         }
 
         /**
          * Waits until the IMU is finished calibrating.
          * Should be run to avoid movement during calibration.
          */
-        void waitUntilCalibrated() const
+        void waitUntilDoneCalibrated()
         {
-            while (imu.is_calibrating())
+            while (getIsCalibrating())
                 pros::delay(20);
+        }
+
+        /**
+         * Checks if the IMU is currently calibrating.
+         * @return True if the IMU is currently calibrating, false otherwise. If the operation failed, an error code is returned.
+         */
+        HWResult<bool> getIsCalibrating()
+        {
+            const auto result = executeWithErrorCheck<pros::imu_status_e_t>(pros::c::imu_get_status, port);
+            if (!result.isSuccess())
+                return result.status;
+
+            return result.value & IMU_STATUS_CALIBRATING;
         }
 
         /**
          * Gets the current acceleration of the IMU in inches per second squared.
          * @return The current acceleration of the IMU in inches per second squared.
          */
-        HWResult<Vector3> getAccel() const
+        HWResult<Vector3> getAccel()
         {
-            const auto accel = imu.get_accel();
-            const auto x = static_cast<float>(accel.x);
-            const auto y = static_cast<float>(accel.y);
-            const auto z = static_cast<float>(accel.z);
+            const auto result = executeWithErrorCheck<pros::imu_accel_s_t>(pros::c::imu_get_accel, port);
+            if (!result.isSuccess())
+                return result.status;
+
+            const auto x = static_cast<float>(result.value.x);
+            const auto y = static_cast<float>(result.value.y);
+            const auto z = static_cast<float>(result.value.z);
 
             if (x == PROS_ERR_F)
                 return getStatusCode();
@@ -100,14 +113,14 @@ namespace devils
          * Gets the current heading of the IMU in radians, unscaled and without offset.
          * @return The current heading of the IMU in radians or 0 if the operation failed.
          */
-        HWResult<float> getRawHeading() const
+        HWResult<float> getRawHeading()
         {
-            const auto heading = static_cast<float>(imu.get_rotation());
-            if (heading == PROS_ERR_F)
-                return getStatusCode();
+            const auto result = executeWithErrorCheck<double>(pros::c::imu_get_rotation, port);
+            if (!result.isSuccess())
+                return result.status;
 
             // Apply scale/offset
-            return Units::degToRad(heading);
+            return Units::degToRad(static_cast<float>(result.value));
         }
 
         /**
@@ -127,36 +140,39 @@ namespace devils
          * Gets the current pitch of the IMU in radians.
          * @return The current pitch of the IMU in radians or 0 if the operation failed.
          */
-        HWResult<float> getPitch() const
+        HWResult<float> getPitch()
         {
-            const auto pitch = static_cast<float>(imu.get_pitch());
-            if (pitch == PROS_ERR_F)
-                return getStatusCode();
-            return Units::degToRad(pitch);
+            const auto result = executeWithErrorCheck<double>(pros::c::imu_get_pitch, port);
+            if (!result.isSuccess())
+                return result.status;
+
+            return Units::degToRad(static_cast<float>(result.value));
         }
 
         /**
          * Gets the current roll of the IMU in radians.
          * @return The current roll of the IMU in radians or 0 if the operation failed.
          */
-        HWResult<float> getRoll() const
+        HWResult<float> getRoll()
         {
-            const auto roll = static_cast<float>(imu.get_roll());
-            if (roll == PROS_ERR_F)
-                return getStatusCode();
-            return Units::degToRad(roll);
+            const auto result = executeWithErrorCheck<double>(pros::c::imu_get_roll, port);
+            if (!result.isSuccess())
+                return result.status;
+
+            return Units::degToRad(static_cast<float>(result.value));
         }
 
         /**
          * Gets the current yaw of the IMU in radians.
          * @return The current yaw of the IMU in radians or 0 if the operation failed.
          */
-        HWResult<float> getYaw() const
+        HWResult<float> getYaw()
         {
-            const auto yaw = static_cast<float>(imu.get_yaw());
-            if (yaw == PROS_ERR_F)
-                return getStatusCode();
-            return Units::degToRad(yaw);
+            const auto result = executeWithErrorCheck<double>(pros::c::imu_get_yaw, port);
+            if (!result.isSuccess())
+                return result.status;
+
+            return Units::degToRad(static_cast<float>(result.value));
         }
 
     private:
@@ -166,7 +182,6 @@ namespace devils
         bool isErrored = false;
         bool isConnected = false;
 
-        pros::IMU imu;
         Pose odomPose;
     };
 }

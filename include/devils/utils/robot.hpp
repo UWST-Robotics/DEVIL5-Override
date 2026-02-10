@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pros/misc.hpp"
 #include "../hardware/controller.hpp"
 
 namespace devils
@@ -44,7 +43,7 @@ namespace devils
 
         /// @brief The main game controller.
         Controller mainController = Controller("Main Controller", pros::E_CONTROLLER_MASTER);
-
+        
         /// @brief The partner game controller.
         Controller partnerController = Controller("Partner Controller", pros::E_CONTROLLER_PARTNER);
     };

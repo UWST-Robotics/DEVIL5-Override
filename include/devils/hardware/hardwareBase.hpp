@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <stdexcept>
+#include "../utils/logger.hpp"
 
 namespace devils
 {
@@ -42,7 +43,7 @@ namespace devils
         HWStatus status;
 
         // Constructor for implicit conversion from T to HWResult<T>
-        HWResult(const T& val) : value(val), status(SUCCESS)
+        HWResult(const T val) : value(val), status(SUCCESS)
         {
         }
 
@@ -77,36 +78,84 @@ namespace devils
     public:
         /**
          * Base class for all hardware devices.
-         * @param name The name of the hardware
+         * @param name The name of the hardware (e.g. "Left Drive Motor")
          * @param type The type of the hardware (e.g. SmartMotor)
-         * @param port The port of the hardware
+         * @param portName The name of the port the hardware is connected to (e.g. "A")
          */
         HardwareBase(
             std::string name,
             std::string type,
-            const int8_t port)
+            std::string portName)
             : name(std::move(name)),
               type(std::move(type)),
-              port(port)
+              portName(std::move(portName))
         {
         }
 
     protected:
+
         /**
-         * Reports an error based on the current errno value.
+         * Reports an error based on a hardware status code.
+         * @param status The hardware status code to report an error for.
          */
-        void reportError() const
+        void reportErrorFromStatus(const HWStatus status)
         {
-            reportError(getStatusCode());
+            switch (status)
+            {
+            case ERROR_INCORRECT_TYPE:
+                reportError(toString() + " is not a " + type + ".");
+                break;
+            case ERROR_INVALID_PORT:
+                reportError(toString() + " is not connected to a valid port.");
+                break;
+            case ERROR_CALIBRATING:
+                reportError(toString() + " is currently calibrating and cannot be used.");
+                break;
+            case ERROR_RESOURCE_BUSY:
+            case ERROR_PORT_IN_USE:
+                reportError(toString() + " is currently in use by another process and cannot be used.");
+                break;
+            default:
+                reportError(toString() + " encountered an unknown error (code " + std::to_string(status) + ").");
+                break;
+            }
         }
 
         /**
-         * Reports an error with a specific status code.
-         * @param status The hardware status code to report.
+         * Reports an error with a custom error message.
+         * @param errorText - The text of the error to report.
          */
-        void reportError(const HWStatus status) const
+        void reportError(const std::string& errorText)
         {
-            // TODO: Implement logging or error reporting mechanism
+            // TODO: Implement me!
+            Logger::error(errorText);
+        }
+
+        /**
+         * Executes a function and checks for errors based on errno.
+         * @tparam ReturnType Return type of the function
+         * @tparam Func The function type
+         * @tparam Args The argument types
+         * @param func The function to execute
+         * @param args The arguments to pass to the function
+         * @return The result of the function or an error code if an error occurred.
+         */
+        template<typename ReturnType, typename Func, typename... Args>
+        HWResult<ReturnType> executeWithErrorCheck(Func func, Args... args) {
+            // Always resets errno before calling the function
+            errno = 0;
+
+            // Call the function with its arguments
+            ReturnType result = func(args...);
+            auto statusCode = getStatusCode();
+
+            // Check errno for errors
+            if (statusCode != SUCCESS)
+            {
+                reportErrorFromStatus(statusCode);
+                return statusCode;
+            }
+            return result; // or handle someValue as needed
         }
 
         /**
@@ -120,6 +169,7 @@ namespace devils
             case 0:
                 return SUCCESS;
             case ENXIO:
+            case ENOENT:
                 return ERROR_INVALID_PORT;
             case ENODEV:
                 return ERROR_INCORRECT_TYPE;
@@ -150,8 +200,68 @@ namespace devils
             }
         }
 
+        /**
+         * Returns a string representation of the hardware, including its name and port.
+         * @return A string representation of the hardware, including its name and port (e.g. "Left Drive Motor (port A)").
+         */
+        std::string toString() const
+        {
+            return name + " (port " + portName + ")";
+        }
+
         std::string name;
         std::string type;
-        int8_t port;
+        std::string portName;
+    };
+
+    /**
+     * Represents a `HardwareBase` that is connected to a specific ADI port on the VEX V5 brain.
+     */
+    class ADIHardwareBase : public HardwareBase
+    {
+    public:
+        ADIHardwareBase(std::string name, std::string type, const char port)
+            : HardwareBase(std::move(name), std::move(type), adiPortToString(port)),
+              port(port)
+        {
+        }
+
+    protected:
+        char port;
+
+    private:
+        /**
+         * Converts an ADI port id (e.g. 'A', 'B', etc.) to its corresponding string representation (e.g. "A", "B", etc.).
+         * @param port - The ID of the port (e.g. 'A', 'B', etc.)
+         * @return A string representation of the ADI port (e.g. "A", "B", etc.). If the port name is invalid, returns "?".
+         */
+        static std::string adiPortToString(const char port)
+        {
+            if (port >= 'A' && port <= 'H')
+                return std::string(1, port); // Convert 'A'-'H' to "A"-"H"
+            if (port >= 'a' && port <= 'h')
+                return std::string(1, port - ('a' - 'A')); // Convert 'a'-'h' to "A"-"H"
+
+            // Invalid port name
+            return "?";
+        }
+    };
+
+    /**
+     * Represents a `HardwareBase` that is connected to a specific V5 port on the VEX V5 brain.
+     */
+    class V5HardwareBase : public HardwareBase
+    {
+    public:
+        V5HardwareBase(
+            std::string name,
+            std::string type,
+            const uint8_t port)
+            : HardwareBase(std::move(name), std::move(type), std::to_string(port)),
+              port(port)
+        {
+        }
+    protected:
+        uint8_t port;
     };
 }

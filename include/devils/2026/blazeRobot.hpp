@@ -19,7 +19,7 @@ namespace devils
 
         void autonomous() override
         {
-            imu.waitUntilCalibrated();
+            imu.waitUntilDoneCalibrated();
             BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
@@ -47,7 +47,7 @@ namespace devils
                 const bool rakePneumaticsButton = mainController.b; // toggle rake pneumatics
 
                 // Combine Left and Right X Joystick Inputs
-                float combinedX = JoystickCurve::combine(leftX, rightX);
+                const float combinedX = JoystickCurve::combine(leftX, rightX);
 
                 // Run Cyclers
                 if (exitCyclerButton)
@@ -68,7 +68,7 @@ namespace devils
                 rakePneumatics.setExtended(rakePneumaticsButton);
 
                 // Drive normally
-                chassis.move(leftY, combinedX * 0.5f);
+                chassis.move(leftY, combinedX * 0.5f, 0);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -100,10 +100,10 @@ namespace devils
         SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-5});
         SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-6});
 
-        ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 1);
-        ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 2);
-        ADIPneumatic rakePneumatics = ADIPneumatic("RakePneumatics", 5);
-        ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", -8);
+        ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 'A');
+        ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 'B');
+        ADIPneumatic rakePneumatics = ADIPneumatic("RakePneumatics", 'E');
+        ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'H', true);
 
         OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 7);
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", 9);

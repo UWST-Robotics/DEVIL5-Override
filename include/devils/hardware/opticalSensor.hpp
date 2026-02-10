@@ -9,7 +9,7 @@ namespace devils
     /**
      * Represents a V5 optical sensor unit.
      */
-    class OpticalSensor : private HardwareBase
+    class OpticalSensor : V5HardwareBase
     {
     public:
         /**
@@ -19,9 +19,8 @@ namespace devils
          */
         OpticalSensor(
             const std::string& name,
-            const int8_t port)
-            : HardwareBase(name, "OpticalSensor", port),
-              sensor(port)
+            const uint8_t port)
+            : V5HardwareBase(name, "OpticalSensor", port)
         {
         }
 
@@ -31,10 +30,14 @@ namespace devils
          */
         void setLEDBrightness(const float brightness)
         {
-            const auto brightnessInt = static_cast<uint8_t>(std::clamp(brightness, 0.0f, 1.0f) * 255.0f);
-            const auto result = sensor.set_led_pwm(brightnessInt);
-            if (result == PROS_ERR)
-                reportError();
+            // Scale the brightness from [0, 1] to [0, 255] and clamp it to the valid range
+            const auto brightnessScaled = std::clamp(brightness, 0.0f, 1.0f) * 255.0f;
+            
+            // Convert the brightness to an integer
+            const auto brightnessInt = static_cast<uint8_t>(brightnessScaled);
+            
+            // Set the brightness of the LED
+            executeWithErrorCheck<int32_t>(pros::c::optical_set_led_pwm, port, brightnessInt);
         }
 
         /**
@@ -43,10 +46,13 @@ namespace devils
          */
         HWResult<float> getProximity()
         {
-            const auto proximity = sensor.get_proximity();
-            if (proximity == PROS_ERR)
-                return getStatusCode();
-            return static_cast<float>(proximity) / 255.0f;
+            // Get the proximity from the sensor
+            const auto result = executeWithErrorCheck<int32_t>(pros::c::optical_get_proximity, port);
+            if (!result.isSuccess())
+                return result.status;
+
+            // Scale the proximity from [0, 255] to [0, 1]
+            return static_cast<float>(result) / 255.0f;
         }
 
         /**
@@ -55,37 +61,43 @@ namespace devils
          */
         HWResult<float> getHue()
         {
-            const auto hue = static_cast<float>(sensor.get_hue());
-            if (hue == PROS_ERR_F)
-                return getStatusCode();
-            return hue;
+            // Get the hue from the sensor
+            const auto result = executeWithErrorCheck<double>(pros::c::optical_get_hue, port);
+            if (!result.isSuccess())
+                return result.status;
+
+            // Convert the hue to a float
+            return static_cast<float>(result);
         }
 
         /**
          * Gets the current saturation of the Optical Sensor.
-         * @return The current saturation of the Optical Sensor as an percentage value from 0 to 1.
+         * @return The current saturation of the Optical Sensor as a percentage value from 0 to 1.
          */
         HWResult<float> getSaturation()
         {
-            const auto saturation = static_cast<float>(sensor.get_saturation());
-            if (saturation == PROS_ERR_F)
-                return getStatusCode();
-            return saturation;
+            // Get the saturation from the sensor
+            const auto result = executeWithErrorCheck<double>(pros::c::optical_get_saturation, port);
+            if (!result.isSuccess())
+                return result.status;
+            
+            // Convert the saturation to a float
+            return static_cast<float>(result);
         }
 
         /**
          * Gets the current brightness of the Optical Sensor.
-         * @return The current brightness of the Optical Sensor as an percentage value from 0 to 1.
+         * @return The current brightness of the Optical Sensor as a percentage value from 0 to 1.
          */
         HWResult<float> getBrightness()
         {
-            const auto brightness = static_cast<float>(sensor.get_brightness());
-            if (brightness == PROS_ERR_F)
-                return getStatusCode();
-            return brightness;
+            // Get the brightness from the sensor
+            const auto result = executeWithErrorCheck<double>(pros::c::optical_get_brightness, port);
+            if (!result.isSuccess())
+                return result.status;
+            
+            // Convert the brightness to a float
+            return static_cast<float>(result);
         }
-
-    private:
-        pros::Optical sensor;
     };
 }

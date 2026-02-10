@@ -15,7 +15,7 @@ void set_styles()
     lv_style_set_radius(&style_radio, LV_RADIUS_CIRCLE);
 
     lv_style_init(&style_radio_chk);
-    lv_style_set_bg_img_src(&style_radio_chk, NULL);
+    lv_style_set_bg_image_src(&style_radio_chk, NULL);
 }
 namespace devils
 {
@@ -85,13 +85,13 @@ namespace devils
         static void handleCheck(lv_event_t *e) {
             // get instance of the RadioGroup class
             RadioGroup *instance = static_cast<RadioGroup *>(lv_event_get_user_data(e));
-            lv_obj_t * cont = lv_event_get_current_target(e);
-            lv_obj_t * act_cb = lv_event_get_target(e);
-            lv_obj_t * old_cb = lv_obj_get_child(cont, instance->selected_index);
+            auto cont = static_cast<lv_obj_t *>(lv_event_get_current_target(e));
+            auto act_cb = static_cast<lv_obj_t *>(lv_event_get_target(e));
+            lv_obj_t * old_cb = lv_obj_get_child(cont,instance->selected_index);
 
             if (act_cb == cont) return;
 
-            lv_obj_clear_state(old_cb, LV_STATE_CHECKED);   /*Uncheck the previous radio button*/
+            lv_obj_remove_state(old_cb, LV_STATE_CHECKED);   /*Uncheck the previous radio button*/
             lv_obj_add_state(act_cb, LV_STATE_CHECKED);     /*Uncheck the current radio button*/
 
             instance->selected_index = lv_obj_get_index(act_cb);
