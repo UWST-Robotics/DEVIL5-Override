@@ -64,8 +64,7 @@ namespace devils
          */
         float getValue() const
         {
-            pros::Controller controller(port);
-            const float rawValue = static_cast<float>(controller.get_analog(axis)) / 127.0f;
+            const float rawValue = getRawValue();
 
             // Apply deadzone
             if (std::abs(rawValue) < options.deadzone)

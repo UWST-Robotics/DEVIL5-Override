@@ -14,6 +14,15 @@ namespace devils
 
             odometry->useIMU(&imu);
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
+            odometry->start();
+            
+            toastDisplay->start();
+            devilBotsDisplay->start();
+            
+            // Logger::debug("This is a debug message");
+            // Logger::info("This is an info message");
+            // Logger::warn("This is a warning message");
+            // Logger::error("This is an error message");
         }
 
         void autonomous() override
@@ -72,6 +81,8 @@ namespace devils
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f, 0.0f);
 
+                frontTopIntakeMotors.getMotors()[0]->checkForMicroDisconnection();
+                
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
             }
@@ -128,6 +139,10 @@ namespace devils
             verticalSensor,
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
+        
+        // Displays
+        std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+        std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
         // Renderer
         // RobotAutoOptions autoOptions = RobotAutoOptions();

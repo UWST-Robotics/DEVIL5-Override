@@ -85,6 +85,18 @@ namespace devils
 
             return result.value & IMU_STATUS_CALIBRATING;
         }
+        
+        /**
+         * Checks if the IMU is ready to be used (e.g. finished calibrating).
+         * @return True if the IMU is ready to be used, false otherwise. If the operation failed, false is returned.
+         */
+        bool getIsReady() override
+        {
+            const auto isCalibrating = getIsCalibrating();
+            if (!isCalibrating.isSuccess())
+                return false;
+            return !isCalibrating.value;
+        }
 
         /**
          * Gets the current acceleration of the IMU in inches per second squared.
@@ -178,10 +190,5 @@ namespace devils
     private:
         float headingScale = 1;
         float headingOffset = 0;
-        bool isCalibrating = false;
-        bool isErrored = false;
-        bool isConnected = false;
-
-        Pose odomPose;
     };
 }

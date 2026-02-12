@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include "../utils/logger.hpp"
+#include "pros/apix.h"
 
 namespace devils
 {
@@ -43,20 +44,22 @@ namespace devils
         HWStatus status;
 
         // Constructor for implicit conversion from T to HWResult<T>
-        HWResult(const T val) : value(val), status(SUCCESS)
+        HWResult(const T val) :
+            value(val),
+            status(SUCCESS)
         {
         }
 
         // Constructor for explicit creation of HWResult with status
-        HWResult(const HWStatus status) : status(status)
+        HWResult(const HWStatus status) :
+            value(T{}),
+            status(status)
         {
         }
 
         // Conversion operator for implicit conversion from HWResult<T> to T
         operator T() const
         {
-            if (status != SUCCESS)
-                throw std::runtime_error("Cannot convert HWResult to T: operation was not successful.");
             return value;
         }
 
@@ -98,37 +101,27 @@ namespace devils
          * Reports an error based on a hardware status code.
          * @param status The hardware status code to report an error for.
          */
-        void reportErrorFromStatus(const HWStatus status)
+        void reportErrorFromStatus(const HWStatus status) const
         {
             switch (status)
             {
             case ERROR_INCORRECT_TYPE:
-                reportError(toString() + " is not a " + type + ".");
+                Logger::error(toString() + " isn't a " + type + ".");
                 break;
             case ERROR_INVALID_PORT:
-                reportError(toString() + " is not connected to a valid port.");
+                Logger::error(toString() + " isn't connected to a valid port.");
                 break;
             case ERROR_CALIBRATING:
-                reportError(toString() + " is currently calibrating and cannot be used.");
+                Logger::error(toString() + " is busy calibrating.");
                 break;
             case ERROR_RESOURCE_BUSY:
             case ERROR_PORT_IN_USE:
-                reportError(toString() + " is currently in use by another process and cannot be used.");
+                Logger::error(toString() + " is ` use by another process.");
                 break;
             default:
-                reportError(toString() + " encountered an unknown error (code " + std::to_string(status) + ").");
+                Logger::error(toString() + " encountered an unknown error (code " + std::to_string(status) + ").");
                 break;
             }
-        }
-
-        /**
-         * Reports an error with a custom error message.
-         * @param errorText - The text of the error to report.
-         */
-        void reportError(const std::string& errorText)
-        {
-            // TODO: Implement me!
-            Logger::error(errorText);
         }
 
         /**

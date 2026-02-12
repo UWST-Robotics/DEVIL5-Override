@@ -21,6 +21,7 @@ namespace devils
         SmartMotorGroup(
             std::string name,
             const std::initializer_list<int8_t> ports)
+            : name(std::move(name))
         {
             motors.reserve(ports.size());
             for (int8_t port : ports)

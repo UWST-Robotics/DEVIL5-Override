@@ -3,34 +3,105 @@
 #include <fstream>
 #include <iostream>
 #include <format>
+#include <stack>
+
 #include "pros/rtos.hpp"
 
 namespace devils
 {
+    // Forward declare `ToastDisplay` to prevent circular dependency
+    class ToastDisplay;
+    
     /**
      * Represents a global logging utility.
      */
     class Logger
     {
     public:
+        // Delete constructor to prevent instantiation
+        Logger() = delete;
+        
         /// @brief The log level (INFO, WARN, ERROR, DEBUG).
         enum LogLevel
         {
+            // Least severe
+            DEBUG = 0,
             INFO,
             WARN,
             ERROR,
-            DEBUG
+            // Most severe
+        };
+        
+        /// @brief Represents a single log message.
+        struct LogMessage
+        {
+            uint32_t timestamp;
+            LogLevel level;
+            std::string text;
         };
 
         /**
-         * Logs a message to the terminal, display, SD card, and network.
+         * Logs an info message.
          * @param message The message to log.
-         * @param level The log level.
          */
-        static void log(
-            const std::string& message,
-            const LogLevel level)
+        static void info(const std::string& message)
         {
+            log({pros::millis(), INFO, message});
+        }
+
+        /**
+         * Logs a warning message.
+         * @param message The message to log.
+         */
+        static void warn(const std::string& message)
+        {
+            log({pros::millis(), WARN, message});
+        }
+
+        /**
+         * Logs an error message.
+         * @param message The message to log.
+         */
+        static void error(const std::string& message)
+        {
+            log({pros::millis(), ERROR, message});
+        }
+
+        /**
+         * Logs a debug message.
+         * @param message The message to log.
+         */
+        static void debug(const std::string& message)
+        {
+            log({pros::millis(), DEBUG, message});
+        }
+        
+        /**
+         * Logs a message to the terminal and the `ToastDisplay` (if it exists).
+         * @param logMessage The log message to log.
+         */
+        static void log(const LogMessage& logMessage)
+        {
+            printToConsole(logMessage);
+            if (toastBuffer.size() < MAX_BUFFER_SIZE)
+            toastBuffer.push(logMessage);
+        }
+        
+    protected:
+        
+        /**
+         * Logs a message to the serial console.
+         * Can be accessed by used `pros terminal` on a connected device
+         * while connected to the VEX V5 brain (or controller) over USB.
+         * @param logMessage - The log message to print to the console.
+         */
+        static void printToConsole(const LogMessage& logMessage)
+        {
+            // Get the message and level from the log message struct
+            const auto time = logMessage.timestamp;
+            const auto message = logMessage.text;
+            const auto level = logMessage.level;
+            
             // ANSI escape codes (prefix colors)
             if (level == INFO)
                 std::cout << "\033[1;94m";
@@ -42,7 +113,6 @@ namespace devils
                 std::cout << "\033[1;90m";
 
             // Timestamp
-            const auto time = pros::millis();
             const auto milliseconds = time % 1000;
             const auto seconds = time / 1000;
             const auto minutes = seconds / 60;
@@ -67,44 +137,10 @@ namespace devils
             // Message
             std::cout << message << "\033[0m" << std::endl;
         }
-
-        /**
-         * Logs an info message.
-         * @param message The message to log.
-         */
-        static void info(std::string message)
-        {
-            log(message, INFO);
-        }
-
-        /**
-         * Logs a warning message.
-         * @param message The message to log.
-         */
-        static void warn(std::string message)
-        {
-            log(message, WARN);
-        }
-
-        /**
-         * Logs an error message.
-         * @param message The message to log.
-         */
-        static void error(std::string message)
-        {
-            log(message, ERROR);
-        }
-
-        /**
-         * Logs a debug message.
-         * @param message The message to log.
-         */
-        static void debug(std::string message)
-        {
-            log(message, DEBUG);
-        }
-
     private:
-        Logger() = delete;
+        /// @brief Represents a buffer of log messages that have been logged but not yet displayed as toasts.
+        static inline std::stack<LogMessage> toastBuffer = {};
+        static constexpr int MAX_BUFFER_SIZE = 1024;
+        friend class ToastDisplay;
     };
 }

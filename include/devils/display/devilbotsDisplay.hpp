@@ -1,23 +1,22 @@
 #pragma once
 
-#include "liblvgl/lvgl.h"
+#include "displayBase.hpp"
 #include "../utils/asyncTask.hpp"
+#include "devils/utils/backgroundService.hpp"
 
 namespace devils
 {
-    class EyesRenderer : public AsyncTask
+    class DevilBotsDisplay : 
+        public BackgroundService,
+        public DisplayBase
     {
     public:
-        EyesRenderer(lv_obj_t *parent) : AsyncTask()
+        DevilBotsDisplay()
         {
-            this->parent = parent;
-        }
-
-        /// @brief Initializes and renders the eyes on the parent object.
-        void render()
-        {
-            fullScreenContainer = lv_obj_create(parent);
+            fullScreenContainer = lv_obj_create(getRootContainer());
+            lv_obj_set_style_bg_color(fullScreenContainer, lv_color_make(3, 36, 53), 0);
             lv_obj_set_size(fullScreenContainer, lv_pct(100), lv_pct(100));
+            
             eyesGroup = lv_obj_create(fullScreenContainer);
             lv_obj_set_size(eyesGroup, 340, 200);
             lv_obj_align(eyesGroup, LV_ALIGN_CENTER, 0, 0);
@@ -30,19 +29,12 @@ namespace devils
 
             leftEye = makeEye(-100, 0, 120);
             rightEye = makeEye(100, 0, 120);
-            leftEyebrow = makeEyebrow(-100, -85, 0, 130);
-            rightEyebrow = makeEyebrow(100, -110, 0, 130);
-
-            lv_obj_set_style_bg_color(parent, lv_color_make(3, 36, 53), 0);
-
-            lv_obj_add_event_cb(fullScreenContainer, handleDestroy, LV_EVENT_LONG_PRESSED, this);
-            lv_obj_add_event_cb(eyesGroup, handleDestroy, LV_EVENT_LONG_PRESSED, this);
-            lv_obj_add_event_cb(leftEye, handleDestroy, LV_EVENT_LONG_PRESSED, this);
-            lv_obj_add_event_cb(rightEye, handleDestroy, LV_EVENT_LONG_PRESSED, this);
-            lv_obj_add_event_cb(leftEyebrow, handleDestroy, LV_EVENT_LONG_PRESSED, this);
-            lv_obj_add_event_cb(rightEyebrow, handleDestroy, LV_EVENT_LONG_PRESSED, this);
-
-            start();
+            leftEyebrow = makeEyebrow(-100, -85, 40, 130);
+            rightEyebrow = makeEyebrow(100, -110, -40, 130);
+        }
+        ~DevilBotsDisplay() override
+        {
+            lv_obj_del(fullScreenContainer);
         }
 
     protected:
@@ -53,18 +45,21 @@ namespace devils
 
             lv_obj_set_pos(
                 eyesGroup,
-                std::cos(t * 0.05) * 20,
+                std::cos(t * 0.03) * 24,
                 0);
         }
 
-        void destroy()
-        {
-            stop();
-            lv_obj_delete(fullScreenContainer);
-        }
-
-    private:
-        lv_obj_t *makeEye(int16_t x, int16_t y, int16_t size)
+        /**
+         * Makes an eye object in LVGL with the given position and size and adds it to the eyes group.
+         * @param x - The x position of the eye relative to the center of the screen.
+         * @param y - The y position of the eye relative to the center of the screen.
+         * @param size - The size of the eye in pixels. The eye will be a square with sides of this length.
+         * @return The created eye object.
+         */
+        lv_obj_t* makeEye(
+            const int16_t x,
+            const int16_t y,
+            const int16_t size) const
         {
             // Object
             lv_obj_t *eye = lv_obj_create(eyesGroup);
@@ -80,7 +75,19 @@ namespace devils
             return eye;
         }
 
-        lv_obj_t *makeEyebrow(int16_t x, int16_t y, int16_t angle, int16_t size)
+        /**
+         * Makes an eyebrow object in LVGL with the given position, angle, and size and adds it to the eyes group.
+         * @param x - The x position of the eyebrow relative to the center of the screen.
+         * @param y - The y position of the eyebrow relative to the center of the screen.
+         * @param angle - The angle of the eyebrow in degrees. 0 is flat, positive is raised, negative is furrowed.
+         * @param size - The size of the eyebrow in pixels. The eyebrow will be a square with sides of this length.
+         * @return The created eyebrow object.
+         */
+        lv_obj_t* makeEyebrow(
+            const int16_t x,
+            const int16_t y,
+            const int16_t angle,
+            const int16_t size) const
         {
             // Object
             lv_obj_t *eyebrow = lv_obj_create(eyesGroup);
@@ -92,7 +99,7 @@ namespace devils
             lv_obj_set_style_border_width(eyebrow, 0, 0);
             lv_obj_set_style_transform_pivot_x(eyebrow, size / 2, 0);
             lv_obj_set_style_transform_pivot_y(eyebrow, size, 0);
-            lv_obj_set_style_transform_rotation(eyebrow, angle, 0);
+            lv_obj_set_style_transform_angle(eyebrow, angle, 0);
 
             lv_obj_align(eyebrow, LV_ALIGN_CENTER, 0, 0);
             lv_obj_set_pos(eyebrow, x, y);
@@ -100,23 +107,7 @@ namespace devils
             return eyebrow;
         }
 
-        static void handleDestroy(lv_event_t *e)
-        {
-            // get target object
-            EyesRenderer *renderer = static_cast<EyesRenderer *>(lv_event_get_user_data(e));
-            renderer->destroy();
-        }
-
-        static void removeObject(lv_obj_t *obj)
-        {
-            if (obj != nullptr)
-            {
-                lv_obj_delete(obj);
-                obj = nullptr;
-            }
-        }
-
-        lv_obj_t *parent;
+    private:
         lv_obj_t *fullScreenContainer;
         lv_obj_t *eyesGroup;
         lv_obj_t *leftEye;

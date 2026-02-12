@@ -1,5 +1,7 @@
 #pragma once
 
+#include "hardwareBase.hpp"
+
 namespace devils
 {
     /**
@@ -9,6 +11,12 @@ namespace devils
     {
         virtual ~IGyro() = default;
 
+        /**
+         * Check if the sensor is ready to be used (e.g. finished calibrating).
+         * @return True if the sensor is ready to be used, false otherwise. 
+         */
+        virtual bool getIsReady() = 0;
+        
         /**
          * Gets the current heading of the sensor in radians.
          * @return The current heading of the sensor in radians.

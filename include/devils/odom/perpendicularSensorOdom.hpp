@@ -90,43 +90,46 @@ namespace devils
         void onUpdate() override
         {
             // Get Sensor Angles in Degrees
-            const float verticalAngle = verticalSensor.getAngle();
-            const bool isVerticalSensorError = errno != 0;
-
-            const float horizontalAngle = horizontalSensor.getAngle();
-            const bool isHorizontalSensorError = errno != 0;
+            const auto verticalResult = verticalSensor.getAngle();
+            const auto horizontalResult = horizontalSensor.getAngle();
 
             // Get Delta Time
             lastUpdateTimestamp = pros::millis();
 
-            // Calculate arc length
-            // r * theta
-            const float vertical = verticalAngle * wheelRadius;
-            const float horizontal = horizontalAngle * wheelRadius;
-
             // Update IMU
             // Also calculate the change in rotation
             float deltaRotation = 0;
-            if (imu != nullptr)
+            if (imu != nullptr && imu->getIsReady())
             {
-                const auto heading = imu->getHeading();
-                if (heading.isSuccess())
+                const auto headingResult = imu->getHeading();
+                if (headingResult.isSuccess())
                 {
-                    deltaRotation = heading - lastRotation;
-                    lastRotation = heading;
-                    currentPose.rotation = heading;
+                    deltaRotation = headingResult.value - lastRotation;
+                    lastRotation = headingResult.value;
+                    currentPose.rotation = lastRotation;
                 }
             }
+            
+            // Check for sensor errors
+            if (!verticalResult.isSuccess() ||
+                !horizontalResult.isSuccess())
+            {
+                Logger::warn("Failed to get sensor angles for PerpendicularSensorOdometry.");
+                return;
+            }
+            
+            // Calculate arc length
+            // r * theta
+            const float verticalRevolutions = verticalResult.value * wheelRadius;
+            const float horizontalRevolutions = horizontalResult.value * wheelRadius;
 
             // Get Delta Distance
-            float deltaVertical = vertical - lastVertical;
-            float deltaHorizontal = horizontal - lastHorizontal;
+            float deltaVertical = verticalRevolutions - lastVertical;
+            float deltaHorizontal = horizontalRevolutions - lastHorizontal;
 
             // Check for sensor errors
-            if (!isVerticalSensorError)
-                lastVertical = vertical;
-            if (!isHorizontalSensorError)
-                lastHorizontal = horizontal;
+            lastVertical = verticalRevolutions;
+            lastHorizontal = horizontalRevolutions;
 
             // Apply Sensor Offsets
             if (verticalSensorOffset != nullptr &&
@@ -146,12 +149,6 @@ namespace devils
                 deltaVertical -= verticalArcLength;
                 deltaHorizontal -= horizontalArcLength;
             }
-
-            // Check for sensor errors
-            if (isVerticalSensorError)
-                deltaVertical = 0;
-            if (isHorizontalSensorError)
-                deltaHorizontal = 0;
 
             // Calculate trigonometric values
             const float rotation = currentPose.rotation;

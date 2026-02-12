@@ -74,7 +74,8 @@
 #include "autoSteps/transformer/mirrorTransform.hpp"
 
 // Display
-// #include "display/optionsRenderer.hpp"
+#include "display/toastDisplay.hpp"
+#include "display/devilbotsDisplay.hpp"
 // #include "display/eyesRenderer.hpp"
 
 // VEXBridge

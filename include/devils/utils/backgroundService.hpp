@@ -1,5 +1,6 @@
 #pragma once
 
+#include <thread>
 #include "asyncTask.hpp"
 
 namespace devils
@@ -9,12 +10,9 @@ namespace devils
      *  Inherits from `AsyncTask` and starts automatically upon creation.
      *  Like `AsyncTask`, classes derived from `BackgroundService` must be managed by `std::shared_ptr`.
      */
-    class BackgroundService : AsyncTask
+    class BackgroundService : public AsyncTask
     {
     public:
-        BackgroundService() : AsyncTask("BackgroundService")
-        {
-            start();
-        }
+        BackgroundService() : AsyncTask("BackgroundService") {}
     };
 }

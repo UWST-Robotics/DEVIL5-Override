@@ -51,13 +51,23 @@ namespace devils
     protected:
         void onUpdate() override
         {
-            // Process differential odometry
-            const float leftPosition = chassis.getLeftMotors().getPosition() / ticksPerRevolution;
-            const float rightPosition = chassis.getRightMotors().getPosition() / ticksPerRevolution;
-            update(leftPosition, rightPosition);
+            // Get encoder positions
+            const auto leftResult = chassis.getLeftMotors().getPosition();
+            const auto rightResult = chassis.getRightMotors().getPosition();
+            
+            if (!leftResult.isSuccess() ||
+                !rightResult.isSuccess())
+            {
+                Logger::warn("Failed to get encoder positions for TankChassisOdom.");
+                return;
+            }
+            
+            // Convert ticks to wheel rotations and update odometry
+            update(leftResult.value / ticksPerRevolution,
+                   rightResult.value / ticksPerRevolution);
 
             // Apply IMU
-            if (imu != nullptr)
+            if (imu != nullptr && imu->getIsReady())
             {
                 Pose currentPose = getPose();
                 currentPose.rotation = imu->getHeading();

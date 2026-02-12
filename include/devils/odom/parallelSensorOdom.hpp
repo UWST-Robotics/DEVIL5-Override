@@ -31,8 +31,20 @@ namespace devils
 
         void onUpdate() override
         {
-            const float leftPosition = leftSensor.getAngle() / (2 * M_PIF) / ticksPerRevolution;
-            const float rightPosition = rightSensor.getAngle() / (2 * M_PIF) / ticksPerRevolution;
+            // Get sensor angles
+            const auto leftResult = leftSensor.getAngle();
+            const auto rightResult = rightSensor.getAngle();
+            
+            if (!leftResult.isSuccess() ||
+                !rightResult.isSuccess())
+            {
+                Logger::warn("Failed to get sensor angles for ParallelSensorOdometry.");
+                return;
+            }
+            
+            // Convert angles to wheel positions in revolutions
+            const float leftPosition = leftResult.value / (2 * M_PIF) / ticksPerRevolution;
+            const float rightPosition = rightResult.value / (2 * M_PIF) / ticksPerRevolution;
             update(leftPosition, rightPosition);
         }
 

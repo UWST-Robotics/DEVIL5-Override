@@ -31,6 +31,32 @@ namespace devils
         }
 
         /**
+         * Checks for SmartMotor micro-disconnection by comparing the SmartMotor's clock to the system clock.
+         * This allows the system to detect if a motor has been disconnected and reconnected before VEX's device timeout occurs.
+         * Based on https://github.com/LemLib/hardware/issues/5
+         */
+        void checkForMicroDisconnect()
+        {
+            // Get timestamp from the motor
+            uint32_t motorTimestamp = 0;
+            executeWithErrorCheck<uint32_t>(pros::c::motor_get_raw_position, port, &motorTimestamp);
+            const auto motorTimeDifference = static_cast<long>(motorTimestamp) - lastMotorTimestamp;
+            
+            // Get timestamp from the system
+            const auto systemTime = pros::c::millis();
+            const auto systemTimeDifference = static_cast<long>(systemTime) - lastSystemTimestamp;
+            
+            // Compare the time differences
+            const auto timeDifference = std::abs(static_cast<long>(motorTimeDifference - systemTimeDifference));
+            const auto isFirstCheck = lastSystemTimestamp == 0 || lastMotorTimestamp == 0;
+            if (timeDifference > MICRODISCONNECT_THRESHOLD_MS && !isFirstCheck)
+                Logger::warn(name + " may have disconnected (" + std::to_string(timeDifference) + "ms out of sync)");
+            
+            lastSystemTimestamp = systemTime;
+            lastMotorTimestamp = motorTimestamp;
+        }
+
+        /**
          * Runs the motor in voltage mode.
          * @param speed The speed to run the motor at, from -1 to 1.
          * @return HWStatus indicating success or failure.
@@ -38,7 +64,7 @@ namespace devils
         void move(const float speed) override
         {
             // Convert -1 to 1 range to -127 to 127 range
-            auto voltage = std::clamp(static_cast<int>(speed * 127), -127, 127);
+            auto voltage = std::clamp(static_cast<int>(speed * MAX_VALUE), -MAX_VALUE, MAX_VALUE);
 
             // Invert voltage if necessary
             if (isInverted)
@@ -163,6 +189,19 @@ namespace devils
         }
 
     protected:
+        /// @brief Motor clock must be this out of sync with system clock to be considered a micro-disconnection
+        static constexpr int MICRODISCONNECT_THRESHOLD_MS = 100;
+        
+        /// @brief Maximum voltage value inputted into the motor (in millivolts)
+        static constexpr int MAX_VALUE = 12000;
+        
+        /// @brief Whether the motor is inverted (i.e. if the port number is negative)
         bool isInverted = false;
+        
+        /// @brief System's timestamp the last time `checkForMicroDisconnect()` was called
+        uint32_t lastSystemTimestamp = 0;
+        
+        /// @brief Motor's timestamp the last time `checkForMicroDisconnect()` was called
+        uint32_t lastMotorTimestamp = 0;
     };
 }
