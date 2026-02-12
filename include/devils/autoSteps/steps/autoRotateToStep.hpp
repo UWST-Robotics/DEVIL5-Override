@@ -5,6 +5,7 @@
 #include "../../chassis/chassisBase.hpp"
 #include "../../geometry/math.hpp"
 #include "../../controller/pidController.hpp"
+#include "devils/controller/profiledPIDController.hpp"
 
 namespace devils
 {
@@ -16,22 +17,19 @@ namespace devils
     public:
         struct Options
         {
-            /// @brief The PID parameters to snap to an angle. Uses delta radians as the error.
-            PIDController::Options pidParams = {0.1, 0.0, 0.0};
+            /// @brief The PID parameters to snap to an angle. Used as a feedback controller.
+            PIDController::Options pidParams = {0.5, 0.0, 0.0};
+            
+            /// @brief The constraints for the motion profile. Used as a feedforward controller
+            TrapezoidMotionProfile::Constraints motionProfileConstraints = {3.0f, 3.0f, 3.0f};
 
-            /// @brief The minimum speed in %
-            float minSpeed = 0.1;
-
-            /// @brief The maximum speed in %
-            float maxSpeed = 0.6;
-
-            /// @brief The distance to the goal in radians
-            float goalDist = 0.015;
-
-            /// @brief The maximum goal speed of the robot in rad/s. (Defaults to no limit)
-            float goalSpeed = std::numeric_limits<float>::max();
-
-            /// @brief Setting this to false will rotate to the absolute angle instead of the minimum distance.
+            /**
+             * If true, the robot will try to rotate to the angle using the fastest path possible.
+             * For example if the robot is at 10 degrees and the target angle is 350 degrees, the robot will rotate -20 degrees instead of +340 degrees.
+             * 
+             * If false, the robot will try to match the angle exactly, even if it means taking a longer path.
+             * For example if the robot is at 10 degrees and the target angle is 350 degrees, the robot will rotate +340 degrees instead of -20 degrees.
+             */
             bool useMinimumDistance = true;
 
             /// @brief The default options for the rotational step.
@@ -52,10 +50,13 @@ namespace devils
             const Options& options = Options::defaultOptions)
             : chassis(chassis),
               odomSource(odomSource),
-              rotationPID(options.pidParams),
               targetAngle(targetAngle),
+              pidController(options.pidParams,
+                            options.motionProfileConstraints,
+                            0),
               options(options)
         {
+            pidController.setGoal(getGoalAngle());
         }
 
         Options& getOptions()
@@ -66,35 +67,15 @@ namespace devils
     protected:
         void onStart() override
         {
-            // Reset Finished
-            this->isAtGoal = false;
-
-            // Reset PID
-            rotationPID.reset();
+            pidController.reset();
         }
 
         void onUpdate() override
         {
-            // Get Current Pose
-            const Pose currentPose = odomSource.getPose();
-            const float currentVelocity = odomSource.getVelocity().rotation;
-
-            // Calculate distance to start and target
-            const float currentAngle = currentPose.rotation;
-            const float distanceToTarget = angleDiff(targetAngle, currentAngle);
-
-            // Check if we are at the goal
-            const bool isAtGoalPose = fabsf(distanceToTarget) < options.goalDist;
-            const bool isAtGoalVelocity = fabsf(currentVelocity) < options.goalSpeed;
-            isAtGoal = isAtGoalPose && isAtGoalVelocity;
-
-            // Calculate Speed
-            float speed = rotationPID.update(distanceToTarget);
-            speed = std::clamp(speed, -options.maxSpeed, options.maxSpeed); // Clamp to max speed
-            speed = std::copysign(std::max(fabsf(speed), options.minSpeed), speed); // Clamp to min speed
-
-            // Move Chassis
-            chassis.move(0.0f, speed, 0.0f);
+            // Get profiled PID output
+            const auto currentAngle = odomSource.getPose().rotation;
+            const auto velocity = pidController.getState(currentAngle);
+            chassis.move(0.0f, velocity, 0.0f);
         }
 
         void onStop() override
@@ -105,39 +86,29 @@ namespace devils
 
         bool checkFinished() override
         {
-            return isAtGoal;
+            return pidController.getTimeRemaining() <= 0;
         }
-
-    protected:
-        // State
-        bool isAtGoal = false;
-
-        // Params
+        
         ChassisBase& chassis;
         OdomSource& odomSource;
-        PIDController rotationPID;
         float targetAngle = 0;
+        ProfiledPIDController pidController;
         Options options;
 
     private:
         static constexpr float POST_DRIVE_DELAY = 50; // ms
 
         /**
-         * Gets the angle difference between two angles.
-         * Uses the minimum distance if the option is enabled.
-         * Otherwise, returns the difference.
-         * @param a The first angle.
-         * @param b The second angle.
-         * @return The difference between the two angles.
+         * Gets the goal angle to rotate to based on the current angle and the target angle, taking into account the `useMinimumDistance` option.
+         * @return The goal angle to rotate to in radians.
          */
-        float angleDiff(const float a, const float b) const
+        float getGoalAngle() const
         {
-            if (options.useMinimumDistance)
-                return Math::angleDiff(a, b);
-            return a - b;
+            const auto currentAngle = odomSource.getPose().rotation;
+            return options.useMinimumDistance ? currentAngle + Math::angleDiff(targetAngle, currentAngle) : targetAngle;
         }
     };
 
     // Initialize Default Options
-    AutoRotateToStep::Options AutoRotateToStep::Options::defaultOptions = AutoRotateToStep::Options();
+    AutoRotateToStep::Options AutoRotateToStep::Options::defaultOptions = Options();
 }

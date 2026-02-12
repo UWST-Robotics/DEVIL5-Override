@@ -1,5 +1,7 @@
 #include "main.h"
 
+#include "devils/2026/dummyRobot.hpp"
+
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -9,7 +11,7 @@
 void initialize()
 {
     Logger::info("==== Initialize ====");
-    robot = std::make_shared<PJRobot>(); // <-- Change this to the target robot
+    robot = std::make_shared<DummyRobot>(); // <-- Change this to the target robot
     Logger::info("Robot created");
 }
 

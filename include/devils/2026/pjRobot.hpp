@@ -80,8 +80,6 @@ namespace devils
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f, 0.0f);
-
-                frontTopIntakeMotors.getMotors()[0]->checkForMicroDisconnection();
                 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);

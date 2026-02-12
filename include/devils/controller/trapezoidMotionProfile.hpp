@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../utils/logger.hpp"
+
 namespace devils
 {
     class TrapezoidMotionProfile
@@ -39,21 +41,42 @@ namespace devils
         /**
          * Calculates a trapezoidal motion profile based on the given constraints, starting velocity, ending velocity, and distance.
          * @param constraints - The constraints for the motion profile, including max velocity, acceleration, and deceleration.
-         * @param distance - The total distance to be covered by the motion profile (typically inches or degrees).
+         * @param goalDistance - The total distance to be covered by the motion profile (typically inches or degrees).
          * @param startingVelocity - The initial velocity of the motion profile (typically inches/s or degrees/s).
          * @param endingVelocity - The final velocity of the motion profile (typically inches/s or degrees/s).
          */
         TrapezoidMotionProfile(
             const Constraints& constraints,
-            const float distance,
+            const float goalDistance,
             const float startingVelocity = 0,
             const float endingVelocity = 0)
             : startingVelocity(startingVelocity),
               endingVelocity(endingVelocity),
-              constraints(constraints),
-              peakVelocity(constraints.maxVelocity)
+              constraints(constraints)
         {
+            recalculate(goalDistance);
+        }
+
+        /**
+         * Recalculates the motion profile based on the given distance.
+         * Should be called whenever the distance changes to update the motion profile.
+         * @param goalDistance - The total distance to be covered by the motion profile (typically inches or degrees).
+         */
+        void recalculate(const float goalDistance)
+        {
+            // Check if constraints are zero
+            if (constraints.maxVelocity <= 0 ||
+                constraints.maxAcceleration <= 0 ||
+                constraints.maxDeceleration <= 0)
+            {
+                Logger::warn("TrapezoidMotionProfile: One or more constraints are zero or negative. Adjusting to default values.");
+                constraints.maxVelocity = std::max(constraints.maxVelocity, 1.0f);
+                constraints.maxAcceleration = std::max(constraints.maxAcceleration, 1.0f);
+                constraints.maxDeceleration = std::max(constraints.maxDeceleration, 1.0f);
+            }
+            
             // Calculate the time to accelerate/decelerate to/from the peak velocity
+            peakVelocity = constraints.maxVelocity;
             accelerationTime = (peakVelocity - startingVelocity) / constraints.maxAcceleration;
             decelerationTime = (peakVelocity - endingVelocity) / constraints.maxDeceleration;
 
@@ -61,14 +84,15 @@ namespace devils
             decelerationDistance = calculateDistance(0, peakVelocity, -constraints.maxDeceleration, decelerationTime);
             
             // Calculate the distance covered during the cruising velocity phase
-            cruisingDistance = distance - accelerationDistance - decelerationDistance;
+            const auto positiveGoalDistance = std::abs(goalDistance);
+            cruisingDistance = positiveGoalDistance - accelerationDistance - decelerationDistance;
             cruisingTime = cruisingDistance / peakVelocity;
             
             // Check if this is a triangular profile 
             if (cruisingDistance < 0)
             {
                 // Recalculate the peak velocity for a triangular profile
-                peakVelocity = 2 * distance +
+                peakVelocity = 2 * positiveGoalDistance +
                                 startingVelocity * startingVelocity / constraints.maxAcceleration +
                                 endingVelocity * endingVelocity / constraints.maxDeceleration;
                 peakVelocity /= 1 / constraints.maxAcceleration + 1 / constraints.maxDeceleration;
@@ -98,6 +122,23 @@ namespace devils
                 decelerationTime = 0;
                 peakVelocity = endingVelocity;
             }
+            
+            // Copy the sign of the goal distance to the distances and velocities
+            const auto goalSign = (goalDistance >= 0) ? 1 : -1;
+            accelerationDistance *= goalSign;
+            cruisingDistance *= goalSign;
+            decelerationDistance *= goalSign;
+            peakVelocity *= goalSign;
+            acceleration = constraints.maxAcceleration * goalSign;
+            deceleration = -constraints.maxDeceleration * goalSign;
+            
+            Logger::debug("Acceleration time = " + std::to_string(accelerationTime));
+            Logger::debug("Cruising time = " + std::to_string(cruisingTime));
+            Logger::debug("Deceleration time = " + std::to_string(decelerationTime));
+            Logger::debug("Acceleration distance = " + std::to_string(accelerationDistance));
+            Logger::debug("Cruising distance = " + std::to_string(cruisingDistance));
+            Logger::debug("Deceleration distance = " + std::to_string(decelerationDistance));
+            Logger::debug("Peak velocity = " + std::to_string(peakVelocity));
         }
 
         /**
@@ -109,14 +150,18 @@ namespace devils
         {
             if (t < accelerationTime)
                 return ACCELERATING;
-            else if (t < accelerationTime + cruisingTime)
+            if (t < accelerationTime + cruisingTime)
                 return CRUISING;
-            else if (t < accelerationTime + cruisingTime + decelerationTime)
+            if (t < accelerationTime + cruisingTime + decelerationTime)
                 return DECELERATING;
-            else
-                return COMPLETE;
+            return COMPLETE;
         }
         
+        /**
+         * Gets the state of the motion profile at a given time.
+         * @param t - The time at which to get the state of the motion profile (typically seconds).
+         * @return The state of the motion profile at the given time, including position, velocity, and acceleration.
+         */
         State getStateAtTime(const float t) const
         {
             float localT;
@@ -126,9 +171,9 @@ namespace devils
             switch (currentPhase)
             {
                 case ACCELERATING:
-                    state.position = calculateDistance(0, startingVelocity, constraints.maxAcceleration, t);
-                    state.velocity = startingVelocity + constraints.maxAcceleration * t;
-                    state.acceleration = constraints.maxAcceleration;
+                    state.position = calculateDistance(0, startingVelocity, acceleration, t);
+                    state.velocity = startingVelocity + acceleration * t;
+                    state.acceleration = acceleration;
                     break;
                 case CRUISING:
                     localT = t - accelerationTime;
@@ -138,9 +183,9 @@ namespace devils
                     break;
                 case DECELERATING:
                     localT = t - accelerationTime - cruisingTime;
-                    state.position = calculateDistance(accelerationDistance + cruisingDistance, peakVelocity, -constraints.maxDeceleration, localT);
-                    state.velocity = peakVelocity - constraints.maxDeceleration * localT;
-                    state.acceleration = -constraints.maxDeceleration;
+                    state.position = calculateDistance(accelerationDistance + cruisingDistance, peakVelocity, deceleration, localT);
+                    state.velocity = peakVelocity + deceleration * localT;
+                    state.acceleration = deceleration;
                     break;
                 case COMPLETE:
                     state.position = accelerationDistance + cruisingDistance + decelerationDistance;
@@ -190,6 +235,9 @@ namespace devils
         float accelerationTime;
         float cruisingTime;
         float decelerationTime;
+        
+        float acceleration;
+        float deceleration;
         
         float peakVelocity;
     };

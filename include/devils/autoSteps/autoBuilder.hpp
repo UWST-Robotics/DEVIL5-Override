@@ -8,11 +8,8 @@
 #include "../path/splinePath.hpp"
 #include "./steps/autoDriveStep.hpp"
 #include "./steps/autoRotateToStep.hpp"
-#include "./steps/autoTimeoutStep.hpp"
-#include "./steps/autoPauseStep.hpp"
 #include "./steps/autoPurePursuitStep.hpp"
 #include "./steps/autoRamseteStep.hpp"
-#include "./transformer/poseTransform.h"
 
 namespace devils
 {
@@ -61,14 +58,8 @@ namespace devils
          */
         void setPose(const Pose& pose)
         {
-            // Set the current pose
             this->currentPose = pose;
-
-            // Transform the pose
-            Pose transformedPose = tryTransformPose(pose);
-
-            // Return a new `AutoJumpToStep` with the given pose
-            this->odom.setPose(transformedPose);
+            this->odom.setPose(pose);
         }
 
         /**
@@ -82,10 +73,7 @@ namespace devils
             const float y,
             const float rotation)
         {
-            // Create a new pose
             const auto pose = Pose(x, y, Units::degToRad(rotation));
-
-            // Return a new `AutoJumpToStep` with the given pose
             setPose(pose);
         }
 
@@ -94,10 +82,10 @@ namespace devils
          * @param duration The duration to pause in milliseconds
          * @returns A pointer to the created step
          */
-        AutoStepPtr pause(uint32_t duration)
+        void pause(const uint32_t duration)
         {
             velocity = 0.0;
-            return std::make_shared<AutoPauseStep>(duration);
+            pros::delay(duration);
         }
 
         /**
@@ -184,8 +172,8 @@ namespace devils
             AutoRamseteStep::Options options = AutoRamseteStep::Options::defaultOptions)
         {
             // Transform the pose
-            Pose fromPose = startFromOdomPose ? tryTransformPose(odom.getPose()) : tryTransformPose(this->currentPose);
-            Pose toPose = tryTransformPose(pose);
+            const Pose fromPose = startFromOdomPose ? odom.getPose() : this->currentPose;
+            const Pose toPose = pose;
 
             // Create a new path
             SplinePath path = SplinePath::makeArc(fromPose, toPose, strength, isReversed);
@@ -206,25 +194,6 @@ namespace devils
 
             // Make a new `AutoRamseteStep` with the given trajectory
             return std::make_shared<AutoRamseteStep>(chassis, odom, trajectory, options);
-        }
-
-        /**
-         * Rotates the robot a given amount
-         * @param distance The distance to rotate in degrees
-         * @param timeout The timeout in milliseconds
-         * @param options The options for the drive step
-         * @returns A pointer to the created step
-         */
-        AutoStepPtr rotate(
-            const float distance,
-            const uint32_t timeout = 2000,
-            const AutoRotateToStep::Options& options = AutoRotateToStep::Options::defaultOptions)
-        {
-            // Calculate the new heading (in degrees)
-            const auto newHeading = Units::radToDeg(currentPose.rotation) + distance;
-
-            // Return a new `AutoRotateToStep` with the given heading
-            return rotateTo(newHeading, timeout, options);
         }
 
         /**
@@ -263,52 +232,38 @@ namespace devils
         }
 
         /**
+         * Rotates the robot a given amount
+         * @param distance The distance to rotate in degrees
+         * @param options The options for the drive step
+         * @returns A pointer to the created step
+         */
+        AutoStepPtr rotate(
+            const float distance,
+            const AutoRotateToStep::Options& options = AutoRotateToStep::Options::defaultOptions)
+        {
+            // Calculate the new heading (in degrees)
+            const auto newHeading = Units::radToDeg(currentPose.rotation) + distance;
+
+            // Return a new `AutoRotateToStep` with the given heading
+            return rotateTo(newHeading, options);
+        }
+
+        /**
          * Rotates the robot to a given heading
          * @param heading The heading to rotate to in degrees
-         * @param timeout The timeout in milliseconds
          * @param options The options for the drive step
          * @returns A pointer to the created step
          */
         AutoStepPtr rotateTo(
             const float heading,
-            uint32_t timeout = 2000,
             AutoRotateToStep::Options options = AutoRotateToStep::Options::defaultOptions)
         {
             // Convert & apply the heading to the current pose
             currentPose.rotation = Units::degToRad(heading);
             velocity = 0.0;
 
-            // Transform the pose
-            Pose transformedPose = tryTransformPose(currentPose);
-
             // Return a new `AutoRotateToStep` with the given heading
-            return std::make_shared<AutoTimeoutStep>(
-                std::make_shared<AutoRotateToStep>(chassis, odom, transformedPose.rotation, options), timeout);
-        }
-
-        /**
-         * Uses a pose transformation when building autonomous
-         * @param newTransformer - The transformation to apply
-         */
-        void useTransformer(std::unique_ptr<PoseTransform> newTransformer)
-        {
-            this->transformer = std::move(newTransformer);
-        }
-
-    protected:
-        /**
-         * Tries to transform a pose using the assigned transformer, if any
-         * @param pose - The pose to transform
-         * @returns The transformed pose
-         */
-        Pose tryTransformPose(const Pose& pose) const
-        {
-            // If a transformer is assigned, transform the pose
-            if (transformer)
-                return transformer->transform(pose);
-
-            // Otherwise, return the original pose
-            return pose;
+            return std::make_shared<AutoRotateToStep>(chassis, odom, currentPose.rotation, options);
         }
 
     private:
@@ -317,9 +272,6 @@ namespace devils
 
         /// @brief The current velocity of the robot in inches per second
         float velocity = 0.0;
-
-        /// @brief The active transformer used to transform poses
-        std::unique_ptr<PoseTransform> transformer = nullptr;
 
         // Input references
         ChassisBase& chassis;

@@ -65,13 +65,9 @@
 #include "autoSteps/steps/autoDriveTimeStep.hpp"
 #include "autoSteps/steps/autoDriveToStep.hpp"
 #include "autoSteps/steps/autoDriveStep.hpp"
-#include "autoSteps/steps/autoRotateStep.hpp"
 #include "autoSteps/steps/autoRotateToStep.hpp"
-#include "autoSteps/steps/autoPauseStep.hpp"
-#include "autoSteps/steps/autoJumpToStep.hpp"
 #include "autoSteps/steps/autoPurePursuitStep.hpp"
 #include "autoSteps/steps/autoRamseteStep.hpp"
-#include "autoSteps/transformer/mirrorTransform.hpp"
 
 // Display
 #include "display/toastDisplay.hpp"
