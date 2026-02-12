@@ -5,8 +5,11 @@
 namespace devils
 {
     /**
-     * Represents a feedforward controller for a motor.
-     * Assumes no gravity or external forces act on the motor (See `ArmFeedforward` or `ElevatorFeedforward` for those cases).
+     * Represents a feedforward controller for a motor or a group of motors.
+     * Can be used to calculate the voltage to apply to a motor based on the desired velocity and acceleration of the motor.
+     * Typically used in conjunction with a `TrapezoidMotionProfile` and/or `ProfiledPIDController` to follow a motion profile with feedforward control.
+     * 
+     * \note Assumes no gravity or external forces act on the motor (See `ArmFeedforward` or `ElevatorFeedforward` for those cases).
      */
     class MotorFeedforward
     {
@@ -45,7 +48,8 @@ namespace devils
             // V = k_g + k_s * sign(vel) + k_v * vel + k_a * acc
 
             float voltage = 0.0;
-            voltage += options.staticFriction * std::copysign(1.0f, velocity); // Static friction
+            if (velocity != 0)
+                voltage += options.staticFriction * std::copysign(1.0f, velocity); // Static friction
             voltage += options.velocityGain * velocity; // Velocity
             voltage += options.accelerationGain * acceleration; // Acceleration
 

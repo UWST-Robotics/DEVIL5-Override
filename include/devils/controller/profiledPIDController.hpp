@@ -65,33 +65,14 @@ namespace devils
         }
 
         /**
-         * Calculates the current state of the motion profile based on the internal timer and the expected position.
-         * @param currentPosition - The current position of the mechanism. This is used to calculate the error for the PID controller.
-         * @return The output velocity to apply to the motor based on the motion profile and the PID controller. This is typically inches/s or degrees/s.
+         * Gets the current error of the motion profile based on the current position and the setpoint. This can be used as feedback to correct for any errors in the motion profile.
+         * @param currentPosition - The current position of the system (typically inches or degrees).
+         * @return The current error of the motion profile based on the current position and the setpoint. Returns 0 if the motion profile is complete.
          */
-        float getState(const float currentPosition)
+        float update(const float currentPosition)
         {
             const auto setpoint = getSetpoint();
-            const float pidOutput = pidController.update(setpoint.position - currentPosition);
-            
-            Logger::debug("Current Position = " + std::to_string(currentPosition));
-            Logger::debug("Setpoint Position = " + std::to_string(setpoint.position));
-            Logger::debug("Setpoint Velocity = " + std::to_string(setpoint.velocity));
-            Logger::debug("PID Output = " + std::to_string(pidOutput));
-            
-            return feedbackGain * pidOutput + 
-                   feedforwardGain * setpoint.velocity;
-        }
-
-        /**
-         * Sets the feedback and feedforward gains for the controller.
-         * @param newFeedbackGain - The gain to apply to the PID controller output
-         * @param newFeedforwardGain  - The gain to apply to the feedforward velocity from the motion profile
-         */
-        void setGains(const float newFeedbackGain, const float newFeedforwardGain)
-        {
-            this->feedbackGain = newFeedbackGain;
-            this->feedforwardGain = newFeedforwardGain;
+            return pidController.update(setpoint.position - currentPosition);
         }
 
         /**
@@ -109,8 +90,5 @@ namespace devils
         PIDController pidController;
         TrapezoidMotionProfile motionProfile;
         uint32_t startTime;
-        
-        float feedbackGain = 1.0f;
-        float feedforwardGain = 0.108f;
     };
 }

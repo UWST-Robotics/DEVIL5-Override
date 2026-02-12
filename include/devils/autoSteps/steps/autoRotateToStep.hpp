@@ -17,11 +17,14 @@ namespace devils
     public:
         struct Options
         {
-            /// @brief The PID parameters to snap to an angle. Used as a feedback controller.
+            /// @brief The PID parameters to snap to an angle. Used to correct drift from the motion profile.
             PIDController::Options pidParams = {0.5, 0.0, 0.0};
             
-            /// @brief The constraints for the motion profile. Used as a feedforward controller
-            TrapezoidMotionProfile::Constraints motionProfileConstraints = {3.0f, 3.0f, 3.0f};
+            /// @brief The constraints for the motion profile.
+            TrapezoidMotionProfile::Constraints motionProfileConstraints = {3.0f, 3.0f, 6.0f};
+            
+            /// @brief The feedforward option to apply based on the motion profile.
+            MotorFeedforward::Options feedforwardOptions = {0.0f, 0.1f, 0.0f};
 
             /**
              * If true, the robot will try to rotate to the angle using the fastest path possible.
@@ -54,6 +57,7 @@ namespace devils
               pidController(options.pidParams,
                             options.motionProfileConstraints,
                             0),
+              feedforwardController(options.feedforwardOptions),
               options(options)
         {
             pidController.setGoal(getGoalAngle());
@@ -74,13 +78,18 @@ namespace devils
         {
             // Get profiled PID output
             const auto currentAngle = odomSource.getPose().rotation;
-            const auto velocity = pidController.getState(currentAngle);
-            chassis.move(0.0f, velocity, 0.0f);
+            const auto pidOutput = pidController.update(currentAngle);
+            
+            // Get feedforward output
+            const auto setpoint = pidController.getSetpoint();
+            const auto feedforwardOutput = feedforwardController.update(setpoint.velocity, setpoint.acceleration);
+            
+            // Combine the outputs and apply to the chassis
+            chassis.move(0.0f, pidOutput + feedforwardOutput, 0.0f);
         }
 
         void onStop() override
         {
-            // Stop Chassis
             chassis.stop();
         }
 
@@ -93,6 +102,7 @@ namespace devils
         OdomSource& odomSource;
         float targetAngle = 0;
         ProfiledPIDController pidController;
+        MotorFeedforward feedforwardController;
         Options options;
 
     private:

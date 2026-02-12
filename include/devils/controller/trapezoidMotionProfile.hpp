@@ -131,14 +131,6 @@ namespace devils
             peakVelocity *= goalSign;
             acceleration = constraints.maxAcceleration * goalSign;
             deceleration = -constraints.maxDeceleration * goalSign;
-            
-            Logger::debug("Acceleration time = " + std::to_string(accelerationTime));
-            Logger::debug("Cruising time = " + std::to_string(cruisingTime));
-            Logger::debug("Deceleration time = " + std::to_string(decelerationTime));
-            Logger::debug("Acceleration distance = " + std::to_string(accelerationDistance));
-            Logger::debug("Cruising distance = " + std::to_string(cruisingDistance));
-            Logger::debug("Deceleration distance = " + std::to_string(decelerationDistance));
-            Logger::debug("Peak velocity = " + std::to_string(peakVelocity));
         }
 
         /**
