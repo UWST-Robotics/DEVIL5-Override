@@ -30,9 +30,9 @@ namespace devils
          * @param dGain The derivative gain of the controller (d * derivative)
          */
         PIDController(
-            float pGain,
-            float iGain,
-            float dGain)
+            const float pGain,
+            const float iGain,
+            const float dGain)
             : pGain(pGain),
               iGain(iGain),
               dGain(dGain)

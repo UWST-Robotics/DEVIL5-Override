@@ -17,7 +17,9 @@ namespace devils
             ChassisBase& chassisBase = *chassis;
             
             auto autoBuilder = AutoBuilder(chassisBase, odom);
-            const auto testStep = autoBuilder.rotate(180)->start();
+            
+            AutoRotateToStep::Options::defaultOptions.useMinimumDistance = false;
+            const auto testStep = autoBuilder.rotate(360)->start();
             
             while (testStep->getState() != STOPPED)
             {

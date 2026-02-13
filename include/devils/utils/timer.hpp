@@ -9,18 +9,19 @@ namespace devils
     public:
         /**
          * Creates a new instance of Timer with a given duration.
-         * @param duration The duration of the timer in milliseconds.
+         * @param duration The duration of the timer in seconds.
          * @return The new instance of Timer.
          */
-        Timer(const uint32_t duration) : duration(duration)
+        explicit Timer(const float duration) :
+            duration(duration)
         {
         }
 
         /**
          * Sets the duration of the timer.
-         * @param newDuration The duration of the timer in milliseconds.
+         * @param newDuration The duration of the timer in seconds.
          */
-        void setDuration(const uint32_t newDuration)
+        void setDuration(const float newDuration)
         {
             this->duration = newDuration;
         }
@@ -57,23 +58,32 @@ namespace devils
          */
         bool finished() const
         {
-            return isStarted && pros::millis() - startTime >= duration;
+            return isStarted && elapsedTime() >= duration;
         }
 
+        /**
+         * Gets the elapsed time since the timer was started.
+         * @return The elapsed time since the timer was started in milliseconds.
+         */
+        float elapsedTime() const
+        {
+            return static_cast<float>(pros::millis() - startTime) * 1000.0f;
+        }
+        
         /**
          * Gets the time remaining on the timer.
          * @return The time remaining on the timer in milliseconds.
          */
-        uint32_t timeRemaining() const
+        float timeRemaining() const
         {
             if (!running())
                 return 0;
-            return duration - (pros::millis() - startTime);
+            return duration - elapsedTime();
         }
 
     private:
         bool isStarted = false;
         uint32_t startTime = 0;
-        uint32_t duration = 0;
+        float duration = 0;
     };
 }

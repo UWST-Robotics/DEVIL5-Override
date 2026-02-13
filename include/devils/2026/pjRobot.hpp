@@ -17,7 +17,7 @@ namespace devils
             odometry->start();
             
             toastDisplay->start();
-            devilBotsDisplay->start();
+            // devilBotsDisplay->start();
             
             // Logger::debug("This is a debug message");
             // Logger::info("This is an info message");
@@ -28,7 +28,14 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            PJSkillsAuto::run(chassis, *odometry.get(), intake);
+            
+            auto autoBuilder = AutoBuilder(chassis, *odometry.get());
+            autoBuilder.rotateTo(90, {.endingVelocity = 0.0f})->startSync();
+            autoBuilder.rotateTo(180, {.endingVelocity = 0.0f})->startSync();
+            // autoBuilder.rotateTo(0)->startSync();
+            // autoBuilder.rotateTo(180)->startSync();
+            
+            // PJSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
         void opcontrol() override
@@ -139,7 +146,7 @@ namespace devils
             DEAD_WHEEL_RADIUS);
         
         // Displays
-        std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
         // Renderer

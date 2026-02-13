@@ -49,18 +49,29 @@ namespace devils
         float getTimeRemaining() const
         {
             const float elapsedTime = (pros::millis() - startTime) / 1000.0f; // Convert to seconds
-            const float totalTime = motionProfile.getTotalTime();
+            const float totalTime = motionProfile.getTotalTime() + feedbackDelay; // Add the feedback delay to account for any latency in the control loop
             
             return std::max(0.0f, totalTime - elapsedTime);
         }
 
         /**
+         * Gets the total duration of the motion profile.
+         * @return The total duration of the motion profile in seconds.
+         */
+        float getDuration() const
+        {
+            return motionProfile.getTotalTime();
+        }
+
+        /**
          * Gets the setpoint which is the target state of the motion profile based on the internal timer.
+         * @param deltaTime - The amount of time to add to the internal timer to account for feedback latency. This can be used to get a more accurate setpoint for the current time when using the `update` method, which may have some latency between getting the setpoint and applying the output.
          * @return The current state of the motion profile based on the internal timer.
          */
-        TrapezoidMotionProfile::State getSetpoint() const
+        TrapezoidMotionProfile::State getSetpoint(const float deltaTime = 0.0f) const
         {
-            const float t = (pros::millis() - startTime) / 1000.0f; // Convert to seconds
+            float t = (pros::millis() - startTime) / 1000.0f; // Convert to seconds
+            t += deltaTime; // Add the delta time to account for feedback latency
             return motionProfile.getStateAtTime(t);
         }
 
@@ -71,7 +82,7 @@ namespace devils
          */
         float update(const float currentPosition)
         {
-            const auto setpoint = getSetpoint();
+            const auto setpoint = getSetpoint(-feedbackDelay);
             return pidController.update(setpoint.position - currentPosition);
         }
 
@@ -79,16 +90,31 @@ namespace devils
          * Sets a new goal distance for the motion profile and resets the internal timer.
          * Should be called whenever the goal distance changes to update the motion profile.
          * @param newGoal - The new goal distance to be covered by the motion profile (typically inches or degrees).
+         * @param newStartingVelocity - The new initial velocity of the motion profile (typically inches/s or degrees/s). If not provided, the starting velocity will be 0.
+         * @param newEndingVelocity - The new final velocity of the motion profile (typically inches/s or degrees/s). If not provided, the ending velocity will be 0.
          */
-        void setGoal(const float newGoal)
+        void setGoal(const float newGoal,
+                     const float newStartingVelocity = 0,
+                     const float newEndingVelocity = 0)
         {
-            motionProfile.recalculate(newGoal);
+            motionProfile.recalculate(newGoal, newStartingVelocity, newEndingVelocity);
             reset();
+        }
+
+        /**
+         * Adds a delay to the internal timer to account for feedback latency.
+         * Only used in the `update` method to get a more accurate setpoint for the current time when there may be some latency between getting the setpoint and applying the output.
+         * @param delay - The amount of time to add to the internal timer to account for feedback latency in seconds.
+         */
+        void setFeedbackDelay(const float delay)
+        {
+            feedbackDelay = delay;
         }
         
     protected:
         PIDController pidController;
         TrapezoidMotionProfile motionProfile;
         uint32_t startTime;
+        float feedbackDelay = 0.02f; // seconds
     };
 }

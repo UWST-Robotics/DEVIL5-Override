@@ -50,19 +50,22 @@ namespace devils
             const float goalDistance,
             const float startingVelocity = 0,
             const float endingVelocity = 0)
-            : startingVelocity(startingVelocity),
-              endingVelocity(endingVelocity),
-              constraints(constraints)
+            : constraints(constraints)
         {
-            recalculate(goalDistance);
+            recalculate(goalDistance, startingVelocity, endingVelocity);
         }
 
         /**
          * Recalculates the motion profile based on the given distance.
          * Should be called whenever the distance changes to update the motion profile.
          * @param goalDistance - The total distance to be covered by the motion profile (typically inches or degrees).
+         * @param newStartingVelocity - The new initial velocity of the motion profile (typically inches/s or degrees/s).
+         * @param newEndingVelocity - The new final velocity of the motion profile (typically inches/s or degrees/s).
          */
-        void recalculate(const float goalDistance)
+        void recalculate(
+            const float goalDistance,
+            const float newStartingVelocity = 0,
+            const float newEndingVelocity = 0)
         {
             // Check if constraints are zero
             if (constraints.maxVelocity <= 0 ||
@@ -74,6 +77,9 @@ namespace devils
                 constraints.maxAcceleration = std::max(constraints.maxAcceleration, 1.0f);
                 constraints.maxDeceleration = std::max(constraints.maxDeceleration, 1.0f);
             }
+            
+            startingVelocity = newStartingVelocity;
+            endingVelocity = newEndingVelocity;
             
             // Calculate the time to accelerate/decelerate to/from the peak velocity
             peakVelocity = constraints.maxVelocity;
@@ -124,7 +130,7 @@ namespace devils
             }
             
             // Copy the sign of the goal distance to the distances and velocities
-            const auto goalSign = (goalDistance >= 0) ? 1 : -1;
+            const float goalSign = (goalDistance >= 0) ? 1 : -1;
             accelerationDistance *= goalSign;
             cruisingDistance *= goalSign;
             decelerationDistance *= goalSign;

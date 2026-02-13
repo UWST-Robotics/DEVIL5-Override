@@ -18,13 +18,25 @@ namespace devils
         struct Options
         {
             /// @brief The PID parameters to snap to an angle. Used to correct drift from the motion profile.
-            PIDController::Options pidParams = {0.5, 0.0, 0.0};
+            PIDController::Options pidParams = {0.8, 0.0, 0.0};
             
             /// @brief The constraints for the motion profile.
-            TrapezoidMotionProfile::Constraints motionProfileConstraints = {3.0f, 3.0f, 6.0f};
+            TrapezoidMotionProfile::Constraints motionProfileConstraints = {16.0f, 8.0f, 16.0f};
             
             /// @brief The feedforward option to apply based on the motion profile.
-            MotorFeedforward::Options feedforwardOptions = {0.0f, 0.1f, 0.0f};
+            MotorFeedforward::Options feedforwardOptions = {0.0f, 0.09f, 0.005f};
+            
+            /// @brief The amount of time to add to the remaining time of the motion profile to account for feedback latency
+            float feedbackLatency = 0.07f; // 70 ms
+            
+            /// @brief If true, the current velocity of the robot will be used as the starting velocity for the motion profile. Otherwise, the starting velocity will be 0.
+            bool useCurrentVelocityAsStartingVelocity = true;
+            
+            /// @brief The starting rotational velocity for the motion profile. Only used if `useCurrentVelocityAsStartingVelocity` is false.
+            float startingVelocity = 0.0f;
+            
+            /// @brief The ending rotational velocity for the motion profile
+            float endingVelocity = 0.0f;
 
             /**
              * If true, the robot will try to rotate to the angle using the fastest path possible.
@@ -60,7 +72,16 @@ namespace devils
               feedforwardController(options.feedforwardOptions),
               options(options)
         {
-            pidController.setGoal(getGoalAngle());
+            // Get the starting velocity for the motion profile. This is typically the current velocity of the robot, but can be overridden by the options.
+            float startingVelocity = options.startingVelocity;
+            if (options.useCurrentVelocityAsStartingVelocity)
+                startingVelocity = odomSource.getVelocity().rotation;
+            
+            // Set the goal distance for the motion profile based on the target angle and the current angle from odometry.
+            pidController.setGoal(getGoalDistance(), startingVelocity, options.endingVelocity);
+            
+            // Set the feedback delay for the PID controller to account for any latency in the odometry or the control loop.
+            pidController.setFeedbackDelay(options.feedbackLatency);
         }
 
         Options& getOptions()
@@ -72,20 +93,22 @@ namespace devils
         void onStart() override
         {
             pidController.reset();
+            startingRotation = odomSource.getPose().rotation;
         }
 
         void onUpdate() override
         {
             // Get profiled PID output
             const auto currentAngle = odomSource.getPose().rotation;
-            const auto pidOutput = pidController.update(currentAngle);
+            const auto currentAngleRelative = Math::angleDiff(currentAngle, startingRotation);
+            const auto pidOutput = pidController.update(currentAngleRelative);
             
             // Get feedforward output
             const auto setpoint = pidController.getSetpoint();
             const auto feedforwardOutput = feedforwardController.update(setpoint.velocity, setpoint.acceleration);
             
             // Combine the outputs and apply to the chassis
-            chassis.move(0.0f, pidOutput + feedforwardOutput, 0.0f);
+            chassis.move(0.0f, feedforwardOutput + pidOutput, 0.0f);
         }
 
         void onStop() override
@@ -101,22 +124,24 @@ namespace devils
         ChassisBase& chassis;
         OdomSource& odomSource;
         float targetAngle = 0;
+        float startingRotation = 0;
         ProfiledPIDController pidController;
         MotorFeedforward feedforwardController;
         Options options;
 
     private:
-        static constexpr float POST_DRIVE_DELAY = 50; // ms
-
         /**
-         * Gets the goal angle to rotate to based on the current angle and the target angle, taking into account the `useMinimumDistance` option.
-         * @return The goal angle to rotate to in radians.
+         * Gets the remaining angle to the target angle based on the current angle from odometry and the target angle.
+         * @return the remaining angle to the target angle in radians.
          */
-        float getGoalAngle() const
+        float getGoalDistance() const
         {
             const auto currentAngle = odomSource.getPose().rotation;
-            return options.useMinimumDistance ? currentAngle + Math::angleDiff(targetAngle, currentAngle) : targetAngle;
+            return options.useMinimumDistance ? 
+                Math::angleDiff(targetAngle, currentAngle) : 
+                targetAngle - currentAngle;
         }
+        
     };
 
     // Initialize Default Options
