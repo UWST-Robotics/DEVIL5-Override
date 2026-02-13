@@ -36,7 +36,7 @@ namespace devils
         void move(
             const float forward,
             const float turn,
-            const float strafe) override
+            const float strafe = 0) override
         {
             moveTank(forward + turn, forward - turn);
         }
