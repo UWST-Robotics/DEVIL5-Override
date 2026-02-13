@@ -61,13 +61,9 @@
 
 // AutoSteps
 #include "autoSteps/autoBuilder.hpp"
-#include "autoSteps/steps/autoTimeoutStep.hpp"
-#include "autoSteps/steps/autoDriveTimeStep.hpp"
-#include "autoSteps/steps/autoDriveToStep.hpp"
-#include "autoSteps/steps/autoDriveStep.hpp"
-#include "autoSteps/steps/autoRotateToStep.hpp"
-#include "autoSteps/steps/autoPurePursuitStep.hpp"
-#include "autoSteps/steps/autoRamseteStep.hpp"
+#include "autoSteps/steps/drivePIDStep.hpp"
+#include "autoSteps/steps/driveRAMSETEStep.hpp"
+#include "autoSteps/steps/rotateMotionProfileStep.hpp"
 
 // Display
 #include "display/toastDisplay.hpp"

@@ -32,9 +32,9 @@ namespace devils
          * @param constraints The robot constraints
          * @param pathInfo The path information
          */
-        TrajectoryGenerator(
-            const TrajectoryConstraints& constraints,
-            const PathInfo pathInfo)
+        explicit TrajectoryGenerator(
+            const PathInfo pathInfo,
+            const TrajectoryConstraints& constraints = TrajectoryConstraints::defaultConstraints)
             : constraints(constraints),
               pathInfo(pathInfo)
         {
@@ -147,7 +147,7 @@ namespace devils
                     velocity = -velocity;
 
                 // Clamp velocity to existing point
-                velocity = Math::minMagnitude(velocity, point.velocity);
+                velocity = Math::smallestMagnitude({velocity, point.velocity});
 
                 // Update previous point
                 point.velocity = velocity;

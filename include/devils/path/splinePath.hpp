@@ -39,7 +39,7 @@ namespace devils
         static SplinePath makeArc(
             const Pose& from,
             const Pose& to,
-            float delta = 18.0,
+            float delta = 6.0,
             bool isReversed = false)
         {
             if (isReversed)

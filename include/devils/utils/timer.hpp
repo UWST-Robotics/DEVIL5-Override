@@ -1,14 +1,20 @@
 #pragma once
-
-#include "pros/rtos.hpp"
+#include "stopwatch.hpp"
 
 namespace devils
 {
+    /**
+     * Represents a timer that can be used to measure elapsed time against a specified duration.
+     * The timer can be started and stopped, and the elapsed time and time remaining can be retrieved.
+     * The timer is considered finished when the elapsed time exceeds the specified duration.
+     */
     class Timer
     {
     public:
         /**
          * Creates a new instance of Timer with a given duration.
+         * By default, the timer is automatically started.
+         * It can be restarted by calling the `start()` method again.
          * @param duration The duration of the timer in seconds.
          * @return The new instance of Timer.
          */
@@ -31,8 +37,7 @@ namespace devils
          */
         void start()
         {
-            this->startTime = pros::millis();
-            this->isStarted = true;
+            stopwatch.start();
         }
 
         /**
@@ -40,50 +45,49 @@ namespace devils
          */
         void stop()
         {
-            this->isStarted = false;
+            stopwatch.stop();
         }
 
         /**
          * Gets whether the timer has started.
          * @return True if the timer has started, false otherwise.
          */
-        bool running() const
+        bool getIsRunning() const
         {
-            return isStarted && !finished();
+            return stopwatch.getIsRunning() && !getIsFinished();
         }
 
         /**
          * Gets whether the timer has finished.
          * @return True if the timer has finished, false otherwise.
          */
-        bool finished() const
+        bool getIsFinished() const
         {
-            return isStarted && elapsedTime() >= duration;
+            return stopwatch.getIsRunning() && getElapsedTime() >= duration;
         }
 
         /**
          * Gets the elapsed time since the timer was started.
-         * @return The elapsed time since the timer was started in milliseconds.
+         * @return The elapsed time since the timer was started in seconds.
          */
-        float elapsedTime() const
+        float getElapsedTime() const
         {
-            return static_cast<float>(pros::millis() - startTime) * 1000.0f;
+            return stopwatch.getTime();
         }
         
         /**
          * Gets the time remaining on the timer.
-         * @return The time remaining on the timer in milliseconds.
+         * @return The time remaining on the timer in seconds.
          */
-        float timeRemaining() const
+        float getTimeRemaining() const
         {
-            if (!running())
+            if (!getIsRunning())
                 return 0;
-            return duration - elapsedTime();
+            return duration - getElapsedTime();
         }
 
-    private:
-        bool isStarted = false;
-        uint32_t startTime = 0;
+    protected:
+        Stopwatch stopwatch;
         float duration = 0;
     };
 }

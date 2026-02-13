@@ -3,44 +3,22 @@
 #include "../geometry/units.hpp"
 #include "../odom/odomSource.hpp"
 #include "../chassis/chassisBase.hpp"
-#include "../trajectory/trajectoryConstraints.hpp"
 #include "../trajectory/trajectoryGenerator.hpp"
 #include "../path/splinePath.hpp"
-#include "./steps/autoDriveStep.hpp"
-#include "./steps/autoRotateToStep.hpp"
-#include "./steps/autoPurePursuitStep.hpp"
-#include "./steps/autoRamseteStep.hpp"
+#include "./steps/rotateMotionProfileStep.hpp"
+#include "./steps/driveRAMSETEStep.hpp"
 
 namespace devils
 {
+    /**
+     * A builder for creating closed-loop autonomous routines w/ a chassis and odometry source.
+     * Used to quickly create autonomous routines with a fluent API.
+     */
     class AutoBuilder
     {
     public:
-        /// @brief The options passed in by the user in autoBuilder
-        struct TrajectoryOptions
-        {
-            /// @brief If true, the robot will drive in reverse. Otherwise, it will drive forward.
-            bool isReversed = false;
-
-            /// @brief If true, the robot will start from the odometry pose. Otherwise, it will start from the theoretical current pose.
-            bool startFromOdomPose = false;
-
-            /// @brief The strength of the Bézier curve (inches). Typically, about 1/3 the path length.
-            float strength = 2.0;
-
-            /// @brief The expected velocity at the end of the trajectory (inches per second)
-            float finalVelocity = 0;
-
-            /// @brief The constraints for the trajectory
-            TrajectoryConstraints constraints = {56.0f, 64.0f};
-
-            /// @brief The options for the drive step
-            AutoRamseteStep::Options driveOptions = AutoRamseteStep::Options::defaultOptions;
-        };
-
         /**
-         * A builder for creating closed-loop autonomous routines w/ a chassis and odometry source.
-         * Used to quickly create autonomous routines with a fluent API.
+         * Creates a new autonomous builder with the given chassis and odometry source.
          * @param chassis The chassis to control
          * @param odom The odometry source to use
          */
@@ -53,181 +31,32 @@ namespace devils
         }
 
         /**
-         * Sets the pose of the robot
-         * @param pose The pose to set the robot to
-         */
-        void setPose(const Pose& pose)
-        {
-            this->currentPose = pose;
-            this->odom.setPose(pose);
-        }
-
-        /**
-         * Sets the pose of the robot
-         * @param x The x position to set the robot to in inches
-         * @param y The y position to set the robot to in inches
-         * @param rotation The rotation to set the robot to in degrees
-         */
-        void setPose(
-            const float x,
-            const float y,
-            const float rotation)
-        {
-            const auto pose = Pose(x, y, Units::degToRad(rotation));
-            setPose(pose);
-        }
-
-        /**
-         * Pauses the autonomous routine for a given duration
-         * @param duration The duration to pause in milliseconds
+         * Shorthand to drive to a specific location on the field.
+         * Uses 'AutoRamseteStep' by default, but can be changed to use other control methods in the future.
+         * @param pose - The pose to drive to
          * @returns A pointer to the created step
          */
-        void pause(const uint32_t duration)
+        AutoStepPtr driveTo(const Pose& pose) const
         {
-            velocity = 0.0;
-            pros::delay(duration);
+            // TODO: Auto switch between `AutoRamseteStep` and `AutoHolonomicDriveStep` depending on the chassis type (holonomic or not).
+            return driveTo_RAMSETE(pose);
         }
 
         /**
-         * Drives the robot to a given pose using a Bézier curve, trajectory generation, and ramsete control.
-         * @param x The x position to drive to in inches
-         * @param y The y position to drive to in inches
-         * @param rotation The rotation to drive to in degrees
-         * @param isReversed Whether to drive in reverse or not
-         * @param finalVelocity The final velocity to drive at in inches per second. Speed is carried over from the previous step.
-         * @param strength The strength of the Bézier curve (inches)
-         * @param constraints The constraints for the trajectory
-         * @param startFromOdomPose Whether to start from the odometry pose or the theoretical current pose
-         * @param options The options for the drive step
-         * @returns A pointer to the created step
+         * Shorthand to drive to a specific location on the field using Ramsete control.
+         * @param pose - The pose to drive to
+         * @param options - The options for the drive step
+         * @return A pointer to the created step
          */
-        AutoStepPtr driveToTrajectory(
-            const float x,
-            const float y,
-            const float rotation,
-            const bool isReversed = false,
-            const float finalVelocity = 0,
-            const float strength = 2.0,
-            const TrajectoryConstraints& constraints = {56, 64},
-            const bool startFromOdomPose = false,
-            const AutoRamseteStep::Options& options = AutoRamseteStep::Options::defaultOptions)
-        {
-            // Create a new pose
-            const auto targetPose = Pose(x, y, Units::degToRad(rotation));
-
-            // Return a new `AutoRamseteStep` with the given pose
-            return driveToTrajectoryPose(
-                targetPose,
-                isReversed,
-                finalVelocity,
-                strength,
-                constraints,
-                startFromOdomPose,
-                options);
-        }
-
-        /**
-         * Drives the robot to a given pose using a Bézier curve, trajectory generation, and ramsete control.
-         * @param x The x position to drive to in inches
-         * @param y The y position to drive to in inches
-         * @param rotation The rotation to drive to in degrees
-         * @param options The options for the drive step
-         */
-        AutoStepPtr driveToTrajectory(
-            const float x,
-            const float y,
-            const float rotation,
-            const TrajectoryOptions& options)
-        {
-            return driveToTrajectory(
-                x,
-                y,
-                rotation,
-                options.isReversed,
-                options.finalVelocity,
-                options.strength,
-                options.constraints,
-                options.startFromOdomPose,
-                options.driveOptions);
-        }
-
-        /**
-         * Drives the robot to a given pose using a Bézier curve, trajectory generation, and ramsete control.
-         * @param pose The pose to drive to
-         * @param isReversed Whether to drive in reverse or not
-         * @param finalVelocity The final velocity to drive at in inches per second. Speed is carried over from the previous step.
-         * @param strength The strength of the Bézier curve (inches)
-         * @param constraints The constraints for the trajectory
-         * @param startFromOdomPose Whether to start from the odometry pose or the theoretical current pose
-         * @param options The options for the drive step
-         * @returns A pointer to the created step
-         */
-        AutoStepPtr driveToTrajectoryPose(
+        AutoStepPtr driveTo_RAMSETE(
             const Pose& pose,
-            const bool isReversed = false,
-            float finalVelocity = 0,
-            const float strength = 10.0,
-            const TrajectoryConstraints& constraints = {48, 64},
-            const bool startFromOdomPose = false,
-            AutoRamseteStep::Options options = AutoRamseteStep::Options::defaultOptions)
-        {
-            // Transform the pose
-            const Pose fromPose = startFromOdomPose ? odom.getPose() : this->currentPose;
-            const Pose toPose = pose;
-
-            // Create a new path
-            SplinePath path = SplinePath::makeArc(fromPose, toPose, strength, isReversed);
-
-            // Flip final velocity if the path is reversed
-            if (isReversed)
-                finalVelocity *= -1;
-
-            // Generate Trajectory
-            const auto trajectoryGenerator = TrajectoryGenerator(
-                constraints,
-                TrajectoryGenerator::PathInfo{velocity, finalVelocity});
-            auto trajectory = trajectoryGenerator.calc(path);
-
-            // Set the current pose
-            this->currentPose = pose;
-            velocity = finalVelocity;
-
-            // Make a new `AutoRamseteStep` with the given trajectory
-            return std::make_shared<AutoRamseteStep>(chassis, odom, trajectory, options);
-        }
-
-        /**
-         * Drives the robot a given distance in closed loop
-         * @param distance The distance to drive in inches
-         * @param isReversed Whether to drive in reverse or not
-         * @param finalVelocity The final velocity to drive at in inches per second. Speed is carried over from the previous step.
-         * @param strength The strength of the Bézier curve (inches)
-         * @param constraints The constraints for the trajectory
-         * @param startFromOdomPose Whether to start from the odometry pose or the theoretical current pose
-         * @param options The options for the drive step
-         */
-        AutoStepPtr driveTrajectory(
-            const float distance,
-            const bool isReversed = false,
-            const float finalVelocity = 0,
-            const float strength = 10.0,
-            const TrajectoryConstraints& constraints = {48, 64},
-            const bool startFromOdomPose = false,
-            const AutoRamseteStep::Options& options = AutoRamseteStep::Options::defaultOptions)
-        {
-            // Create a new pose
-            const auto targetPose = Pose(currentPose.x + distance * std::cos(currentPose.rotation),
-                                         currentPose.y + distance * std::sin(currentPose.rotation),
-                                         currentPose.rotation);
-
-            // Return a new `AutoDriveStep` with the given pose
-            return driveToTrajectoryPose(
-                targetPose,
-                isReversed,
-                finalVelocity,
-                strength,
-                constraints,
-                startFromOdomPose,
+            const DriveRAMSETEStep::Options& options = DriveRAMSETEStep::Options::defaultOptions) const
+        {  
+            const auto trajectory = generateTrajectoryToPose(pose);
+            return std::make_shared<DriveRAMSETEStep>(
+                chassis,
+                odom,
+                trajectory,
                 options);
         }
 
@@ -239,13 +68,15 @@ namespace devils
          */
         AutoStepPtr rotate(
             const float distance,
-            const AutoRotateToStep::Options& options = AutoRotateToStep::Options::defaultOptions)
+            const RotateMotionProfileStep::Options& options = RotateMotionProfileStep::Options::defaultOptions) const
         {
-            // Calculate the new heading (in degrees)
-            const auto newHeading = Units::radToDeg(currentPose.rotation) + distance;
-
-            // Return a new `AutoRotateToStep` with the given heading
-            return rotateTo(newHeading, options);
+            const auto currentRotation = odom.getPose().rotation;
+            const auto targetRotation = currentRotation + Units::degToRad(distance);
+            return std::make_shared<RotateMotionProfileStep>(
+                chassis,
+                odom,
+                targetRotation,
+                options);
         }
 
         /**
@@ -256,24 +87,36 @@ namespace devils
          */
         AutoStepPtr rotateTo(
             const float heading,
-            AutoRotateToStep::Options options = AutoRotateToStep::Options::defaultOptions)
+            RotateMotionProfileStep::Options options = RotateMotionProfileStep::Options::defaultOptions) const
         {
-            // Convert & apply the heading to the current pose
-            currentPose.rotation = Units::degToRad(heading);
-            velocity = 0.0;
-
-            // Return a new `AutoRotateToStep` with the given heading
-            return std::make_shared<AutoRotateToStep>(chassis, odom, currentPose.rotation, options);
+            return std::make_shared<RotateMotionProfileStep>(
+                chassis,
+                odom,
+                Units::degToRad(heading),
+                options);
+        }
+        
+    protected:
+        /**
+         * Generates a trajectory to a given pose using the current pose as the starting point.
+         * @param targetPose - The target pose to generate the trajectory to
+         * @return A shared pointer to the generated trajectory
+         */
+        std::shared_ptr<Trajectory> generateTrajectoryToPose(const Pose& targetPose) const
+        {
+            // Generate Path
+            const auto currentPose = odom.getPose();
+            const auto distance = currentPose.distanceTo(targetPose);
+            auto path = SplinePath::makeArc(currentPose, targetPose, distance * 0.3f);
+            
+            // TODO: Check if we drive in reverse
+            
+            // Generate Trajectory
+            const auto currentVelocity = odom.getVelocity().magnitude();
+            const auto generator = TrajectoryGenerator({.startingVelocity = currentVelocity});
+            return generator.calc(path);
         }
 
-    private:
-        /// @brief The current robot pose (pre-transform)
-        Pose currentPose;
-
-        /// @brief The current velocity of the robot in inches per second
-        float velocity = 0.0;
-
-        // Input references
         ChassisBase& chassis;
         OdomSource& odom;
     };

@@ -195,10 +195,10 @@ namespace devils
         }
 
         /**
-         * Gets the total time of the motion profile.
-         * @return The total time of the motion profile (typically seconds).
+         * Gets the total duration of the motion profile.
+         * @return The total duration of the motion profile in seconds.
          */
-        float getTotalTime() const
+        float getTotalDuration() const
         {
             return accelerationTime + cruisingTime + decelerationTime;
         }

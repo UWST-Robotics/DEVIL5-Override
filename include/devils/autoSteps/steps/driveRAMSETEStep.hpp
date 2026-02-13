@@ -12,10 +12,10 @@
 namespace devils
 {
     /**
-     * Drives the robot along a trajectory using ramsete control.
+     * Drives the robot along a trajectory using RAMSETE control.
      * See: https://file.tavsys.net/control/controls-engineering-in-frc.pdf
      */
-    class AutoRamseteStep : public AutoStep
+    class DriveRAMSETEStep : public AutoStep
     {
     public:
         struct Options
@@ -52,7 +52,7 @@ namespace devils
          * @param trajectory The trajectory to follow.
          * @param options The options for the drive step.
          */
-        AutoRamseteStep(
+        DriveRAMSETEStep(
             ChassisBase& chassis,
             OdomSource& odomSource,
             std::shared_ptr<Trajectory> trajectory,
@@ -60,6 +60,7 @@ namespace devils
             : chassis(chassis),
               odomSource(odomSource),
               trajectory(std::move(trajectory)),
+              internalTimer(trajectory->duration()),
               options(options)
         {
         }
@@ -67,15 +68,13 @@ namespace devils
     protected:
         void onStart() override
         {
-            // Save the start time
-            startTime = pros::millis();
+            internalTimer.start();
         }
 
         void onUpdate() override
         {
             // Get the current time
-            auto t = static_cast<float>(pros::millis() - startTime);
-            t /= 1000.0f; // Convert to seconds
+            const auto t = internalTimer.getElapsedTime();
 
             // Get current setpoint
             const auto setpoint = trajectory->getStateAt(t);
@@ -132,27 +131,21 @@ namespace devils
 
         void onStop() override
         {
-            // Stop the chassis
             chassis.stop();
         }
 
         bool checkFinished() override
         {
-            // Get the current time
-            const auto t = static_cast<float>(pros::millis() - startTime);
-
-            // Check if the trajectory is finished
-            return trajectory->duration() * 1000 <= t;
+            return internalTimer.getIsFinished();
         }
 
         ChassisBase& chassis;
         OdomSource& odomSource;
         std::shared_ptr<Trajectory> trajectory;
+        Timer internalTimer;
         Options options;
-
-        uint32_t startTime = 0;
     };
 }
 
 // Define the default options
-devils::AutoRamseteStep::Options devils::AutoRamseteStep::Options::defaultOptions = Options();
+devils::DriveRAMSETEStep::Options devils::DriveRAMSETEStep::Options::defaultOptions = Options();

@@ -16,5 +16,8 @@ namespace devils
 
         /// @brief The maximum deceleration of the robot in inches per second squared
         float maxDeceleration = 100.0f; // in/s^2
+        
+        /// @brief The default constraints for trajectory generation
+        static TrajectoryConstraints defaultConstraints;
     };
 }

@@ -65,7 +65,7 @@ namespace devils
                 const bool rakePneumaticsButton = mainController.b; // toggle rake pneumatics
 
                 // Combine Left and Right X Joystick Inputs
-                const float combinedX = JoystickCurve::combine(leftX, rightX);
+                const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Run Cyclers
                 if (exitCyclerButton)

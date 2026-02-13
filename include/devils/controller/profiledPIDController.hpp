@@ -29,7 +29,7 @@ namespace devils
             const float endingVelocity = 0)
             : pidController(pidOptions),
               motionProfile(constraints, goalDistance, startingVelocity, endingVelocity),
-              startTime(pros::millis())
+              internalTimer(motionProfile.getTotalDuration())
         {
         }
 
@@ -39,7 +39,7 @@ namespace devils
         void reset()
         {
             pidController.reset();
-            startTime = pros::millis();
+            internalTimer.start();
         }
 
         /**
@@ -48,19 +48,16 @@ namespace devils
          */
         float getTimeRemaining() const
         {
-            const float elapsedTime = (pros::millis() - startTime) / 1000.0f; // Convert to seconds
-            const float totalTime = motionProfile.getTotalTime() + feedbackDelay; // Add the feedback delay to account for any latency in the control loop
-            
-            return std::max(0.0f, totalTime - elapsedTime);
+            return internalTimer.getTimeRemaining();
         }
 
         /**
          * Gets the total duration of the motion profile.
          * @return The total duration of the motion profile in seconds.
          */
-        float getDuration() const
+        float getTotalDuration() const
         {
-            return motionProfile.getTotalTime();
+            return motionProfile.getTotalDuration();
         }
 
         /**
@@ -70,8 +67,7 @@ namespace devils
          */
         TrapezoidMotionProfile::State getSetpoint(const float deltaTime = 0.0f) const
         {
-            float t = (pros::millis() - startTime) / 1000.0f; // Convert to seconds
-            t += deltaTime; // Add the delta time to account for feedback latency
+            const auto t = internalTimer.getElapsedTime() + deltaTime;
             return motionProfile.getStateAtTime(t);
         }
 
@@ -114,7 +110,7 @@ namespace devils
     protected:
         PIDController pidController;
         TrapezoidMotionProfile motionProfile;
-        uint32_t startTime;
+        Timer internalTimer;
         float feedbackDelay = 0.02f; // seconds
     };
 }

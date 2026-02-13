@@ -5,6 +5,9 @@
 
 namespace devils
 {
+    /**
+     * A collection of interpolation utilities.
+     */
     struct Lerp
     {
         Lerp() = delete;

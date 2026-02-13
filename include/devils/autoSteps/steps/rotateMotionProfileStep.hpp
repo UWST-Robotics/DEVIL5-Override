@@ -12,7 +12,7 @@ namespace devils
     /**
      * Rotates the robot to a specific angle along its center of rotation.
      */
-    class AutoRotateToStep : public AutoStep
+    class RotateMotionProfileStep : public AutoStep
     {
     public:
         struct Options
@@ -58,7 +58,7 @@ namespace devils
          * @param targetAngle The angle to rotate to in radians.
          * @param options The options for the rotational step.
          */
-        AutoRotateToStep(
+        RotateMotionProfileStep(
             ChassisBase& chassis,
             OdomSource& odomSource,
             const float targetAngle,
@@ -100,7 +100,7 @@ namespace devils
         {
             // Get profiled PID output
             const auto currentAngle = odomSource.getPose().rotation;
-            const auto currentAngleRelative = Math::angleDiff(currentAngle, startingRotation);
+            const auto currentAngleRelative = Units::diffRad(currentAngle, startingRotation);
             const auto pidOutput = pidController.update(currentAngleRelative);
             
             // Get feedforward output
@@ -138,12 +138,12 @@ namespace devils
         {
             const auto currentAngle = odomSource.getPose().rotation;
             return options.useMinimumDistance ? 
-                Math::angleDiff(targetAngle, currentAngle) : 
+                Units::diffRad(targetAngle, currentAngle) : 
                 targetAngle - currentAngle;
         }
         
     };
 
     // Initialize Default Options
-    AutoRotateToStep::Options AutoRotateToStep::Options::defaultOptions = Options();
+    RotateMotionProfileStep::Options RotateMotionProfileStep::Options::defaultOptions = Options();
 }
