@@ -32,15 +32,10 @@
 #include "odom/parallelSensorOdom.hpp"
 #include "odom/delayedOdom.hpp"
 
-// Robot
-#include "utils/robot.hpp"
-
-// robotAutoOptions
-#include "utils/robotAutoOptions.hpp"
-
 // Utils
-#include "utils/joystickCurve.hpp"
+#include "utils/robot.hpp"
 #include "utils/timer.hpp"
+#include "utils/stopwatch.hpp"
 
 // Path
 #include "path/path.hpp"

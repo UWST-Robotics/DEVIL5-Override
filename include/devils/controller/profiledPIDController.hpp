@@ -94,6 +94,7 @@ namespace devils
                      const float newEndingVelocity = 0)
         {
             motionProfile.recalculate(newGoal, newStartingVelocity, newEndingVelocity);
+            internalTimer.setDuration(motionProfile.getTotalDuration());
             reset();
         }
 

@@ -2,7 +2,7 @@
 
 #include "../devils.h"
 #include "subsystems/intakeSystem.hpp"
-#include "./autonomous/blazeSkillsAuto.hpp"
+// #include "./autonomous/blazeSkillsAuto.hpp"
 
 namespace devils
 {
@@ -20,7 +20,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
+            // BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
         void opcontrol() override

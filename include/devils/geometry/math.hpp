@@ -128,10 +128,14 @@ namespace devils
          */
         static float smallestMagnitude(const std::initializer_list<float>& values)
         {
-            float smallest = 0;
+            // Handle empty list case
+            if (values.size() == 0)
+                return 0;
+            
+            float smallest = *values.begin();
             for (const auto& value : values)
             {
-                if (std::abs(value) < std::abs(smallest) || smallest == 0)
+                if (std::abs(value) < std::abs(smallest))
                     smallest = value;
             }
             return smallest;

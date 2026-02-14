@@ -34,32 +34,18 @@ namespace devils
          * Shorthand to drive to a specific location on the field.
          * Uses 'AutoRamseteStep' by default, but can be changed to use other control methods in the future.
          * @param pose - The pose to drive to
+         * @param endingVelocity - The desired velocity at the end of the trajectory in inches per second. Defaults to 0 for a full stop.
          * @returns A pointer to the created step
          */
-        AutoStepPtr driveTo(const Pose& pose) const
+        AutoStepPtr driveTo(
+            const Pose& pose,
+            const float endingVelocity = 0.0f) const
         {
             // TODO: Auto switch between `AutoRamseteStep` and `AutoHolonomicDriveStep` depending on the chassis type (holonomic or not).
-            return driveTo_RAMSETE(pose);
+            const auto trajectory = generateTrajectoryToPose(pose, endingVelocity);
+            return std::make_shared<DriveRAMSETEStep>(chassis, odom, trajectory);
         }
-
-        /**
-         * Shorthand to drive to a specific location on the field using Ramsete control.
-         * @param pose - The pose to drive to
-         * @param options - The options for the drive step
-         * @return A pointer to the created step
-         */
-        AutoStepPtr driveTo_RAMSETE(
-            const Pose& pose,
-            const DriveRAMSETEStep::Options& options = DriveRAMSETEStep::Options::defaultOptions) const
-        {  
-            const auto trajectory = generateTrajectoryToPose(pose);
-            return std::make_shared<DriveRAMSETEStep>(
-                chassis,
-                odom,
-                trajectory,
-                options);
-        }
-
+        
         /**
          * Rotates the robot a given amount
          * @param distance The distance to rotate in degrees
@@ -100,23 +86,45 @@ namespace devils
         /**
          * Generates a trajectory to a given pose using the current pose as the starting point.
          * @param targetPose - The target pose to generate the trajectory to
+         * @param endingVelocity - The desired velocity at the end of the trajectory in inches per second. Defaults to 0 for a full stop.
          * @return A shared pointer to the generated trajectory
          */
-        std::shared_ptr<Trajectory> generateTrajectoryToPose(const Pose& targetPose) const
+        std::shared_ptr<Trajectory> generateTrajectoryToPose(
+            const Pose& targetPose,
+            const float endingVelocity = 0.0f) const
         {
-            // Generate Path
+            // Check if the targetPose is behind the currentPose
             const auto currentPose = odom.getPose();
-            const auto distance = currentPose.distanceTo(targetPose);
-            auto path = SplinePath::makeArc(currentPose, targetPose, distance * 0.3f);
+            const auto isReversed = targetPose.isBehind(currentPose);
             
-            // TODO: Check if we drive in reverse
+            // Calculate starting velocity based on current velocity and its direction relative to the target pose
+            const auto currentVelocity = odom.getVelocity();
+            const auto deltaPose = targetPose - currentPose;
+            const auto dotProduct = deltaPose.x * currentVelocity.x + deltaPose.y * currentVelocity.y;
+            const auto velocityDirection = (dotProduct >= 0) ? 1.0f : 0.0f;
+            const auto startingVelocity = velocityDirection * currentVelocity.magnitude();
+            
+            Logger::debug("Velocity Direction: " + std::to_string(velocityDirection));
+            Logger::debug("Current Velocity: " + std::to_string(currentVelocity.magnitude()));
+            
+            // Generate Path
+            const auto distance = currentPose.distanceTo(targetPose);
+            auto path = SplinePath::makeArc(
+                currentPose,
+                targetPose,
+                distance * 0.25f,
+                isReversed);
             
             // Generate Trajectory
-            const auto currentVelocity = odom.getVelocity().magnitude();
-            const auto generator = TrajectoryGenerator({.startingVelocity = currentVelocity});
-            return generator.calc(path);
+            // const auto currentVelocity = odom.getVelocity().magnitude();
+            const auto generator = TrajectoryGenerator({
+                .startingVelocity = startingVelocity,
+                .endingVelocity = endingVelocity});
+            const auto trajectory = generator.calc(path);
+            
+            return trajectory;
         }
-
+        
         ChassisBase& chassis;
         OdomSource& odom;
     };

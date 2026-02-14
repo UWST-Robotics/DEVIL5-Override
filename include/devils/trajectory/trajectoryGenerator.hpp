@@ -85,9 +85,18 @@ namespace devils
                     2 * constraints.maxAcceleration * deltaDistance;
                 velocity = sqrtf(velocity);
 
-                // Clamp velocity
+                // Clamp velocity to constraints
                 velocity = std::min(velocity, constraints.maxVelocity);
 
+                // Clamp velocity to rotational constraints
+                const float curvature = std::abs(currentPose.curvature(previousPoint.pose));
+                if (curvature > 0)
+                {
+                    const float maxVelocityFromRotation = Units::degToRad(constraints.rotationalMaxVelocity) / curvature;
+                    Logger::debug("Max Velocity from Rotation: " + std::to_string(maxVelocityFromRotation));
+                    velocity = std::min(velocity, maxVelocityFromRotation);
+                }
+                
                 // Calculate dot product to determine if the robot is moving forward or backward
                 const float prevDotCurrentPose = cosf(previousPoint.pose.rotation) *
                     (currentPose.x - previousPoint.pose.x) +
@@ -145,7 +154,7 @@ namespace devils
                 // If the dot product is negative, we are moving backwards
                 if (prevDotCurrentPose < 0)
                     velocity = -velocity;
-
+                
                 // Clamp velocity to existing point
                 velocity = Math::smallestMagnitude({velocity, point.velocity});
 

@@ -32,7 +32,8 @@ namespace devils
               verticalSensor(verticalSensor),
               horizontalSensor(horizontalSensor)
         {
-            lastUpdateTimestamp = pros::millis();
+            verticalSensor.setPosition(0);
+            horizontalSensor.setPosition(0);
         }
 
         /**
@@ -93,9 +94,6 @@ namespace devils
             const auto verticalResult = verticalSensor.getAngle();
             const auto horizontalResult = horizontalSensor.getAngle();
 
-            // Get Delta Time
-            lastUpdateTimestamp = pros::millis();
-
             // Update IMU
             // Also calculate the change in rotation
             float deltaRotation = 0;
@@ -119,15 +117,15 @@ namespace devils
             }
             
             // Calculate arc length
-            // r * theta
-            const float verticalRevolutions = verticalResult.value * wheelRadius;
-            const float horizontalRevolutions = horizontalResult.value * wheelRadius;
+            // rads * theta
+            const float verticalRevolutions = Units::degToRad(verticalResult.value) * wheelRadius;
+            const float horizontalRevolutions = Units::degToRad(horizontalResult.value) * wheelRadius;
 
             // Get Delta Distance
             float deltaVertical = verticalRevolutions - lastVertical;
             float deltaHorizontal = horizontalRevolutions - lastHorizontal;
 
-            // Check for sensor errors
+            // Update last sensor values
             lastVertical = verticalRevolutions;
             lastHorizontal = horizontalRevolutions;
 
@@ -174,7 +172,6 @@ namespace devils
         IGyro* imu = nullptr;
 
         Pose currentPose = Pose();
-        uint32_t lastUpdateTimestamp = 0;
 
         float lastVertical = 0;
         float lastHorizontal = 0;

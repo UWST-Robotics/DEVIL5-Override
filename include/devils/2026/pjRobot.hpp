@@ -2,7 +2,7 @@
 
 #include "../devils.h"
 #include "./subsystems/intakeSystem.hpp"
-#include "./autonomous/pjSkillsAuto.hpp"
+// #include "./autonomous/pjSkillsAuto.hpp"
 
 namespace devils
 {
@@ -29,9 +29,12 @@ namespace devils
         {
             imu.waitUntilDoneCalibrated();
             
-            auto autoBuilder = AutoBuilder(chassis, *odometry.get());
-            autoBuilder.rotateTo(90, {.endingVelocity = 0.0f})->startSync();
-            autoBuilder.rotateTo(180, {.endingVelocity = 0.0f})->startSync();
+            const auto autoBuilder = AutoBuilder(chassis, *odometry.get());
+            autoBuilder.driveTo({24, 4, Units::degToRad(90)}, 12.0f)->startSync();
+            // autoBuilder.rotateTo(90)->startSync();
+            // autoBuilder.rotateTo(0)->startSync();
+            // autoBuilder.driveTo({0, 0})->startSync();
+            // autoBuilder.rotateTo(180, {.endingVelocity = 0.0f})->startSync();
             // autoBuilder.rotateTo(0)->startSync();
             // autoBuilder.rotateTo(180)->startSync();
             

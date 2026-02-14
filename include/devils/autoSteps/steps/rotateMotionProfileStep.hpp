@@ -29,10 +29,7 @@ namespace devils
             /// @brief The amount of time to add to the remaining time of the motion profile to account for feedback latency
             float feedbackLatency = 0.07f; // 70 ms
             
-            /// @brief If true, the current velocity of the robot will be used as the starting velocity for the motion profile. Otherwise, the starting velocity will be 0.
-            bool useCurrentVelocityAsStartingVelocity = true;
-            
-            /// @brief The starting rotational velocity for the motion profile. Only used if `useCurrentVelocityAsStartingVelocity` is false.
+            /// @brief The starting rotational velocity for the motion profile
             float startingVelocity = 0.0f;
             
             /// @brief The ending rotational velocity for the motion profile
@@ -72,13 +69,11 @@ namespace devils
               feedforwardController(options.feedforwardOptions),
               options(options)
         {
-            // Get the starting velocity for the motion profile. This is typically the current velocity of the robot, but can be overridden by the options.
-            float startingVelocity = options.startingVelocity;
-            if (options.useCurrentVelocityAsStartingVelocity)
-                startingVelocity = odomSource.getVelocity().rotation;
-            
             // Set the goal distance for the motion profile based on the target angle and the current angle from odometry.
-            pidController.setGoal(getGoalDistance(), startingVelocity, options.endingVelocity);
+            pidController.setGoal(
+                getGoalDistance(),
+                options.startingVelocity,
+                options.endingVelocity);
             
             // Set the feedback delay for the PID controller to account for any latency in the odometry or the control loop.
             pidController.setFeedbackDelay(options.feedbackLatency);

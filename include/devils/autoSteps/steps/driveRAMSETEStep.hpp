@@ -20,26 +20,20 @@ namespace devils
     public:
         struct Options
         {
-            /// @brief The minimum speed in %
-            float minSpeed = 0.0;
-
-            /// @brief The maximum speed in %
-            float maxSpeed = 1.0;
-
             /// @brief A proportional constant. Must be greater than 0. Larger values will result in more aggressive control.
-            float proportionGain = 0.01;
+            float proportionGain = 0.005;
 
             /// @brief A damping coefficient. Must be between 0 and 1. Larger values will result in increased damping.
             float dampingCoefficient = 0.75;
 
             /// @brief Proportion (P in PID) between translational velocity and motor voltage
-            float translationP = 0.012;
+            float translationP = 0.015;
 
             /// @brief Proportion (P in PID) between rotational velocity and motor voltage
             float rotationP = 0.1;
 
             /// @brief Time in seconds of odometry latency. This is the time it takes for the odometry to update after the robot moves.
-            float sensorLatency = 0.2;
+            float sensorLatency = 0.1;
 
             /// @brief The default options for the drive step.
             static Options defaultOptions;
@@ -55,11 +49,11 @@ namespace devils
         DriveRAMSETEStep(
             ChassisBase& chassis,
             OdomSource& odomSource,
-            std::shared_ptr<Trajectory> trajectory,
+            const std::shared_ptr<Trajectory>& trajectory,
             const Options& options = Options::defaultOptions)
             : chassis(chassis),
               odomSource(odomSource),
-              trajectory(std::move(trajectory)),
+              trajectory(trajectory),
               internalTimer(trajectory->duration()),
               options(options)
         {
@@ -85,6 +79,8 @@ namespace devils
 
             // Calculate error to setpoint
             const auto error = feedbackSetpoint.pose - currentPosition;
+            
+            Logger::debug(error.toString());
 
             // Calculate local error
             // This is the error relative to the robot's current rotation
@@ -116,14 +112,10 @@ namespace devils
             float rotationOutput = setpoint.angularVelocity +
                 controllerGain * localError.rotation +
                 options.proportionGain * setpoint.velocity * sinc * localError.y;
-
+            
             // Multiply by translation and rotation P values
             translationOutput *= options.translationP;
             rotationOutput *= options.rotationP;
-
-            // Clamp outputs
-            translationOutput = Math::deadbandClamp(translationOutput, options.minSpeed, options.maxSpeed);
-            rotationOutput = std::clamp(rotationOutput, -options.maxSpeed, options.maxSpeed);
 
             // Set the chassis output
             chassis.move(translationOutput, rotationOutput, 0.0f);

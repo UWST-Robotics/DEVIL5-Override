@@ -32,7 +32,7 @@ namespace devils
          * Creates a new instance of a trajectory
          * @param trajectoryPoints A list of generated points along the trajectory
          */
-        Trajectory(std::unique_ptr<std::vector<Point>> trajectoryPoints)
+        explicit Trajectory(std::unique_ptr<std::vector<Point>> trajectoryPoints)
             : trajectoryPoints(std::move(trajectoryPoints))
         {
         }
