@@ -124,7 +124,7 @@ namespace devils
             const float deltaY = other.y - y;
             const float deltaZ = other.z - z;
 
-            return std::sqrtf(
+            return std::sqrt(
                 deltaX * deltaX +
                 deltaY * deltaY +
                 deltaZ * deltaZ);
@@ -136,7 +136,7 @@ namespace devils
          */
         float magnitude() const
         {
-            return std::sqrtf(
+            return std::sqrt(
                 x * x +
                 y * y +
                 z * z);

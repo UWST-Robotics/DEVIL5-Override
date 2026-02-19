@@ -71,20 +71,20 @@ namespace devils
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Run Cyclers
-                if (exitCyclerButton)
-                    intake.setIntakeMode(SideGoal); // Score Top
-                else if (midOuttakeButton)
-                    intake.setIntakeMode(MidBottom); // Score Bottom
-                else if (exitCyclerMidButton)
-                    intake.setIntakeMode(MidTop); // Score Mid
-                else
-                    intake.setIntakeMode(Cycler); // Intake to cycler
+                // if (exitCyclerButton)
+                //     intake.setIntakeMode(SideGoal); // Score Top
+                // else if (midOuttakeButton)
+                //     intake.setIntakeMode(MidBottom); // Score Bottom
+                // else if (exitCyclerMidButton)
+                //     intake.setIntakeMode(MidTop); // Score Mid
+                // else
+                //     intake.setIntakeMode(Cycler); // Intake to cycler
 
                 bool isScoring = exitCyclerButton || midOuttakeButton || exitCyclerMidButton;
 
                 intake.runIntake(isScoring ? 0.8f : rightY);
                 intake.setArmsExtended(intakeExtendButton);
-                intake.setHoodExtended(hoodExtendButton);
+                // intake.setHoodExtended(hoodExtendButton);
 
                 rakePneumatics.setExtended(rakePneumaticsButton);
 
@@ -132,16 +132,16 @@ namespace devils
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(
-            frontTopIntakeMotors,
-            frontBottomIntakeMotors,
-            frontIntakeRollers,
-            backIntakeMotors,
-            cyclerMotors,
-            colorSensor,
-            intakePneumaticsLeft,
-            intakePneumaticsRight,
-            hoodPneumatics);
+        // IntakeSystem intake = IntakeSystem(
+        //     frontTopIntakeMotors,
+        //     frontBottomIntakeMotors,
+        //     frontIntakeRollers,
+        //     backIntakeMotors,
+        //     cyclerMotors,
+        //     colorSensor,
+        //     intakePneumaticsLeft,
+        //     intakePneumaticsRight,
+        //     hoodPneumatics);
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
             verticalSensor,

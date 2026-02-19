@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../devils.h"
-#include "subsystems/intakeSystem.hpp"
+#include "./subsystems/intakeSystem.hpp"
+#include "./subsystems/StickSystem.hpp"
+#include "./subsystems/tubeSystem.hpp"
 // #include "./autonomous/blazeSkillsAuto.hpp"
 
 namespace devils
@@ -15,6 +17,19 @@ namespace devils
             odometry->useIMU(&imu);
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
+
+            toastDisplay->start();
+
+            auto joystickOptions = ControllerAxis::Options{
+                .deadzone = 0.1f, // <-- Minimum input to register
+                .startingValue = 0.15f, // <-- Jumps to 15% to overcome motor friction
+                .exponent = 3.0f // <-- Cubes the input for finer control at low speeds
+            };
+
+            mainController.leftX.setOptions(joystickOptions);
+            mainController.leftY.setOptions(joystickOptions);
+            mainController.rightX.setOptions(joystickOptions);
+            mainController.rightY.setOptions(joystickOptions);
         }
 
         void autonomous() override
@@ -39,36 +54,34 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                const bool exitCyclerButton = mainController.r1; // high goal from basket
-                const bool midOuttakeButton = mainController.r2; // mid goal from ground
-                const bool intakeExtendButton = mainController.y; // intake extend/retract
                 const bool hoodExtendButton = mainController.l1; // hood extend/retract
-                const bool exitCyclerMidButton = mainController.l2; // mid goal from cycler
-                const bool rakePneumaticsButton = mainController.b; // toggle rake pneumatics
+                const bool tubeExtendButton = mainController.right; // tube extend/retract
+                const bool intakeArmExtendButton = mainController.y;
+                const bool stickFastButton = mainController.r1;
+                const bool stickSlowButton = mainController.r2;
 
                 // Combine Left and Right X Joystick Inputs
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
 
-                // Run Cyclers
-                if (exitCyclerButton)
-                    intake.setIntakeMode(IntakeMode::SideGoal); // Score Top
-                else if (midOuttakeButton)
-                    intake.setIntakeMode(IntakeMode::MidBottom); // Score Bottom
-                else if (exitCyclerMidButton)
-                    intake.setIntakeMode(IntakeMode::MidTop); // Score Mid
-                else
-                    intake.setIntakeMode(IntakeMode::Cycler); // Intake to cycler
-
-                bool isScoring = exitCyclerButton || midOuttakeButton || exitCyclerMidButton;
-
-                intake.runIntake(isScoring ? 0.8f : rightY);
-                intake.setArmsExtended(intakeExtendButton);
-                intake.setHoodExtended(hoodExtendButton);
-
-                rakePneumatics.setExtended(rakePneumaticsButton);
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f, 0);
+
+                //Intake shit
+                intake.runIntake(rightY);
+                intake.setArmsExtended(intakeArmExtendButton);
+
+                tube.setHoodOpen(stickFastButton || stickSlowButton);
+
+                if (stickFastButton) stick.moveFast();
+                else if (stickSlowButton) stick.moveSlow();
+                else stick.retract();
+
+                if (tubeExtendButton) tube.setTubeRaised(true);
+                else tube.setTubeRaised(false);
+
+                stick.setPTOExtended(false);
+
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -94,39 +107,33 @@ namespace devils
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
 
-        SmartMotorGroup frontTopIntakeMotors = SmartMotorGroup("FrontTopIntake", {-1});
-        SmartMotorGroup frontBottomIntakeMotors = SmartMotorGroup("FrontBottomIntake", {-10});
-        SmartMotorGroup frontIntakeRollers = SmartMotorGroup("FrontIntakeRollers", {2, -3});
-        SmartMotorGroup backIntakeMotors = SmartMotorGroup("BackIntakeMotors", {-5});
-        SmartMotorGroup cyclerMotors = SmartMotorGroup("CyclerMotors", {-6});
+        SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-4});
+        SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {6});
 
-        ADIPneumatic intakePneumaticsLeft = ADIPneumatic("IntakePneumatics", 'A');
-        ADIPneumatic intakePneumaticsRight = ADIPneumatic("IntakePneumatics", 'B');
-        ADIPneumatic rakePneumatics = ADIPneumatic("RakePneumatics", 'E');
+        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {-7, 8, -9});
+
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'H', true);
+        ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'G', true);
+        ADIPneumatic intakePnematics = ADIPneumatic("IntakePneumatics", 'F', true);
+        ADIPneumatic ptoPnematics = ADIPneumatic("PTOPneumatics", 'E', true);
 
-        OpticalSensor colorSensor = OpticalSensor("InventoryColorSensor", 7);
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", 9);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 8);
         InertialSensor imu = InertialSensor("IMU", 4);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(
-            frontTopIntakeMotors,
-            frontBottomIntakeMotors,
-            frontIntakeRollers,
-            backIntakeMotors,
-            cyclerMotors,
-            colorSensor,
-            intakePneumaticsLeft,
-            intakePneumaticsRight,
-            hoodPneumatics);
+        IntakeSystem intake = IntakeSystem(intakePnematics, intakeMotors);
+        StickSystem stick = StickSystem(ptoPnematics, stickMotorsRight);
+        TubeSystem tube = TubeSystem(tubePnematics, hoodPneumatics);
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
             verticalSensor,
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
+
+        std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
+
 
         // RobotAutoOptions autoOptions = RobotAutoOptions();
         // std::vector<Routine> routines = {
