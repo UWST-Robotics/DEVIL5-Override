@@ -83,11 +83,21 @@ namespace devils
         static void log(const LogMessage& logMessage)
         {
             printToConsole(logMessage);
-            if (toastBuffer.size() < MAX_BUFFER_SIZE)
-            toastBuffer.push(logMessage);
+            displayToast(logMessage);
+            // TODO: Implement SD Card Logging
         }
         
     protected:
+        /**
+         * Adds a log message to the toast buffer to be displayed as a toast notification on the `ToastDisplay`.
+         * If the buffer exceeds `MAX_BUFFER_SIZE`, the message is discarded to prevent memory issues.
+         * @param logMessage - The log message to add to the toast buffer.
+         */
+        static void displayToast(const LogMessage& logMessage)
+        {
+            if (toastBuffer.size() < MAX_BUFFER_SIZE)
+                toastBuffer.push(logMessage);
+        }
         
         /**
          * Logs a message to the serial console.

@@ -204,7 +204,7 @@ namespace devils
         bool checkForStall()
         {
             // Check if we are reversing because of a stall
-            bool isReversingBecauseStall = reverseBecauseStallTimer.running();
+            bool isReversingBecauseStall = reverseBecauseStallTimer.getIsRunning();
             if (isReversingBecauseStall)
             {
                 frontBottomIntakeMotors.move(STALL_SPEED);
@@ -223,12 +223,12 @@ namespace devils
             if (isStalled)
             {
                 // Once the timer is finished, start reversing
-                if (checkForStallTimer.finished())
+                if (checkForStallTimer.getIsFinished())
                     reverseBecauseStallTimer.start();
 
                 // Start the min stall timer.
                 // This prevents false positives from quick current spikes.
-                if (!checkForStallTimer.running())
+                if (!checkForStallTimer.getIsFinished())
                     checkForStallTimer.start();
             }
             else

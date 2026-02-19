@@ -49,7 +49,8 @@ namespace devils
 
             float voltage = 0.0;
             voltage += options.gravity; // Gravity
-            voltage += options.staticFriction * std::copysign(1.0f, velocity); // Static friction
+            if (velocity != 0)
+                voltage += options.staticFriction * std::copysign(1.0f, velocity); // Static friction
             voltage += options.velocityGain * velocity; // Velocity
             voltage += options.accelerationGain * acceleration; // Acceleration
 

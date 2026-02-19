@@ -7,6 +7,26 @@
 
 namespace devils
 {
+    enum AllianceColor
+    {
+        RED_ALLIANCE = 0,
+        BLUE_ALLIANCE = 1,
+        NONE_ALLIANCE = 2
+    };
+
+    struct Routine
+    {
+        uint8_t id;
+        std::string displayName;
+        bool requiresAllianceColor = false;
+    };
+
+    struct RobotAutoOptions
+    {
+        AllianceColor allianceColor = NONE_ALLIANCE;
+        Routine routine = {0, "None", false};
+    };
+    
     const std::map<AllianceColor, lv_color_t> color_map = {
         {RED_ALLIANCE, lv_color_make(255, 0, 0)},
         {BLUE_ALLIANCE, lv_color_make(0, 0, 255)},

@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <sstream>
 #include <cmath>
 #include "math.hpp"
 
@@ -33,17 +32,6 @@ namespace devils
         }
 
         /**
-         * Compares the difference of two radian angles.
-         * @param radiansA The first angle in radians.
-         * @param radiansB The second angle in radians.
-         * @return The difference between the two angles, relative to `radiansB`. Can be [-PI, PI]
-         */
-        static float diffRad(const float radiansA, const float radiansB)
-        {
-            return std::atan2(std::sin(radiansA - radiansB), std::cos(radiansA - radiansB));
-        }
-
-        /**
          * Converts degrees to radians.
          * @param degrees The degrees to convert.
          * @return The degrees in radians.
@@ -54,6 +42,15 @@ namespace devils
         }
 
         /**
+         * Converts radians to degrees.
+         * @param radians The radians to convert.
+         */
+        static float radToDeg(const float radians)
+        {
+            return radians * (180.0f / M_PIF);
+        }
+        
+        /**
          * Converts centidegrees to radians.
          * @param centidegrees The centidegrees to convert.
          * @return The centidegrees in radians.
@@ -61,6 +58,16 @@ namespace devils
         static float centidegToRad(const float centidegrees)
         {
             return centidegrees * (M_PIF / 18000.0f);
+        }
+
+        /**
+         * Converts radians to centidegrees.
+         * @param radians - The radians to convert.
+         * @return The radians in centidegrees.
+         */
+        static float radToCentideg(const float radians)
+        {
+            return radians * (18000.0f / M_PIF);
         }
 
         /**
@@ -82,7 +89,33 @@ namespace devils
         {
             return degrees * 100.0f;
         }
+        
+        /**
+         * Compares the difference of two radian angles.
+         * @param radiansA The first angle in radians.
+         * @param radiansB The second angle in radians.
+         * @return The difference between the two angles, relative to `radiansB`. Can be [-PI, PI]
+         */
+        static float diffRad(const float radiansA, const float radiansB)
+        {
+            return std::atan2(
+                std::sin(radiansA - radiansB),
+                std::cos(radiansA - radiansB));
+        }
 
+        /**
+         * Compares the difference of two degree angles.
+         * @param degreesA - The first angle in degrees.
+         * @param degreesB - The second angle in degrees.
+         * @return The difference between the two angles, relative to `degreesB`. Can be [-180, 180]
+         */
+        static float diffDeg(const float degreesA, const float degreesB)
+        {
+            return radToDeg(diffRad(
+                degToRad(degreesA),
+                degToRad(degreesB)));
+        }
+        
         /**
          * Modulus function that also works with negative numbers.
          * @param a The number to mod.
@@ -93,16 +126,7 @@ namespace devils
         {
             return a - std::floor(a / b) * b;
         }
-
-        /**
-         * Converts radians to degrees.
-         * @param radians The radians to convert.
-         */
-        static float radToDeg(const float radians)
-        {
-            return radians * (180.0f / M_PIF);
-        }
-
+        
         /**
          * Normalizes an angle in radians to be between 0 and 2 * PI.
          * @param radians The angle in radians to normalize.

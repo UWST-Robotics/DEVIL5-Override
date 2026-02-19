@@ -2,7 +2,7 @@
 
 #include "../devils.h"
 #include "./subsystems/intakeSystem.hpp"
-#include "./autonomous/pjSkillsAuto.hpp"
+// #include "./autonomous/pjSkillsAuto.hpp"
 
 namespace devils
 {
@@ -17,7 +17,7 @@ namespace devils
             odometry->start();
             
             toastDisplay->start();
-            devilBotsDisplay->start();
+            // devilBotsDisplay->start();
             
             // Logger::debug("This is a debug message");
             // Logger::info("This is an info message");
@@ -28,7 +28,17 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            PJSkillsAuto::run(chassis, *odometry.get(), intake);
+            
+            const auto autoBuilder = AutoBuilder(chassis, *odometry.get());
+            autoBuilder.driveTo({24, 4, Units::degToRad(90)}, 12.0f)->startSync();
+            // autoBuilder.rotateTo(90)->startSync();
+            // autoBuilder.rotateTo(0)->startSync();
+            // autoBuilder.driveTo({0, 0})->startSync();
+            // autoBuilder.rotateTo(180, {.endingVelocity = 0.0f})->startSync();
+            // autoBuilder.rotateTo(0)->startSync();
+            // autoBuilder.rotateTo(180)->startSync();
+            
+            // PJSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
         void opcontrol() override
@@ -58,7 +68,7 @@ namespace devils
                 const bool rakePneumaticsButton = mainController.b; // toggle rake pneumatics
 
                 // Combine Left and Right X Joystick Inputs
-                const float combinedX = JoystickCurve::combine(leftX, rightX);
+                const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Run Cyclers
                 if (exitCyclerButton)
@@ -80,8 +90,6 @@ namespace devils
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f, 0.0f);
-
-                frontTopIntakeMotors.getMotors()[0]->checkForMicroDisconnection();
                 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -141,7 +149,7 @@ namespace devils
             DEAD_WHEEL_RADIUS);
         
         // Displays
-        std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
         // Renderer

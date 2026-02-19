@@ -4,7 +4,6 @@
 #include <string>
 #include <cmath>
 #include <utility>
-#include "pros/motors.hpp"
 #include "motorBase.h"
 #include "hardwareBase.hpp"
 
@@ -34,6 +33,15 @@ namespace devils
          * Checks for SmartMotor micro-disconnection by comparing the SmartMotor's clock to the system clock.
          * This allows the system to detect if a motor has been disconnected and reconnected before VEX's device timeout occurs.
          * Based on https://github.com/LemLib/hardware/issues/5
+         * 
+         * @example 
+         * SmartMotor motor("Motor", 1);
+         * while (true)
+         * {
+         *    motor.move(1.0);
+         *    motor.checkForMicroDisconnect();
+         *    pros::delay(100);
+         * }
          */
         void checkForMicroDisconnect()
         {

@@ -14,7 +14,7 @@ namespace devils
      * Can be used as an OdomSource.
      */
     class DummyChassis :
-        BackgroundService,
+        public BackgroundService,
         public ChassisBase,
         public OdomSource,
         public PoseVelocityCalculator

@@ -106,7 +106,7 @@ namespace devils
             switch (status)
             {
             case ERROR_INCORRECT_TYPE:
-                Logger::error(toString() + " isn't a " + type + ".");
+                Logger::error(toString() + " isn't connected");
                 break;
             case ERROR_INVALID_PORT:
                 Logger::error(toString() + " isn't connected to a valid port.");

@@ -2,7 +2,7 @@
 
 #include "../devils.h"
 #include "subsystems/intakeSystem.hpp"
-#include "./autonomous/blazeSkillsAuto.hpp"
+// #include "./autonomous/blazeSkillsAuto.hpp"
 
 namespace devils
 {
@@ -20,7 +20,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
+            // BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
         }
 
         void opcontrol() override
@@ -47,7 +47,7 @@ namespace devils
                 const bool rakePneumaticsButton = mainController.b; // toggle rake pneumatics
 
                 // Combine Left and Right X Joystick Inputs
-                const float combinedX = JoystickCurve::combine(leftX, rightX);
+                const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Run Cyclers
                 if (exitCyclerButton)

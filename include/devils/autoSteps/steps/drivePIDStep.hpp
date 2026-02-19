@@ -12,7 +12,7 @@ namespace devils
      * Drives the robot linearly to a specific pose.
      * Rotates the robot to face the target pose, disregarding target rotation.
      */
-    class AutoDriveToStep : public AutoStep
+    class DrivePIDStep : public AutoStep
     {
     public:
         struct Options
@@ -49,7 +49,7 @@ namespace devils
          * @param targetPose The target pose to drive to.
          * @param options The options for the drive step.
          */
-        AutoDriveToStep(
+        DrivePIDStep(
             ChassisBase& chassis,
             OdomSource& odomSource,
             const Pose& targetPose,
@@ -98,14 +98,14 @@ namespace devils
             }
 
             // Calculate Forward Speed
-            float speed = getSpeed(distanceToTarget);
+            const auto speed = getSpeed(distanceToTarget);
 
             // Calculate Turn Speed
             float turnSpeed = 0;
             if (std::fabs(distanceToTarget) > options.minDistanceToRotate)
             {
                 // Difference in angle
-                const float angleDiff = Math::angleDiff(targetAngleRads, currentPose.rotation);
+                const float angleDiff = Units::diffRad(targetAngleRads, currentPose.rotation);
 
                 turnSpeed = rotationPID.update(angleDiff);
                 turnSpeed = std::clamp(turnSpeed, -options.maxSpeed, options.maxSpeed);
@@ -138,7 +138,7 @@ namespace devils
          * @param distanceToTarget The distance to the target in inches
          * @returns The target speed in inches per second
          */
-        virtual float getSpeed(float distanceToTarget)
+        virtual float getSpeed(const float distanceToTarget)
         {
             // Calculate output speed
             float outputSpeed = translationPID.update(distanceToTarget);
@@ -163,5 +163,5 @@ namespace devils
     };
 
     // Define the default options
-    AutoDriveToStep::Options AutoDriveToStep::Options::defaultOptions = AutoDriveToStep::Options();
+    DrivePIDStep::Options DrivePIDStep::Options::defaultOptions = DrivePIDStep::Options();
 }

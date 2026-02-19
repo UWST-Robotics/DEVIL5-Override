@@ -39,7 +39,7 @@ namespace devils
         static SplinePath makeArc(
             const Pose& from,
             const Pose& to,
-            float delta = 18.0,
+            float delta = 6.0,
             bool isReversed = false)
         {
             if (isReversed)
@@ -56,7 +56,7 @@ namespace devils
          * @param index The index to get the pose at. Interpolate between indices.
          * @return The pose at the index
          */
-        Pose getPoseAt(float index) override
+        Pose getPoseAt(const float index) override
         {
             // Check OOB
             if (index <= 0)
@@ -65,16 +65,16 @@ namespace devils
                 return static_cast<Pose>(poses.back());
 
             // Get the two poses to interpolate between
-            int prevIndex = (int)index;
-            int nextIndex = prevIndex + 1;
-            SplinePose prevPose = poses[prevIndex];
-            SplinePose nextPose = poses[nextIndex];
-            Pose prevAnchor = prevPose.getExitAnchor();
-            Pose nextAnchor = nextPose.getEntryAnchor();
+            const int prevIndex = static_cast<int>(index);
+            const int nextIndex = prevIndex + 1;
+            const SplinePose prevPose = poses[prevIndex];
+            const SplinePose nextPose = poses[nextIndex];
+            const Pose prevAnchor = prevPose.getExitAnchor();
+            const Pose nextAnchor = nextPose.getEntryAnchor();
 
             // Calculate dt between the two poses
             // This is the percentage of the way between the two poses
-            float dt = index - prevIndex;
+            const float dt = index - static_cast<float>(prevIndex);
 
             // Interpolate between the two poses
             // using cubic interpolation
@@ -85,7 +85,7 @@ namespace devils
                 nextPose,
                 dt);
 
-            Pose interpolatedPosePrime = Lerp::cubicPoints(
+            const Pose interpolatedPosePrime = Lerp::cubicPoints(
                 prevPose,
                 prevAnchor,
                 nextAnchor,
@@ -94,7 +94,7 @@ namespace devils
 
             // Calculate rotation
             // This is the instantaneous derivative of the pose at the given index
-            float rotation = std::atan2(
+            const float rotation = std::atan2(
                 interpolatedPosePrime.y - interpolatedPose.y,
                 interpolatedPosePrime.x - interpolatedPose.x);
             interpolatedPose.rotation = rotation;
@@ -112,7 +112,7 @@ namespace devils
          */
         float getLength() override
         {
-            return poses.size();
+            return static_cast<float>(poses.size());
         }
 
     private:

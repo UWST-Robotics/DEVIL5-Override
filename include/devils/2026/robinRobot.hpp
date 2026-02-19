@@ -58,7 +58,7 @@ namespace devils
                 floatingRollers.move(rightY);
 
                 // Combine Left and Right X Joystick Inputs
-                const float combinedX = JoystickCurve::combine(leftX, rightX);
+                const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f, 0);

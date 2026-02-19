@@ -230,7 +230,6 @@ namespace devils
             }
         }
 
-    private:
         static constexpr int UPDATE_INTERVAL = 20; // Default update interval in milliseconds
 
         // List of all running instances

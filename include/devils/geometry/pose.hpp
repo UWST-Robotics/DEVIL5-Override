@@ -29,7 +29,9 @@ namespace devils
          * @param x The x position of the robot in inches
          * @param y The y position of the robot in inches
          */
-        Pose(float x, float y) : Vector2(x, y)
+        Pose(
+            const float x,
+            const float y) : Vector2(x, y)
         {
         }
 
@@ -143,6 +145,37 @@ namespace devils
         std::string toString() const
         {
             return "Pose(" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(rotation) + ")";
+        }
+
+        /**
+         * Checks if this pose is behind another pose.
+         * This is determined by taking the dot product of the current pose's direction vector and the vector from the current pose to the other pose. If the dot product is negative, then the other pose is behind the current pose.
+         * @param otherPose - The other pose to compare to
+         * @return True if the other pose is behind this pose, false otherwise
+         */
+        bool isBehind(const Pose& otherPose) const
+        {
+            const float dotProduct = cosf(rotation) * (otherPose.x - x) + 
+                                     sinf(rotation) * (otherPose.y - y);
+            return dotProduct > 0;
+        }
+
+        /**
+         * Calculates the curvature between this pose and another pose.
+         * Curvature is defined as the change in rotation divided by the distance between the two poses.
+         * A higher curvature indicates a sharper turn, while a lower curvature indicates a gentler turn.
+         * Negative curvature indicates a turn to the left, while positive curvature indicates a turn to the right.
+         * @param otherPose - The other pose to compare to
+         * @return The curvature between this pose and the other pose (measured in radians per inch)
+         */
+        float curvature(const Pose& otherPose) const
+        {
+            const float distance = distanceTo(otherPose);
+            if (distance == 0)
+                return 0; // Avoid division by zero
+            
+            const float angleDifference = otherPose.rotation - rotation;
+            return angleDifference / distance;
         }
     };
 

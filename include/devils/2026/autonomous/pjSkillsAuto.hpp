@@ -121,7 +121,7 @@ namespace devils
     private:
         static void pauseForIntake(uint32_t duration = 500)
         {
-            std::make_shared<AutoPauseStep>(duration)->startSync();
+            // std::make_shared<AutoPauseStep>(duration)->startSync();
         }
 
         static void pauseForOuttake(
@@ -130,7 +130,7 @@ namespace devils
             float outtakeSpeed = 0.8f)
         {
             intake->setTargetSpeed(outtakeSpeed);
-            std::make_shared<AutoPauseStep>(outtakeDuration)->startSync();
+            // std::make_shared<AutoPauseStep>(outtakeDuration)->startSync();
             intake->setTargetSpeed(INTAKE_SPEED);
         }
 

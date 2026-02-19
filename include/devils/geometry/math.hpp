@@ -10,57 +10,14 @@
 
 namespace devils
 {
+    /**
+     * Collection of utility math functions.
+     */
     struct Math
     {
-        /**
-         * Returns the minimum of two values by magnitude.
-         * @param valueA The first value.
-         * @param valueB The second value.
-         * @return The value with the minimum magnitude.
-         */
-        static float minMagnitude(
-            const float valueA,
-            const float valueB)
-        {
-            if (std::abs(valueA) < std::abs(valueB))
-                return valueA;
-            return valueB;
-        }
-
-        /**
-         * Returns the maximum of two values by magnitude.
-         * @param valueA The first value.
-         * @param valueB The second value.
-         * @return The value with the maximum magnitude.
-         */
-        static float maxMagnitude(
-            float valueA,
-            float valueB)
-        {
-            if (std::abs(valueA) > std::abs(valueB))
-                return valueA;
-            return valueB;
-        }
-
-        /**
-         * Interpolates a value along a sigmoid curve.
-         * @param x The input value.
-         * @param kCurve The curve factor. Must be greater than 1.
-         * @return The value along the curve.
-         */
-        static float sigmoidCurve(
-            const float x,
-            const float kCurve)
-        {
-            // Avoid division by zero
-            if (x == 1)
-                return 1;
-
-            // Calculate the curve
-            const float hyperbolic = std::pow(x / (1 - x), kCurve);
-            return 1 - 1 / (1 + hyperbolic);
-        }
-
+        // Delete constructor to prevent instantiation
+        Math() = delete;
+        
         /**
          * Modulus function that works with negative numbers.
          * For example, -1 % 3 = 2 and -1 % -3 = 1.
@@ -88,35 +45,12 @@ namespace devils
             const float min,
             const float max)
         {
-            if (value >= 0)
+            if (value > 0)
                 return std::clamp(value, min, max);
-            return std::clamp(value, -max, -min);
-        }
-
-        /**
-         * Calculates the difference between two radian angles.
-         * @param a The first angle in radians.
-         * @param b The second angle in radians.
-         * @return The minimum difference between the two angles in radians.
-         */
-        static float angleDiff(float a, float b)
-        {
-            float dist = a - b;
-            dist = signedMod(dist + M_PIF, 2 * M_PIF) - M_PIF;
-            return dist;
-        }
-
-        /**
-         * Calculates the difference between two degree angles.
-         * @param a The first angle in degrees.
-         * @param b The second angle in degrees.
-         * @return The minimum difference between the two angles in degrees.
-         */
-        static float angleDiffDeg(float a, float b)
-        {
-            float dist = a - b;
-            dist = signedMod(dist + 180, 360) - 180;
-            return dist;
+            if (value < 0)
+                return std::clamp(value, -max, -min);
+            
+            return 0;
         }
 
         /**
@@ -169,6 +103,42 @@ namespace devils
             const float x = b.x - ((1 - t) * a.x + t * b.x);
             const float y = b.y - ((1 - t) * a.y + t * b.y);
             return sqrtf(x * x + y * y);
+        }
+
+        /**
+         * Chooses the value with the largest magnitude from a list of values.
+         * @param values - A list of values to find the largest magnitude of.
+         * @return The value with the largest magnitude in the list.
+         */
+        static float largestMagnitude(const std::initializer_list<float>& values)
+        {
+            float largest = 0;
+            for (const auto& value : values)
+            {
+                if (std::abs(value) > std::abs(largest))
+                    largest = value;
+            }
+            return largest;
+        }
+
+        /**
+         * Chooses the value with the smallest magnitude from a list of values.
+         * @param values - A list of values to find the smallest magnitude of.
+         * @return The value with the smallest magnitude in the list. 
+         */
+        static float smallestMagnitude(const std::initializer_list<float>& values)
+        {
+            // Handle empty list case
+            if (values.size() == 0)
+                return 0;
+            
+            float smallest = *values.begin();
+            for (const auto& value : values)
+            {
+                if (std::abs(value) < std::abs(smallest))
+                    smallest = value;
+            }
+            return smallest;
         }
     };
 }
