@@ -4,7 +4,6 @@
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/StickSystem.hpp"
 #include "./subsystems/tubeSystem.hpp"
-// #include "./autonomous/blazeSkillsAuto.hpp"
 
 namespace devils
 {
@@ -12,15 +11,16 @@ namespace devils
     {
         BlazeRobot()
         {
-            imu.calibrate();
+            // imu.calibrate();
 
-            odometry->useIMU(&imu);
-            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
-            odometry->start();
+            // odometry->useIMU(&imu);
+            // odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
+            // odometry->start();
 
             toastDisplay->start();
+            // devilBotsDisplay->start();
 
-            auto joystickOptions = ControllerAxis::Options{
+            constexpr auto joystickOptions = ControllerAxis::Options{
                 .deadzone = 0.1f, // <-- Minimum input to register
                 .startingValue = 0.15f, // <-- Jumps to 15% to overcome motor friction
                 .exponent = 3.0f // <-- Cubes the input for finer control at low speeds
@@ -34,8 +34,8 @@ namespace devils
 
         void autonomous() override
         {
-            imu.waitUntilDoneCalibrated();
-            // BlazeSkillsAuto::run(chassis, *odometry.get(), intake);
+            // imu.waitUntilDoneCalibrated();
+            // MatchAuto::run(chassis, *odometry.get());
         }
 
         void opcontrol() override
@@ -54,7 +54,6 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                const bool hoodExtendButton = mainController.l1; // hood extend/retract
                 const bool tubeExtendButton = mainController.right; // tube extend/retract
                 const bool intakeArmExtendButton = mainController.y;
                 const bool stickFastButton = mainController.r1;
@@ -63,25 +62,25 @@ namespace devils
                 // Combine Left and Right X Joystick Inputs
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
 
-
                 // Drive normally
                 chassis.move(leftY, combinedX * 0.5f, 0);
 
-                //Intake shit
+                // Intake shit
                 intake.runIntake(rightY);
                 intake.setArmsExtended(intakeArmExtendButton);
 
-                tube.setHoodOpen(stickFastButton || stickSlowButton);
+                // Stick shit
+                stick.setPTOExtended(false);
 
                 if (stickFastButton) stick.moveFast();
                 else if (stickSlowButton) stick.moveSlow();
                 else stick.retract();
 
+                // Tube shit
+                tube.setHoodOpen(stickFastButton || stickSlowButton);
+
                 if (tubeExtendButton) tube.setTubeRaised(true);
                 else tube.setTubeRaised(false);
-
-                stick.setPTOExtended(false);
-
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -104,22 +103,22 @@ namespace devils
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.4);
 
         // Hardware
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {10, -9, 8, -7, 6});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-5, 14, -3, 13, -1});
 
-        SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-4});
-        SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {6});
+        SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-20});
+        SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {19});
 
-        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {-7, 8, -9});
+        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {18, -17, 16});
 
-        ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'H', true);
-        ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'G', true);
-        ADIPneumatic intakePnematics = ADIPneumatic("IntakePneumatics", 'F', true);
-        ADIPneumatic ptoPnematics = ADIPneumatic("PTOPneumatics", 'E', true);
+        ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'A', true);
+        ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'B', true);
+        ADIPneumatic intakePnematics = ADIPneumatic("IntakePneumatics", 'C', true);
+        ADIPneumatic ptoPnematics = ADIPneumatic("PTOPneumatics", 'D', true);
 
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 9);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 8);
-        InertialSensor imu = InertialSensor("IMU", 4);
+        // RotationSensor verticalSensor = RotationSensor("VerticalOdom", 11);
+        // RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 12);
+        // InertialSensor imu = InertialSensor("IMU", 13);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
@@ -127,12 +126,13 @@ namespace devils
         StickSystem stick = StickSystem(ptoPnematics, stickMotorsRight);
         TubeSystem tube = TubeSystem(tubePnematics, hoodPneumatics);
 
-        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
-            verticalSensor,
-            horizontalSensor,
-            DEAD_WHEEL_RADIUS);
+        // std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
+        //     verticalSensor,
+        //     horizontalSensor,
+        //     DEAD_WHEEL_RADIUS);
 
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
+        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
 
 
         // RobotAutoOptions autoOptions = RobotAutoOptions();
