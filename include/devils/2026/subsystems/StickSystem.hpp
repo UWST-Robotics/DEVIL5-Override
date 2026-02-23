@@ -35,6 +35,14 @@ namespace devils
         {
             moveToPosition(EXPECTED_POSITION_DOWN, RETRACTION_SPEED);
         }
+        void manualRetract()
+        {
+            stickMotors.move(RETRACTION_SPEED);
+        }
+        void manualMove(float speed)
+        {
+            stickMotors.move(speed);
+        }
 
         void moveToPosition(float targetPosition, float speed)
         {
