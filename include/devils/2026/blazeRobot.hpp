@@ -58,6 +58,7 @@ namespace devils
                 const bool intakeArmExtendButton = mainController.y;
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
+                const bool stickDownButton = mainController.down; //temporary, should not exist later please
 
                 // Combine Left and Right X Joystick Inputs
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
@@ -72,9 +73,15 @@ namespace devils
                 // Stick shit
                 stick.setPTOExtended(false);
 
-                if (stickFastButton) stick.moveFast();
+                /*(if (stickFastButton) stick.moveFast();
                 else if (stickSlowButton) stick.moveSlow();
-                else stick.retract();
+                else if (stickFastButton && stickSlowButton) stick.manualRetract();
+                //else stick.retract(); */
+
+                if (stickFastButton) stick.manualMove(1);
+                else if (stickSlowButton) stick.manualMove(.5f);
+                else if (stickDownButton) stick.manualMove(-0.35f);
+                else stick.manualMove(0);
 
                 // Tube shit
                 tube.setHoodOpen(stickFastButton || stickSlowButton);
@@ -104,12 +111,12 @@ namespace devils
 
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {10, -9, 8, -7, 6});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-5, 14, -3, 13, -1});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-1, 2, -3, 4, -5});
 
-        SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-20});
-        SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {19});
+        SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {20});
+        SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {-19});
 
-        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {18, -17, 16});
+        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {-18, 17, 16});
 
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'A', true);
         ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'B', true);
