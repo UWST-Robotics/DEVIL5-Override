@@ -68,21 +68,38 @@ namespace devils
 
                 // Intake shit
                 intake.runIntake(rightY);
+                sideIntake.runIntake(rightY * 0.75f);
                 intake.setArmsExtended(intakeArmExtendButton);
 
                 // Stick shit
-                stick.setPTOExtended(false);
+                stickRight.setPTOExtended(false);
+                stickLeft.setPTOExtended(false);
 
                 /*(if (stickFastButton) stick.moveFast();
                 else if (stickSlowButton) stick.moveSlow();
                 else if (stickFastButton && stickSlowButton) stick.manualRetract();
                 //else stick.retract(); */
 
-                if (stickFastButton) stick.manualMove(1);
-                else if (stickSlowButton) stick.manualMove(.5f);
-                else if (stickDownButton) stick.manualMove(-0.35f);
-                else stick.manualMove(0);
-
+                if (stickFastButton) 
+                {
+                    stickRight.manualMove(1); 
+                    stickLeft.manualMove(1);
+                }
+                else if (stickSlowButton)
+                {
+                    stickRight.manualMove(.5f);
+                    stickLeft.manualMove(.5f);
+                } 
+                else if (stickDownButton) 
+                {
+                    stickRight.manualMove(-0.35f);
+                    stickLeft.manualMove(-0.35f);
+                }
+                else 
+                {
+                    stickRight.manualMove(0);
+                    stickLeft.manualMove(0);
+                }
                 // Tube shit
                 tube.setHoodOpen(stickFastButton || stickSlowButton);
 
@@ -116,7 +133,8 @@ namespace devils
         SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {20});
         SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {-19});
 
-        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {-18, 17, 16});
+        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {16});
+        SmartMotorGroup sideRollers = SmartMotorGroup("SideRollers", {-18, 17});
 
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'A', true);
         ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'B', true);
@@ -130,7 +148,9 @@ namespace devils
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
         IntakeSystem intake = IntakeSystem(intakePnematics, intakeMotors);
-        StickSystem stick = StickSystem(ptoPnematics, stickMotorsRight);
+        IntakeSystem sideIntake = IntakeSystem(intakePnematics, sideRollers);
+        StickSystem stickRight = StickSystem(ptoPnematics, stickMotorsRight);
+        StickSystem stickLeft = StickSystem(ptoPnematics, stickMotorsLeft);
         TubeSystem tube = TubeSystem(tubePnematics, hoodPneumatics);
 
         // std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
