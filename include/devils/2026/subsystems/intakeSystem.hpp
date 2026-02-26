@@ -12,8 +12,8 @@ namespace devils
     {
 
     public:
-        IntakeSystem(ADIPneumatic& intakeArms, SmartMotorGroup& intakeMotors)
-            : intakeArms(intakeArms), intakeMotors(intakeMotors)
+        IntakeSystem(ADIPneumatic& intakeArmLeft, ADIPneumatic& intakeArmRight, SmartMotorGroup& intakeMotors)
+            : intakeArmLeft(intakeArmLeft), intakeArmRight(intakeArmRight), intakeMotors(intakeMotors)
         {
 
         }
@@ -25,11 +25,13 @@ namespace devils
 
         void setArmsExtended(bool extended)
         {
-            intakeArms.setExtended(extended);
+            intakeArmLeft.setExtended(extended);
+            intakeArmRight.setExtended(extended);
         }
 
     private:
-        ADIPneumatic intakeArms;
+        ADIPneumatic intakeArmLeft;
+        ADIPneumatic intakeArmRight;
         SmartMotorGroup intakeMotors;
     };
     

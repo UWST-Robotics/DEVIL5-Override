@@ -5,9 +5,6 @@
 
 namespace devils
 {
-    /**
-     * Represents the intake arm and claw system of the robot.
-     */
     class TubeSystem
     {
 
