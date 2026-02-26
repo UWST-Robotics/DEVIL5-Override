@@ -64,7 +64,7 @@ namespace devils
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Drive normally
-                chassis.move(leftY, combinedX * 0.5f, 0);
+                chassis.move(leftY, combinedX * 0.75f, 0);
 
                 // Intake controls
                 intake.runIntake(rightY);
@@ -72,8 +72,8 @@ namespace devils
                 intake.setArmsExtended(intakeArmExtendButton);
 
                 // Stick pneumatic defaults
-                stickRight.setPTOExtended(false);
-                stickLeft.setPTOExtended(false);
+                stickRight.setPTOExtended(true);
+                stickLeft.setPTOExtended(true);
 
                 // For fancy stick controls once testing is done
                 /*(if (stickFastButton) stick.moveFast();
@@ -138,9 +138,9 @@ namespace devils
         SmartMotorGroup sideRollers = SmartMotorGroup("SideRollers", {-18, 17});
 
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'F', true);
-        ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'C', true);
-        ADIPneumatic intakePnematicsRight = ADIPneumatic("IntakePneumaticsRight", 'D', true);
-        ADIPneumatic intakePnematicsLeft = ADIPneumatic("IntakePneumaticsLeft", 'E', true);
+        ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'C', false);
+        ADIPneumatic intakePnematicsRight = ADIPneumatic("IntakePneumaticsRight", 'D', false);
+        ADIPneumatic intakePnematicsLeft = ADIPneumatic("IntakePneumaticsLeft", 'E', false);
         ADIPneumatic ptoPnematicsLeft = ADIPneumatic("PTOPneumaticsLeft", 'A', true);
         ADIPneumatic ptoPnematicsRight = ADIPneumatic("PTOPneumaticsRight", 'B', true);
 
