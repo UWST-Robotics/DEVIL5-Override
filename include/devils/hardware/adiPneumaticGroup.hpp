@@ -17,16 +17,21 @@ namespace devils
         /**
          * Creates a new ADI pneumatic group.
          * @param name The name of the pneumatic group (for logging purposes)
-         * @param ports The ADI ports of the pneumatics in the group
+         * @param ports The ADI ports of the pneumatics in the group (from 'A' to 'H').
+         * @param isInverted True if the pneumatics should be inverted, false otherwise.
          */
         ADIPneumaticGroup(
             std::string name,
-            const std::initializer_list<int8_t> ports)
+            const std::initializer_list<char> ports,
+            bool isInverted = false)
             : name(std::move(name))
         {
             pneumatics.reserve(ports.size());
             for (auto port : ports)
-                pneumatics.push_back(std::make_shared<ADIPneumatic>(getPneumaticName(port), port));
+                pneumatics.push_back(std::make_shared<ADIPneumatic>(
+                    getPneumaticName(port),
+                    port,
+                    isInverted));
         }
 
         /**
@@ -82,9 +87,9 @@ namespace devils
          * @param port The port of the pneumatic
          * @return The name of the pneumatic
          */
-        std::string getPneumaticName(const int32_t port) const
+        std::string getPneumaticName(const char port) const
         {
-            return name + "_" + std::to_string(abs(port));
+            return name + "_" + ADIHardwareBase::adiPortToString(port);
         }
 
         const std::string name;

@@ -2,6 +2,7 @@
 
 #include "devils/devils.h"
 #include <algorithm>
+#include <utility>
 
 namespace devils
 {
@@ -10,29 +11,47 @@ namespace devils
      */
     class IntakeSystem
     {
-
     public:
-        IntakeSystem(ADIPneumatic& intakeArmLeft, ADIPneumatic& intakeArmRight, SmartMotorGroup& intakeMotors)
-            : intakeArmLeft(intakeArmLeft), intakeArmRight(intakeArmRight), intakeMotors(intakeMotors)
+        IntakeSystem(
+            ADIPneumaticGroup intakeArms,
+            SmartMotorGroup sideRollers,
+            SmartMotorGroup topRollers)
+            : intakeArms(std::move(intakeArms)),
+              sideRollers(std::move(sideRollers)),
+              topRollers(std::move(topRollers))
         {
-
         }
 
+        /**
+         * Runs the intake rollers at a specified speed.
+         * The speed should be between -1 and 1, where positive values run the rollers inwards to intake objects and negative values run the rollers outwards to expel objects.
+         * The speed is limited to prevent the rollers from running too fast.
+         * @param speed - The speed to run the intake rollers at, from -1 to 1. 
+         */
         void runIntake(float speed)
         {
-            intakeMotors.move(speed);
+            // Limit the speed to prevent the rollers from running too fast
+            speed = std::clamp(speed, -1.0f, 1.0f);
+
+            sideRollers.move(speed * SIDE_ROLLER_SPEED);
+            topRollers.move(speed * TOP_ROLLER_SPEED);
         }
 
-        void setArmsExtended(bool extended)
+        /**
+         * Sets whether the intake arms are extended or not.
+         * @param extended - True to extend the intake arms, false to retract them.
+         */
+        void setArmsExtended(const bool extended) const
         {
-            intakeArmLeft.setExtended(extended);
-            intakeArmRight.setExtended(extended);
+            intakeArms.setExtended(extended);
         }
 
     private:
-        ADIPneumatic intakeArmLeft;
-        ADIPneumatic intakeArmRight;
-        SmartMotorGroup intakeMotors;
+        static constexpr float TOP_ROLLER_SPEED = 0.75f;
+        static constexpr float SIDE_ROLLER_SPEED = 0.75f;
+
+        ADIPneumaticGroup intakeArms;
+        SmartMotorGroup sideRollers;
+        SmartMotorGroup topRollers;
     };
-    
 }

@@ -49,17 +49,17 @@ namespace devils
             uint32_t motorTimestamp = 0;
             executeWithErrorCheck<uint32_t>(pros::c::motor_get_raw_position, port, &motorTimestamp);
             const auto motorTimeDifference = static_cast<long>(motorTimestamp) - lastMotorTimestamp;
-            
+
             // Get timestamp from the system
             const auto systemTime = pros::c::millis();
             const auto systemTimeDifference = static_cast<long>(systemTime) - lastSystemTimestamp;
-            
+
             // Compare the time differences
             const auto timeDifference = std::abs(static_cast<long>(motorTimeDifference - systemTimeDifference));
             const auto isFirstCheck = lastSystemTimestamp == 0 || lastMotorTimestamp == 0;
             if (timeDifference > MICRODISCONNECT_THRESHOLD_MS && !isFirstCheck)
                 Logger::warn(name + " may have disconnected (" + std::to_string(timeDifference) + "ms out of sync)");
-            
+
             lastSystemTimestamp = systemTime;
             lastMotorTimestamp = motorTimestamp;
         }
@@ -80,6 +80,9 @@ namespace devils
 
             // Pass voltage to motor
             executeWithErrorCheck<int32_t>(pros::c::motor_move_voltage, port, voltage);
+
+            // Store the last voltage for reference
+            lastVoltage = speed;
         }
 
         /**
@@ -100,7 +103,7 @@ namespace devils
         {
             // Convert position to a double
             const auto positionDouble = static_cast<double>(position);
-            
+
             // Pass position to motor
             executeWithErrorCheck<int32_t>(pros::c::motor_set_zero_position, port, positionDouble);
         }
@@ -139,12 +142,12 @@ namespace devils
             const auto result = executeWithErrorCheck<double>(pros::c::motor_get_position, port);
             if (!result.isSuccess())
                 return result.status;
-            
+
             // Invert the position if necessary
             auto position = static_cast<float>(result.value);
             if (isInverted)
                 position = -position;
-            
+
             return position;
         }
 
@@ -158,12 +161,12 @@ namespace devils
             const auto result = executeWithErrorCheck<double>(pros::c::motor_get_actual_velocity, port);
             if (!result.isSuccess())
                 return result.status;
-            
+
             // Invert the velocity if necessary
             auto velocity = static_cast<float>(result.value);
             if (isInverted)
                 velocity = -velocity;
-            
+
             return velocity;
         }
 
@@ -177,7 +180,7 @@ namespace devils
             const auto result = executeWithErrorCheck<double>(pros::c::motor_get_temperature, port);
             if (!result.isSuccess())
                 return result.status;
-            
+
             return static_cast<float>(result.value);
         }
 
@@ -191,25 +194,37 @@ namespace devils
             const auto result = executeWithErrorCheck<int32_t>(pros::c::motor_get_current_draw, port);
             if (!result.isSuccess())
                 return result.status;
-            
+
             // Convert from milliamps to amps
             return static_cast<float>(result.value) / 1000.0f;
+        }
+
+        /**
+         * Gets the last voltage that was set to the motor, from -1 to 1.
+         * @return The last voltage that was set to the motor, from -1 to 1.
+         */
+        float getLastVoltage() const
+        {
+            return lastVoltage;
         }
 
     protected:
         /// @brief Motor clock must be this out of sync with system clock to be considered a micro-disconnection
         static constexpr int MICRODISCONNECT_THRESHOLD_MS = 100;
-        
+
         /// @brief Maximum voltage value inputted into the motor (in millivolts)
         static constexpr int MAX_VALUE = 12000;
-        
+
         /// @brief Whether the motor is inverted (i.e. if the port number is negative)
         bool isInverted = false;
-        
+
         /// @brief System's timestamp the last time `checkForMicroDisconnect()` was called
         uint32_t lastSystemTimestamp = 0;
-        
+
         /// @brief Motor's timestamp the last time `checkForMicroDisconnect()` was called
         uint32_t lastMotorTimestamp = 0;
+
+        /// @brief The last voltage that was set to the motor, from -1 to 1
+        float lastVoltage = 0;
     };
 }

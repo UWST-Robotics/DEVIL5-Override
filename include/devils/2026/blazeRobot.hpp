@@ -30,6 +30,8 @@ namespace devils
             mainController.leftY.setOptions(joystickOptions);
             mainController.rightX.setOptions(joystickOptions);
             mainController.rightY.setOptions(joystickOptions);
+
+            mainController.up.setMode(ControllerButton::TOGGLED);
         }
 
         void autonomous() override
@@ -58,49 +60,34 @@ namespace devils
                 const bool intakeArmExtendButton = mainController.y;
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
-                const bool stickDownButton = mainController.down; // Temporary, should not exist later please
+
+                const bool driveReverseButton = mainController.b; // Reverse controls
+                const bool ptoButton = mainController.up; // PTO extend/retract (for testing)
 
                 // Combine Left and Right X Joystick Inputs
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Drive normally
-                chassis.move(leftY, combinedX * 0.75f, 0);
+                const auto driveDirection = driveReverseButton ? -1.0f : 1.0f;
+                chassis.move(leftY * driveDirection, combinedX * 0.75f, 0);
 
                 // Intake controls
                 intake.runIntake(rightY);
-                sideIntake.runIntake(rightY * 0.75f);
                 intake.setArmsExtended(intakeArmExtendButton);
 
                 // Stick pneumatic defaults
-                stickRight.setPTOExtended(true);
-                stickLeft.setPTOExtended(true);
+                stick.setPTOExtended(ptoButton);
 
                 // For fancy stick controls once testing is done
-                /*(if (stickFastButton) stick.moveFast();
-                else if (stickSlowButton) stick.moveSlow();
-                else if (stickFastButton && stickSlowButton) stick.manualRetract();
-                //else stick.retract(); */
-
-                if (stickFastButton) 
-                {
-                    stickRight.manualMove(1); 
-                    stickLeft.manualMove(1);
-                }
+                if (stickFastButton)
+                    stick.setState(StickSystem::State::EXTENDED_FAST);
                 else if (stickSlowButton)
-                {
-                    stickRight.manualMove(.5f);
-                    stickLeft.manualMove(.5f);
-                } 
-                else if (stickDownButton) 
-                {
-                    stickRight.manualMove(-0.35f);
-                    stickLeft.manualMove(-0.35f);
-                }
-                else 
-                {
-                    stickRight.manualMove(0);
-                    stickLeft.manualMove(0);
-                }
+                    stick.setState(StickSystem::State::EXTENDED_SLOW);
+                else
+                    stick.setState(StickSystem::State::RETRACTED);
+
+                stick.moveStick();
+
                 // Hood controls (might not be needed if the hood is a passive system)
                 tube.setHoodOpen(stickFastButton || stickSlowButton);
 
@@ -131,18 +118,18 @@ namespace devils
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {10, -9, 8, -7, 6});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-1, 2, -3, 4, -5});
 
-        SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {20});
-        SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {-19});
+        SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-20});
+        SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {19});
 
-        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {16});
+        SmartMotorGroup topRoller = SmartMotorGroup("TopIntakeRoller", {16});
         SmartMotorGroup sideRollers = SmartMotorGroup("SideRollers", {-18, 17});
 
         ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'F', true);
         ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'C', false);
-        ADIPneumatic intakePnematicsRight = ADIPneumatic("IntakePneumaticsRight", 'D', false);
-        ADIPneumatic intakePnematicsLeft = ADIPneumatic("IntakePneumaticsLeft", 'E', false);
-        ADIPneumatic ptoPnematicsLeft = ADIPneumatic("PTOPneumaticsLeft", 'A', true);
-        ADIPneumatic ptoPnematicsRight = ADIPneumatic("PTOPneumaticsRight", 'B', true);
+        ADIPneumaticGroup intakePnematics = ADIPneumaticGroup("IntakePneumatics", {'D', 'E'}, false);
+        ADIPneumaticGroup ptoPnematics = ADIPneumaticGroup("PTOPneumatics", {'A', 'B'}, false);
+
+        RotationSensor stickSensor = RotationSensor("StickSensor", 15);
 
         // RotationSensor verticalSensor = RotationSensor("VerticalOdom", 11);
         // RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 12);
@@ -150,10 +137,14 @@ namespace devils
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        IntakeSystem intake = IntakeSystem(intakePnematicsLeft, intakePnematicsRight, intakeMotors);
-        IntakeSystem sideIntake = IntakeSystem(intakePnematicsLeft, intakePnematicsRight, sideRollers);
-        StickSystem stickRight = StickSystem(ptoPnematicsRight, stickMotorsRight);
-        StickSystem stickLeft = StickSystem(ptoPnematicsLeft, stickMotorsLeft);
+        IntakeSystem intake = IntakeSystem(intakePnematics, sideRollers, topRoller);
+        StickSystem stick = StickSystem(
+            ptoPnematics,
+            stickMotorsLeft,
+            stickMotorsRight,
+            leftMotors,
+            rightMotors,
+            stickSensor);
         TubeSystem tube = TubeSystem(tubePnematics, hoodPneumatics);
 
         // std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(

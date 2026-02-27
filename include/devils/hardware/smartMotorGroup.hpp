@@ -36,6 +36,7 @@ namespace devils
         {
             for (const auto& motor : motors)
                 motor->move(voltage);
+            lastVoltage = voltage;
         }
 
         /**
@@ -195,6 +196,15 @@ namespace devils
             return temperature / motorCount;
         }
 
+        /**
+         * Gets the last voltage that was set to the motors in the group.
+         * @return The last voltage that was set to the motors in the group, from -1 to 1.
+         */
+        float getLastVoltage() const
+        {
+            return lastVoltage;
+        }
+
     protected:
         /**
          * Gets the motor name for a specific port.
@@ -209,5 +219,6 @@ namespace devils
     private:
         const std::string name;
         std::vector<std::shared_ptr<SmartMotor>> motors;
+        float lastVoltage = 0;
     };
 }

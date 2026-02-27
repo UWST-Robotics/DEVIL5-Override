@@ -36,10 +36,11 @@ namespace devils
          */
         void setExtended(bool extended)
         {
+            this->isExtended = extended;
+
             // Invert the value if the port is inverted
             if (isInverted)
                 extended = !extended;
-            this->isExtended = extended;
 
             // Write the value to the ADI port
             executeWithErrorCheck<int32_t>(pros::c::adi_digital_write, port, extended);

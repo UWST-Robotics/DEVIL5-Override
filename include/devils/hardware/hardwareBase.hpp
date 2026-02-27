@@ -96,7 +96,6 @@ namespace devils
         }
 
     protected:
-
         /**
          * Reports an error based on a hardware status code.
          * @param status The hardware status code to report an error for.
@@ -133,8 +132,9 @@ namespace devils
          * @param args The arguments to pass to the function
          * @return The result of the function or an error code if an error occurred.
          */
-        template<typename ReturnType, typename Func, typename... Args>
-        HWResult<ReturnType> executeWithErrorCheck(Func func, Args... args) {
+        template <typename ReturnType, typename Func, typename... Args>
+        HWResult<ReturnType> executeWithErrorCheck(Func func, Args... args)
+        {
             // Always resets errno before calling the function
             errno = 0;
 
@@ -219,10 +219,6 @@ namespace devils
         {
         }
 
-    protected:
-        char port;
-
-    private:
         /**
          * Converts an ADI port id (e.g. 'A', 'B', etc.) to its corresponding string representation (e.g. "A", "B", etc.).
          * @param port - The ID of the port (e.g. 'A', 'B', etc.)
@@ -238,6 +234,9 @@ namespace devils
             // Invalid port name
             return "?";
         }
+
+    protected:
+        char port;
     };
 
     /**
@@ -254,6 +253,7 @@ namespace devils
               port(port)
         {
         }
+
     protected:
         uint8_t port;
     };
