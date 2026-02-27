@@ -64,6 +64,19 @@ namespace devils
          */
         void moveStick()
         {
+            // If the PTO state has changed, start the actuation timer to prevent movement for a short duration
+            if (pto.getExtended() != wasPTOExtended)
+            {
+                ptoActuationTimer.start();
+                wasPTOExtended = pto.getExtended();
+            }
+            if (ptoActuationTimer.getIsRunning())
+            {
+                leftStickMotors.move(0);
+                rightStickMotors.move(0);
+                return;
+            }
+
             // If the PTO is extended, the stick should follow the drive motors
             if (pto.getExtended())
             {
@@ -103,6 +116,27 @@ namespace devils
         }
 
         /**
+         * Checks if the stick is stalled during retraction.
+         * This is done by checking the current of the stick motors.
+         * If the stick is trying to retract but the motor current is above a certain threshold, we can assume it's stalled.
+         * @return True if the stick is stalled, false otherwise.
+         */
+        bool checkStalled() const
+        {
+            // Check for retraction stall
+            const auto stickMotorCurrent = leftStickMotors.getCurrent();
+            if (!stickMotorCurrent.isSuccess())
+                return false;
+
+            Logger::info(std::to_string(stickMotorCurrent));
+
+            // If the stick is trying to retract but the motor current is above the stall threshold, we can assume it's stalled
+            if (currentState == RETRACTED && stickMotorCurrent > RETRACTION_STALL_CURRENT)
+                return true;
+            return false;
+        }
+
+        /**
          * Moves the stick to a target position using a PID controller. The speed of the movement is limited by the `speed` parameter. If the PTO is extended, the stick will not move.
          * @param targetPosition - The target position for the stick to move to (in ticks). This should be set based on the expected positions of the stick when fully extended and fully retracted.
          * @param speed - The maximum speed at which the stick should move (from 0 to 1). This limits the output of the PID controller to prevent the stick from moving too fast.
@@ -124,6 +158,18 @@ namespace devils
         }
 
     private:
+        static constexpr float FAST_SPEED = 1.0f; // %
+        static constexpr float SLOW_SPEED = 0.6f; // %
+        static constexpr float RETRACTION_SPEED = 0.6f; // %
+
+        static constexpr float RETRACTION_STALL_CURRENT = 1.8f; // amps
+        static constexpr float PTO_PAUSE_DURATION = 0.2f; // seconds
+
+        // Expected position of the stick when fully retracted (in ticks)
+        static constexpr float EXPECTED_POSITION_DOWN = 0.0f;
+        // Expected position of the stick when fully extended (in ticks)
+        static constexpr float EXPECTED_POSITION_UP = -160.0f;
+
         ADIPneumaticGroup pto;
         SmartMotorGroup leftStickMotors;
         SmartMotorGroup rightStickMotors;
@@ -136,14 +182,9 @@ namespace devils
         PIDController stickPID{0.03f, 0.0f, 0.1f}; // PID controller for stick position control
 
         State currentState{RETRACTED};
+        Timer ptoActuationTimer = Timer(PTO_PAUSE_DURATION);
 
-        static constexpr float FAST_SPEED = 0.7f;
-        static constexpr float SLOW_SPEED = 0.5f;
-        static constexpr float RETRACTION_SPEED = 0.6f;
-        static constexpr float EXPECTED_POSITION_DOWN = 0.0f;
-        // Expected position of the stick when fully retracted (in ticks)
-        static constexpr float EXPECTED_POSITION_UP = -160.0f;
-        // Expected position of the stick when fully extended (in ticks)
+        bool wasPTOExtended = false;
     };
 }
 

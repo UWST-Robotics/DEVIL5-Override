@@ -3,6 +3,7 @@
 #include "devils/devils.h"
 #include <algorithm>
 #include <utility>
+#include "StickSystem.hpp"
 
 namespace devils
 {
@@ -30,6 +31,20 @@ namespace devils
          */
         void runIntake(float speed)
         {
+            if (isStickStalled)
+            {
+                topRollers.move(-IDLE_ROLLER_SPEED);
+                sideRollers.move(0);
+                return;;
+            }
+
+            if (std::fabsf(speed) < INPUT_DEADZONE)
+            {
+                sideRollers.move(0);
+                topRollers.move(IDLE_ROLLER_SPEED);
+                return;
+            }
+
             // Limit the speed to prevent the rollers from running too fast
             speed = std::clamp(speed, -1.0f, 1.0f);
 
@@ -46,9 +61,23 @@ namespace devils
             intakeArms.setExtended(extended);
         }
 
+        /**
+         * Sets the stick stalled state, which can be used to prevent the intake from running when the stick is stalled during retraction.
+         * @param isStalled - True if the stick is stalled, false otherwise.
+         */
+        void setStickStalled(const bool isStalled)
+        {
+            this->isStickStalled = isStalled;
+        }
+
     private:
         static constexpr float TOP_ROLLER_SPEED = 0.75f;
         static constexpr float SIDE_ROLLER_SPEED = 0.75f;
+
+        static constexpr float IDLE_ROLLER_SPEED = 0.5f;
+        static constexpr float INPUT_DEADZONE = 0.1f;
+
+        bool isStickStalled = false;
 
         ADIPneumaticGroup intakeArms;
         SmartMotorGroup sideRollers;

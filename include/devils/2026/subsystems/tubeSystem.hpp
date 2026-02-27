@@ -2,32 +2,24 @@
 
 #include "devils/devils.h"
 #include <algorithm>
+#include <utility>
 
 namespace devils
 {
     class TubeSystem
     {
-
     public:
-        TubeSystem(ADIPneumatic& tubePneumatics, ADIPneumatic& hoodPneumatics)
-            : tube(tubePneumatics), hood(hoodPneumatics)
+        TubeSystem(ADIPneumatic tubePneumatics)
+            : tube(std::move(tubePneumatics))
         {
-
         }
 
-        void setHoodOpen(bool extended)
-        {
-            hood.setExtended(extended);
-        }
-
-        void setTubeRaised(bool extended)
+        void setTubeRaised(const bool extended)
         {
             tube.setExtended(extended);
         }
 
     private:
-        ADIPneumatic hood;
         ADIPneumatic tube;
     };
-    
 }

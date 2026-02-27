@@ -32,6 +32,7 @@ namespace devils
             mainController.rightY.setOptions(joystickOptions);
 
             mainController.up.setMode(ControllerButton::TOGGLED);
+            mainController.right.setMode(ControllerButton::TOGGLED);
         }
 
         void autonomous() override
@@ -47,6 +48,8 @@ namespace devils
             // Stop autonomous
             AutoStep::stopAll();
 
+            bool isDriveReversed = false;
+
             // Loop
             while (true)
             {
@@ -56,8 +59,8 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                const bool tubeExtendButton = mainController.right; // Tube extend/retract
-                const bool intakeArmExtendButton = mainController.y;
+                const bool tubeExtendButton = mainController.y; // Tube extend/retract
+                const bool intakeArmExtendButton = mainController.l2;
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
 
@@ -67,13 +70,18 @@ namespace devils
                 // Combine Left and Right X Joystick Inputs
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
 
-                // Drive normally
-                const auto driveDirection = driveReverseButton ? -1.0f : 1.0f;
+                // Reverse the drive
+                if (std::fabsf(leftY) < MAX_ROBOT_SPEED_TO_SWITCH_DIRECTION)
+                    isDriveReversed = driveReverseButton;
+                const auto driveDirection = isDriveReversed ? -1.0f : 1.0f;
+
+                // Drive the robot with the left joystick
                 chassis.move(leftY * driveDirection, combinedX * 0.75f, 0);
 
                 // Intake controls
                 intake.runIntake(rightY);
                 intake.setArmsExtended(intakeArmExtendButton);
+                intake.setStickStalled(stick.checkStalled());
 
                 // Stick pneumatic defaults
                 stick.setPTOExtended(ptoButton);
@@ -89,10 +97,7 @@ namespace devils
                 stick.moveStick();
 
                 // Hood controls (might not be needed if the hood is a passive system)
-                tube.setHoodOpen(stickFastButton || stickSlowButton);
-
-                if (tubeExtendButton) tube.setTubeRaised(true);
-                else tube.setTubeRaised(false);
+                tube.setTubeRaised(!tubeExtendButton);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -109,8 +114,9 @@ namespace devils
         }
 
         // Constants
-        // (Copied from PJRobot)
         static constexpr float DEAD_WHEEL_RADIUS = 1;
+        static constexpr float MAX_ROBOT_SPEED_TO_SWITCH_DIRECTION = 0.5f;
+
         Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-0.5, 0);
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.4);
 
@@ -124,7 +130,6 @@ namespace devils
         SmartMotorGroup topRoller = SmartMotorGroup("TopIntakeRoller", {16});
         SmartMotorGroup sideRollers = SmartMotorGroup("SideRollers", {-18, 17});
 
-        ADIPneumatic hoodPneumatics = ADIPneumatic("HoodPneumatics", 'F', true);
         ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'C', false);
         ADIPneumaticGroup intakePnematics = ADIPneumaticGroup("IntakePneumatics", {'D', 'E'}, false);
         ADIPneumaticGroup ptoPnematics = ADIPneumaticGroup("PTOPneumatics", {'A', 'B'}, false);
@@ -145,7 +150,7 @@ namespace devils
             leftMotors,
             rightMotors,
             stickSensor);
-        TubeSystem tube = TubeSystem(tubePnematics, hoodPneumatics);
+        TubeSystem tube = TubeSystem(tubePnematics);
 
         // std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
         //     verticalSensor,

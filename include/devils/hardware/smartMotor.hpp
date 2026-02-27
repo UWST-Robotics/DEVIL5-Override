@@ -65,6 +65,22 @@ namespace devils
         }
 
         /**
+         * Checks for SmartMotor overhead by monitoring the motor temperature
+         * and logging a warning if it exceeds a certain threshold. 
+         */
+        void checkForOverheat()
+        {
+            // Get the temperature of the motor
+            const auto isMotorOverTemp = executeWithErrorCheck<int32_t>(pros::c::motor_is_over_temp, port);
+            if (!isMotorOverTemp.isSuccess())
+                return;
+
+            // Check if the motor is overheating and log a warning if it is
+            if (isMotorOverTemp == 1)
+                Logger::warn(name + " is overheating");
+        }
+
+        /**
          * Runs the motor in voltage mode.
          * @param speed The speed to run the motor at, from -1 to 1.
          * @return HWStatus indicating success or failure.
@@ -83,6 +99,9 @@ namespace devils
 
             // Store the last voltage for reference
             lastVoltage = speed;
+
+            // Check for overheat
+            checkForOverheat();
         }
 
         /**
