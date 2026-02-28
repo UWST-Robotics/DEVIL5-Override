@@ -45,7 +45,7 @@ namespace devils
             const auto trajectory = generateTrajectoryToPose(pose, endingVelocity);
             return std::make_shared<DriveRAMSETEStep>(chassis, odom, trajectory);
         }
-        
+
         /**
          * Rotates the robot a given amount
          * @param distance The distance to rotate in degrees
@@ -81,7 +81,7 @@ namespace devils
                 Units::degToRad(heading),
                 options);
         }
-        
+
     protected:
         /**
          * Generates a trajectory to a given pose using the current pose as the starting point.
@@ -96,17 +96,17 @@ namespace devils
             // Check if the targetPose is behind the currentPose
             const auto currentPose = odom.getPose();
             const auto isReversed = targetPose.isBehind(currentPose);
-            
+
             // Calculate starting velocity based on current velocity and its direction relative to the target pose
             const auto currentVelocity = odom.getVelocity();
             const auto deltaPose = targetPose - currentPose;
             const auto dotProduct = deltaPose.x * currentVelocity.x + deltaPose.y * currentVelocity.y;
             const auto velocityDirection = (dotProduct >= 0) ? 1.0f : 0.0f;
             const auto startingVelocity = velocityDirection * currentVelocity.magnitude();
-            
+
             Logger::debug("Velocity Direction: " + std::to_string(velocityDirection));
             Logger::debug("Current Velocity: " + std::to_string(currentVelocity.magnitude()));
-            
+
             // Generate Path
             const auto distance = currentPose.distanceTo(targetPose);
             auto path = SplinePath::makeArc(
@@ -114,17 +114,18 @@ namespace devils
                 targetPose,
                 distance * 0.25f,
                 isReversed);
-            
+
             // Generate Trajectory
             // const auto currentVelocity = odom.getVelocity().magnitude();
             const auto generator = TrajectoryGenerator({
                 .startingVelocity = startingVelocity,
-                .endingVelocity = endingVelocity});
+                .endingVelocity = endingVelocity
+            });
             const auto trajectory = generator.calc(path);
-            
+            trajectory->printAllPoints();
             return trajectory;
         }
-        
+
         ChassisBase& chassis;
         OdomSource& odom;
     };

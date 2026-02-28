@@ -15,6 +15,7 @@ namespace devils
             EXTENDED_FAST,
             EXTENDED_SLOW,
             RETRACTED,
+            EXTEND_FOR_THREE,
             STOP
         };
 
@@ -95,6 +96,9 @@ namespace devils
             case RETRACTED:
                 moveToPosition(EXPECTED_POSITION_DOWN, RETRACTION_SPEED);
                 break;
+            case EXTEND_FOR_THREE:
+                moveToPosition(EXPECTED_POSITION_EXTEND_FOR_THREE, FAST_SPEED);
+                break;
             case STOP:
                 moveStick(0);
                 break;
@@ -127,7 +131,7 @@ namespace devils
                 return false;
 
             // If the stick is trying to retract but the motor current is above the stall threshold, we can assume it's stalled
-            if (currentState == RETRACTED && stickMotorCurrent > RETRACTION_STALL_CURRENT)
+            if (stickMotorCurrent > RETRACTION_STALL_CURRENT)
                 return true;
             return false;
         }
@@ -165,6 +169,8 @@ namespace devils
         static constexpr float EXPECTED_POSITION_DOWN = 0.0f;
         // Expected position of the stick when fully extended (in ticks)
         static constexpr float EXPECTED_POSITION_UP = -160.0f;
+        // Expected position of the stick when extended for three (in ticks)
+        static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -100.0f;
 
         ADIPneumaticGroup& pto;
         SmartMotorGroup& leftStickMotors;

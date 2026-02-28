@@ -79,8 +79,6 @@ namespace devils
 
             // Calculate error to setpoint
             const auto error = feedbackSetpoint.pose - currentPosition;
-            
-            Logger::debug(error.toString());
 
             // Calculate local error
             // This is the error relative to the robot's current rotation
@@ -112,7 +110,7 @@ namespace devils
             float rotationOutput = setpoint.angularVelocity +
                 controllerGain * localError.rotation +
                 options.proportionGain * setpoint.velocity * sinc * localError.y;
-            
+
             // Multiply by translation and rotation P values
             translationOutput *= options.translationP;
             rotationOutput *= options.rotationP;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../devils.h"
+#include "./autonomous/matchAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/StickSystem.hpp"
 #include "./subsystems/tubeSystem.hpp"
@@ -38,17 +39,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            // MatchAuto::run(chassis, *odometry.get());
-
-            const auto autoBuilder = AutoBuilder(chassis, *odometry.get());
-            autoBuilder.rotate(180)->start();
-
-            while (true)
-            {
-                // Print odom
-                auto odom = odometry->getPose();
-                Logger::info(odom.toString());
-            }
+            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube);
         }
 
         void opcontrol() override

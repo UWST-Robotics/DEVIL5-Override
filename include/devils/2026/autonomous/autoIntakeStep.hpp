@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../subsystems/intakeSystem.hpp"
+#include "../subsystems/StickSystem.hpp"
 
 namespace devils
 {
@@ -9,8 +10,10 @@ namespace devils
     public:
         AutoIntakeStep(
             IntakeSystem& intake,
+            StickSystem& stick,
             const float targetSpeed = 1.0)
             : intake(intake),
+              stick(stick),
               targetSpeed(targetSpeed)
         {
         }
@@ -18,6 +21,7 @@ namespace devils
         void onUpdate() override
         {
             intake.runIntake(targetSpeed);
+            intake.setStickStalled(stick.checkStalled());
         }
 
         /**
@@ -31,6 +35,7 @@ namespace devils
 
     private:
         IntakeSystem& intake;
+        StickSystem& stick;
         float targetSpeed = 1.0;
     };
 }

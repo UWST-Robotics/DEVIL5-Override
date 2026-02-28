@@ -92,11 +92,11 @@ namespace devils
                 const float curvature = std::abs(currentPose.curvature(previousPoint.pose));
                 if (curvature > 0)
                 {
-                    const float maxVelocityFromRotation = Units::degToRad(constraints.rotationalMaxVelocity) / curvature;
-                    Logger::debug("Max Velocity from Rotation: " + std::to_string(maxVelocityFromRotation));
+                    const float maxVelocityFromRotation = Units::degToRad(constraints.rotationalMaxVelocity) /
+                        curvature;
                     velocity = std::min(velocity, maxVelocityFromRotation);
                 }
-                
+
                 // Calculate dot product to determine if the robot is moving forward or backward
                 const float prevDotCurrentPose = cosf(previousPoint.pose.rotation) *
                     (currentPose.x - previousPoint.pose.x) +
@@ -154,7 +154,7 @@ namespace devils
                 // If the dot product is negative, we are moving backwards
                 if (prevDotCurrentPose < 0)
                     velocity = -velocity;
-                
+
                 // Clamp velocity to existing point
                 velocity = Math::smallestMagnitude({velocity, point.velocity});
 
@@ -200,6 +200,10 @@ namespace devils
                 // If the time is NaN, set to 0
                 if (std::isnan(deltaTime))
                     deltaTime = 0;
+
+                // Safety check to prevent large jumps in time due to numerical instability
+                if (deltaTime > 1.0f)
+                    deltaTime = 0.0f; // Cap delta time to prevent large jumps
 
                 // Calculate angular velocity
                 float angularVelocity = Units::diffRad(point.pose.rotation, previousPoint.pose.rotation) / deltaTime;
