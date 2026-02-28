@@ -104,9 +104,6 @@ namespace devils
             const auto velocityDirection = (dotProduct >= 0) ? 1.0f : 0.0f;
             const auto startingVelocity = velocityDirection * currentVelocity.magnitude();
 
-            Logger::debug("Velocity Direction: " + std::to_string(velocityDirection));
-            Logger::debug("Current Velocity: " + std::to_string(currentVelocity.magnitude()));
-
             // Generate Path
             const auto distance = currentPose.distanceTo(targetPose);
             auto path = SplinePath::makeArc(
@@ -122,7 +119,6 @@ namespace devils
                 .endingVelocity = endingVelocity
             });
             const auto trajectory = generator.calc(path);
-            trajectory->printAllPoints();
             return trajectory;
         }
 

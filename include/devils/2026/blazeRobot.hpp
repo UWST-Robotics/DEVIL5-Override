@@ -44,7 +44,8 @@ namespace devils
 
         void opcontrol() override
         {
-            // Default State
+            // Home the stick
+            stick.homeStick();
 
             // Stop autonomous
             AutoStep::stopAll();
@@ -102,7 +103,6 @@ namespace devils
 
                 // Print odom
                 auto odom = odometry->getPose();
-                Logger::info(odom.toString());
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -139,7 +139,7 @@ namespace devils
         ADIPneumaticGroup intakePnematics = ADIPneumaticGroup("IntakePneumatics", {'D', 'E'}, false);
         ADIPneumaticGroup ptoPnematics = ADIPneumaticGroup("PTOPneumatics", {'A', 'B'}, false);
 
-        RotationSensor stickSensor = RotationSensor("StickSensor", 15);
+        ADIDigitalInput stickHomeSensor = ADIDigitalInput("StickSensor", 'H');
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", 12);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
@@ -154,7 +154,7 @@ namespace devils
             stickMotorsRight,
             leftMotors,
             rightMotors,
-            stickSensor);
+            stickHomeSensor);
         TubeSystem tube = TubeSystem(tubePnematics);
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(

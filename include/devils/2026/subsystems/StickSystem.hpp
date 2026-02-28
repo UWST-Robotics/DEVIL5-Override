@@ -14,6 +14,8 @@ namespace devils
         {
             EXTENDED_FAST,
             EXTENDED_SLOW,
+
+            // Homes the stick to the bottom position using the stick home sensor.
             RETRACTED,
             EXTEND_FOR_THREE,
             STOP
@@ -25,15 +27,16 @@ namespace devils
             SmartMotorGroup& rightStickMotors,
             SmartMotorGroup& leftDriveMotors,
             SmartMotorGroup& rightDriveMotors,
-            RotationSensor& stickPositionSensor)
+            ADIDigitalInput& stickHomeSensor)
             : pto(pto),
               leftStickMotors(leftStickMotors),
               rightStickMotors(rightStickMotors),
               leftDriveMotors(leftDriveMotors),
               rightDriveMotors(rightDriveMotors),
-              stickPositionSensor(stickPositionSensor)
+              stickHomeSensor(stickHomeSensor)
         {
-            stickPositionSensor.setPosition(0);
+            leftStickMotors.setPosition(0);
+            rightStickMotors.setPosition(0);
         }
 
         /**
@@ -42,7 +45,7 @@ namespace devils
          * If the PTO is retracted, the stick will move to the position corresponding to the current state.
          * @param extended - True to extend the PTO, false to retract it.
          */
-        void setPTOExtended(const bool extended) const
+        void setPTOExtended(const bool extended)
         {
             pto.setExtended(extended);
         }
@@ -68,6 +71,7 @@ namespace devils
             {
                 ptoActuationTimer.start();
                 wasPTOExtended = pto.getExtended();
+                homeStick();
             }
             if (ptoActuationTimer.getIsRunning())
             {
@@ -81,6 +85,25 @@ namespace devils
             {
                 leftStickMotors.move(leftDriveMotors.getLastVoltage());
                 rightStickMotors.move(rightDriveMotors.getLastVoltage());
+                return;
+            }
+
+            // Check if we are homed
+            const auto stickHomeSensorResult = stickHomeSensor.getValue();
+            const auto isStickHomed = stickHomeSensorResult.isSuccess() && stickHomeSensorResult.value;
+            const auto didHomeTimeout = stickHomingTimer.getIsFinished();
+
+            if (isStickHoming && (isStickHomed || didHomeTimeout))
+            {
+                leftStickMotors.setPosition(0);
+                rightStickMotors.setPosition(0);
+                isStickHoming = false;
+            }
+
+            // Try to home the stick if we are not homed yet
+            if (isStickHoming)
+            {
+                moveStick(HOMING_SPEED);
                 return;
             }
 
@@ -118,6 +141,19 @@ namespace devils
         }
 
         /**
+         * Starts the homing process for the stick.
+         * @details
+         * This will cause the stick to move downwards until the stick home sensor is triggered.
+         * This should be called whenever we want to ensure that we know the position of the stick,
+         * such as after starting the robot or after changing the PTO state.
+         */
+        void homeStick()
+        {
+            stickHomingTimer.start();
+            isStickHoming = true;
+        }
+
+        /**
          * Checks if the stick is stalled during retraction.
          * This is done by checking the current of the stick motors.
          * If the stick is trying to retract but the motor current is above a certain threshold, we can assume it's stalled.
@@ -137,13 +173,32 @@ namespace devils
         }
 
         /**
+         * Gets the current position of the stick.
+         * This is done by checking the position of the stick motor encoders.
+         * @return The current position of the stick in ticks. If the position cannot be determined, returns an error code.
+         */
+        HWResult<float> getStickPosition() const
+        {
+            const auto leftStickPosition = leftStickMotors.getPosition();
+            if (leftStickPosition.isSuccess())
+                return leftStickPosition.value;
+
+            const auto rightStickPosition = rightStickMotors.getPosition();
+            if (rightStickPosition.isSuccess())
+                return rightStickPosition.value;
+
+            Logger::warn("Failed to get stick position from both motors");
+            return ERROR_UNKNOWN;
+        }
+
+        /**
          * Moves the stick to a target position using a PID controller. The speed of the movement is limited by the `speed` parameter. If the PTO is extended, the stick will not move.
          * @param targetPosition - The target position for the stick to move to (in ticks). This should be set based on the expected positions of the stick when fully extended and fully retracted.
          * @param speed - The maximum speed at which the stick should move (from 0 to 1). This limits the output of the PID controller to prevent the stick from moving too fast.
          */
         void moveToPosition(const float targetPosition, const float speed)
         {
-            const auto currentPosition = stickPositionSensor.getAngle();
+            const auto currentPosition = getStickPosition();
             if (!currentPosition.isSuccess())
                 return;
 
@@ -161,16 +216,17 @@ namespace devils
         static constexpr float FAST_SPEED = 1.0f; // %
         static constexpr float SLOW_SPEED = 0.6f; // %
         static constexpr float RETRACTION_SPEED = 0.6f; // %
+        static constexpr float HOMING_SPEED = 0.6f; // %
 
         static constexpr float RETRACTION_STALL_CURRENT = 1.8f; // amps
         static constexpr float PTO_PAUSE_DURATION = 0.2f; // seconds
 
         // Expected position of the stick when fully retracted (in ticks)
-        static constexpr float EXPECTED_POSITION_DOWN = 0.0f;
+        static constexpr float EXPECTED_POSITION_DOWN = 30.0f;
         // Expected position of the stick when fully extended (in ticks)
-        static constexpr float EXPECTED_POSITION_UP = -160.0f;
+        static constexpr float EXPECTED_POSITION_UP = -700.0f;
         // Expected position of the stick when extended for three (in ticks)
-        static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -100.0f;
+        static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -400.0f;
 
         ADIPneumaticGroup& pto;
         SmartMotorGroup& leftStickMotors;
@@ -179,14 +235,16 @@ namespace devils
         SmartMotorGroup& leftDriveMotors;
         SmartMotorGroup& rightDriveMotors;
 
-        RotationSensor& stickPositionSensor;
+        ADIDigitalInput& stickHomeSensor;
 
-        PIDController stickPID{0.03f, 0.0f, 0.1f}; // PID controller for stick position control
+        PIDController stickPID{0.005f, 0.0f, 0.0f}; // PID controller for stick position control
 
         State currentState{RETRACTED};
-        Timer ptoActuationTimer = Timer(PTO_PAUSE_DURATION);
+        Timer ptoActuationTimer = Timer(PTO_PAUSE_DURATION); // Pauses the stick movement while the pto actuates
+        Timer stickHomingTimer = Timer(1.0f); // Timer to prevent infinite homing if the sensor fails
 
         bool wasPTOExtended = false;
+        bool isStickHoming = false;
     };
 }
 
