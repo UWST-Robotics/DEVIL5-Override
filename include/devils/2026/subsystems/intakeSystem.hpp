@@ -2,8 +2,6 @@
 
 #include "devils/devils.h"
 #include <algorithm>
-#include <utility>
-#include "StickSystem.hpp"
 
 namespace devils
 {
@@ -14,12 +12,12 @@ namespace devils
     {
     public:
         IntakeSystem(
-            ADIPneumaticGroup intakeArms,
-            SmartMotorGroup sideRollers,
-            SmartMotorGroup topRollers)
-            : intakeArms(std::move(intakeArms)),
-              sideRollers(std::move(sideRollers)),
-              topRollers(std::move(topRollers))
+            ADIPneumaticGroup& intakeArms,
+            SmartMotorGroup& sideRollers,
+            SmartMotorGroup& topRollers)
+            : intakeArms(intakeArms),
+              sideRollers(sideRollers),
+              topRollers(topRollers)
         {
         }
 
@@ -79,8 +77,8 @@ namespace devils
 
         bool isStickStalled = false;
 
-        ADIPneumaticGroup intakeArms;
-        SmartMotorGroup sideRollers;
-        SmartMotorGroup topRollers;
+        ADIPneumaticGroup& intakeArms;
+        SmartMotorGroup& sideRollers;
+        SmartMotorGroup& topRollers;
     };
 }

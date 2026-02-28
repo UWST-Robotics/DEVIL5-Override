@@ -1,8 +1,6 @@
 #pragma once
 
 #include "devils/devils.h"
-#include <algorithm>
-#include <utility>
 
 namespace devils
 {
@@ -21,18 +19,18 @@ namespace devils
         };
 
         StickSystem(
-            ADIPneumaticGroup pto,
-            SmartMotorGroup leftStickMotors,
-            SmartMotorGroup rightStickMotors,
-            SmartMotorGroup leftDriveMotors,
-            SmartMotorGroup rightDriveMotors,
-            RotationSensor stickPositionSensor)
-            : pto(std::move(pto)),
-              leftStickMotors(std::move(leftStickMotors)),
-              rightStickMotors(std::move(rightStickMotors)),
-              leftDriveMotors(std::move(leftDriveMotors)),
-              rightDriveMotors(std::move(rightDriveMotors)),
-              stickPositionSensor(std::move(stickPositionSensor))
+            ADIPneumaticGroup& pto,
+            SmartMotorGroup& leftStickMotors,
+            SmartMotorGroup& rightStickMotors,
+            SmartMotorGroup& leftDriveMotors,
+            SmartMotorGroup& rightDriveMotors,
+            RotationSensor& stickPositionSensor)
+            : pto(pto),
+              leftStickMotors(leftStickMotors),
+              rightStickMotors(rightStickMotors),
+              leftDriveMotors(leftDriveMotors),
+              rightDriveMotors(rightDriveMotors),
+              stickPositionSensor(stickPositionSensor)
         {
             stickPositionSensor.setPosition(0);
         }
@@ -128,8 +126,6 @@ namespace devils
             if (!stickMotorCurrent.isSuccess())
                 return false;
 
-            Logger::info(std::to_string(stickMotorCurrent));
-
             // If the stick is trying to retract but the motor current is above the stall threshold, we can assume it's stalled
             if (currentState == RETRACTED && stickMotorCurrent > RETRACTION_STALL_CURRENT)
                 return true;
@@ -170,14 +166,14 @@ namespace devils
         // Expected position of the stick when fully extended (in ticks)
         static constexpr float EXPECTED_POSITION_UP = -160.0f;
 
-        ADIPneumaticGroup pto;
-        SmartMotorGroup leftStickMotors;
-        SmartMotorGroup rightStickMotors;
+        ADIPneumaticGroup& pto;
+        SmartMotorGroup& leftStickMotors;
+        SmartMotorGroup& rightStickMotors;
 
-        SmartMotorGroup leftDriveMotors;
-        SmartMotorGroup rightDriveMotors;
+        SmartMotorGroup& leftDriveMotors;
+        SmartMotorGroup& rightDriveMotors;
 
-        RotationSensor stickPositionSensor;
+        RotationSensor& stickPositionSensor;
 
         PIDController stickPID{0.03f, 0.0f, 0.1f}; // PID controller for stick position control
 

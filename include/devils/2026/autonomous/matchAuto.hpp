@@ -14,26 +14,24 @@ namespace devils
             //     https://auto.devilbots.org/
             // =====================================
 
-            AutoBuilder autoBuilder = AutoBuilder(chassis, odom);
-            autoBuilder.jumpTo({-64, 16, 0});
-            autoBuilder.driveTo({-13, 13, -45})->startSync();
-            pros::delay(9999999);
+            AutoBuilder autoBuilder;
+            autoBuilder.jumpTo({-46, -14, 540});
+            autoBuilder.driveTo({-13, -13, 225})->startSync();
             // Drop off balls
-            autoBuilder.driveTo({-48, 48, -45})->startSync();
+            autoBuilder.driveTo({-48, -48, 225})->startSync();
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-60, 48, 180})->startSync();
+            autoBuilder.driveTo({-60, -48, 180})->startSync();
             // Pickup Loader
-            autoBuilder.driveTo({-32, 48, 180})->startSync();
+            autoBuilder.driveTo({-32, -48, 180})->startSync();
             // Drop off balls
-            autoBuilder.driveTo({-40, 44, 247.5})->startSync();
-            autoBuilder.rotateTo(135)->startSync();
-            // Drop wing mech, drop blue blocks
-            autoBuilder.driveTo({-10, 37, 180})->startSync();
-            autoBuilder.driveTo({-38, 42, 135})->startSync();
-            autoBuilder.driveTo({-60, 48, 180})->startSync();
-            // Pickup loader blocks
-            autoBuilder.driveTo({-32, 48, 180})->startSync();
-            // SLAM IT! (and hold)
+            autoBuilder.driveTo({-44, -40, 135})->startSync();
+            autoBuilder.rotateTo(225)->startSync();
+            autoBuilder.driveTo({-10, -37, 180})->startSync();
+            // Drive through
+            autoBuilder.driveTo({-40, -41, 225})->startSync();
+            autoBuilder.driveTo({-60, -48, 180})->startSync();
+            autoBuilder.driveTo({-32, -48, 180})->startSync();
+            // Drop off bloalls
 
             // =====================================
             //     End of WIP Match Auto

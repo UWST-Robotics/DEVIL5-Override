@@ -22,7 +22,8 @@ namespace devils
         RotationSensor(
             const std::string& name,
             const int8_t port)
-            : V5HardwareBase(name, "RotationSensor", abs(port))
+            : V5HardwareBase(name, "RotationSensor", abs(port)),
+              isInverted(port < 0)
         {
         }
 

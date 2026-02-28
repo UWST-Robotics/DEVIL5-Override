@@ -11,11 +11,11 @@ namespace devils
     {
         BlazeRobot()
         {
-            // imu.calibrate();
+            imu.calibrate();
 
-            // odometry->useIMU(&imu);
-            // odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
-            // odometry->start();
+            odometry->useIMU(&imu);
+            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
+            odometry->start();
 
             toastDisplay->start();
             // devilBotsDisplay->start();
@@ -37,8 +37,18 @@ namespace devils
 
         void autonomous() override
         {
-            // imu.waitUntilDoneCalibrated();
+            imu.waitUntilDoneCalibrated();
             // MatchAuto::run(chassis, *odometry.get());
+
+            const auto autoBuilder = AutoBuilder(chassis, *odometry.get());
+            autoBuilder.rotate(180)->start();
+
+            while (true)
+            {
+                // Print odom
+                auto odom = odometry->getPose();
+                Logger::info(odom.toString());
+            }
         }
 
         void opcontrol() override
@@ -99,6 +109,10 @@ namespace devils
                 // Hood controls (might not be needed if the hood is a passive system)
                 tube.setTubeRaised(!tubeExtendButton);
 
+                // Print odom
+                auto odom = odometry->getPose();
+                Logger::info(odom.toString());
+
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
             }
@@ -117,8 +131,8 @@ namespace devils
         static constexpr float DEAD_WHEEL_RADIUS = 1;
         static constexpr float MAX_ROBOT_SPEED_TO_SWITCH_DIRECTION = 0.5f;
 
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-0.5, 0);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, 2.4);
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-1.8, 0);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, -2.2);
 
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {10, -9, 8, -7, 6});
@@ -136,9 +150,9 @@ namespace devils
 
         RotationSensor stickSensor = RotationSensor("StickSensor", 15);
 
-        // RotationSensor verticalSensor = RotationSensor("VerticalOdom", 11);
-        // RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 12);
-        // InertialSensor imu = InertialSensor("IMU", 13);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 12);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
+        InertialSensor imu = InertialSensor("IMU", 13);
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
@@ -152,10 +166,10 @@ namespace devils
             stickSensor);
         TubeSystem tube = TubeSystem(tubePnematics);
 
-        // std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
-        //     verticalSensor,
-        //     horizontalSensor,
-        //     DEAD_WHEEL_RADIUS);
+        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
+            verticalSensor,
+            horizontalSensor,
+            DEAD_WHEEL_RADIUS);
 
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
         // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
