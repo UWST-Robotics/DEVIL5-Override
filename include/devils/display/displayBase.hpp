@@ -11,7 +11,7 @@ namespace devils
     {
     public:
         virtual ~DisplayBase() = default;
-        
+
     protected:
         /**
          * Gets or creates the root container for the display. All display elements should be created as children of this container.
@@ -27,7 +27,7 @@ namespace devils
                 rootContainer = lv_obj_create(nullptr);
                 lv_scr_load(rootContainer);
             }
-            
+
             return rootContainer;
         }
     };

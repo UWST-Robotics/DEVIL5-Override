@@ -35,41 +35,75 @@ namespace devils
 
             const auto autoBuilder = AutoBuilder(chassis, odom);
             odom.setPose({-46, -14, Units::degToRad(180)});
-            autoBuilder.driveTo({-15, -14, Units::degToRad(225)})->startSync();
-            stick.setState(StickSystem::State::EXTENDED_FAST);
-            pros::delay(1000);
-            stick.setState(StickSystem::State::RETRACTED);
-            // Drop off balls
-            intake.setArmsExtended(true);
-            autoBuilder.driveTo({-60, -42, Units::degToRad(180)})->startSync(); //moves to loader
 
-            // Pickup Loader
-            pros::delay(3000);
+            // Drop off at center goal
+            stick.homeStick();
+            autoBuilder.driveTo({-14, -12, Units::degToRad(225)})->startSync();
+            stick.setState(StickSystem::State::EXTENDED_FAST);
+            pros::delay(500);
             tube.setTubeRaised(true);
-            autoBuilder.driveTo({-32, -46, Units::degToRad(180)})->startSync();
-            // Drop off balls
+            pros::delay(500);
+
+            // Move to loader
+            stick.setState(StickSystem::State::RETRACTED);
+            intake.setArmsExtended(true);
+            tube.setTubeRaised(true);
+            autoBuilder.driveTo({-50, -43, Units::degToRad(180)}, 20.0f)->startSync();
+            autoBuilder.driveTo({-58.5f, -43, Units::degToRad(180)})->startSync();
+
+            // Wiggle while picking up from loader
+            wiggle(chassis, 3.0f);
+
+            // Move to long goal
+            autoBuilder.driveTo({-37.5f, -43.5f, Units::degToRad(180)})->startSync();
+            pros::delay(200);
             stick.setState(StickSystem::State::EXTEND_FOR_THREE);
-            pros::delay(2000);
+            pros::delay(1000);
+
             //move to use wing
-            autoBuilder.driveTo({-44, -48, Units::degToRad(135)})->startSync();
-            autoBuilder.rotateTo(225)->startSync();
+            autoBuilder.driveTo({-44, -50, Units::degToRad(255)})->startSync();
             stick.setState(StickSystem::State::EXTENDED_SLOW);
             intakeAutoStep->setTargetSpeed(-1.0f);
-            autoBuilder.driveTo({-20, -33, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-26, -36, Units::degToRad(180)}, 20.0f)->startSync();
             intakeAutoStep->setTargetSpeed(1.0f);
-            autoBuilder.driveTo({-8, -36, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-6, -40, Units::degToRad(180)})->startSync();
             stick.setState(StickSystem::State::RETRACTED);
-            autoBuilder.driveTo({-40, -34, Units::degToRad(225)})->startSync();
-            autoBuilder.driveTo({-60, -46, Units::degToRad(170)})->startSync();
-            pros::delay(3000);
-            autoBuilder.driveTo({-32, -50, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-28, -32, Units::degToRad(180)}, 20.0f)->startSync();
+
+            // Move to Loader
+            autoBuilder.driveTo({-46, -47, Units::degToRad(180)}, 20.0f)->startSync();
+            autoBuilder.driveTo({-60, -47, Units::degToRad(180)})->startSync();
+            wiggle(chassis, 3.0f);
+
+            // Score in long goal
+            autoBuilder.driveTo({-32.5f, -48, Units::degToRad(180)})->startSync();
             stick.setState(StickSystem::State::EXTENDED_FAST);
+
             pros::delay(1000);
-            stick.setState(StickSystem::State::RETRACTED);
+            tube.setTubeRaised(false);
+            pros::delay(500);
+            tube.setTubeRaised(true);
+
 
             // =====================================
             //     End of WIP Match Auto
             // =====================================
+        }
+
+        static void wiggle(TankChassis& chassis, const float duration)
+        {
+            auto wiggleTimer = Timer(duration);
+            wiggleTimer.start();
+
+            while (!wiggleTimer.getIsFinished())
+            {
+                chassis.move(-0.1f, 0.15f, 0);
+                pros::delay(100);
+                chassis.move(0.3f, -0.15f, 0);
+                pros::delay(100);
+                chassis.stop();
+                pros::delay(300);
+            }
         }
     };
 }

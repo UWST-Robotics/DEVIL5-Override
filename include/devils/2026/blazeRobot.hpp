@@ -101,9 +101,6 @@ namespace devils
                 // Hood controls (might not be needed if the hood is a passive system)
                 tube.setTubeRaised(!tubeExtendButton);
 
-                // Print odom
-                auto odom = odometry->getPose();
-
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
             }

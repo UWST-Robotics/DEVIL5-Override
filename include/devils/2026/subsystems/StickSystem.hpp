@@ -14,8 +14,6 @@ namespace devils
         {
             EXTENDED_FAST,
             EXTENDED_SLOW,
-
-            // Homes the stick to the bottom position using the stick home sensor.
             RETRACTED,
             EXTEND_FOR_THREE,
             STOP
@@ -45,7 +43,7 @@ namespace devils
          * If the PTO is retracted, the stick will move to the position corresponding to the current state.
          * @param extended - True to extend the PTO, false to retract it.
          */
-        void setPTOExtended(const bool extended)
+        void setPTOExtended(const bool extended) const
         {
             pto.setExtended(extended);
         }
@@ -132,7 +130,7 @@ namespace devils
          * Manually moves the stick at a specified speed. The speed should be between -1 and 1, where positive values move the stick up and negative values move the stick down. If the PTO is extended, the stick will not move.
          * @param speed - The speed at which to move the stick (from -1 to 1). Positive values move the stick up, negative values move the stick down. The speed is limited to prevent the stick from moving too fast.
          */
-        void moveStick(const float speed)
+        void moveStick(const float speed) const
         {
             if (pto.getExtended()) return; // Don't move stick if PTO is extended
 
@@ -213,20 +211,20 @@ namespace devils
         }
 
     private:
-        static constexpr float FAST_SPEED = 1.0f; // %
+        static constexpr float FAST_SPEED = 0.8f; // %
         static constexpr float SLOW_SPEED = 0.6f; // %
         static constexpr float RETRACTION_SPEED = 0.6f; // %
         static constexpr float HOMING_SPEED = 0.6f; // %
 
-        static constexpr float RETRACTION_STALL_CURRENT = 1.8f; // amps
+        static constexpr float RETRACTION_STALL_CURRENT = 1.5f; // amps
         static constexpr float PTO_PAUSE_DURATION = 0.2f; // seconds
 
         // Expected position of the stick when fully retracted (in ticks)
         static constexpr float EXPECTED_POSITION_DOWN = 30.0f;
         // Expected position of the stick when fully extended (in ticks)
-        static constexpr float EXPECTED_POSITION_UP = -700.0f;
+        static constexpr float EXPECTED_POSITION_UP = -785.0f;
         // Expected position of the stick when extended for three (in ticks)
-        static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -400.0f;
+        static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -500.0f;
 
         ADIPneumaticGroup& pto;
         SmartMotorGroup& leftStickMotors;

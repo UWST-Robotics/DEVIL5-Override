@@ -230,7 +230,7 @@ namespace devils
             }
         }
 
-        static constexpr int UPDATE_INTERVAL = 20; // Default update interval in milliseconds
+        static constexpr int UPDATE_INTERVAL = 10; // Default update interval in milliseconds
 
         // List of all running instances
         static pros::Mutex allRunningInstancesMutex;

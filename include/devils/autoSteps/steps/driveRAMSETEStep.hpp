@@ -115,6 +115,8 @@ namespace devils
             translationOutput *= options.translationP;
             rotationOutput *= options.rotationP;
 
+            Logger::info(std::to_string(translationOutput));
+
             // Set the chassis output
             chassis.move(translationOutput, rotationOutput, 0.0f);
         }

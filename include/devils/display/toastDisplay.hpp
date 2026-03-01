@@ -1,7 +1,6 @@
 #pragma once
 
 #include "displayBase.hpp"
-#include "liblvgl/core/lv_disp.h"
 #include "liblvgl/core/lv_obj.h"
 #include "liblvgl/extra/widgets/list/lv_list.h"
 #include "../utils/backgroundService.hpp"
@@ -10,7 +9,7 @@
 
 namespace devils
 {
-    class ToastDisplay : 
+    class ToastDisplay :
         public BackgroundService,
         public DisplayBase
     {
@@ -24,11 +23,12 @@ namespace devils
             lv_obj_set_style_bg_opa(toastContainer, 0, 0);
             lv_obj_set_style_border_opa(toastContainer, 0, 0);
         }
+
         ~ToastDisplay() override
         {
             lv_obj_del(toastContainer);
         }
-        
+
     protected:
         /// @brief Represents a single error popup being displayed on the screen.
         struct ActiveToast
@@ -37,7 +37,7 @@ namespace devils
             std::string text;
             lv_obj_t* toastObject;
         };
-        
+
         /**
          * Creates a toast object in LVGL with the given text and adds it to the toast container.
          * @param logMessage - The log message to create a toast for. The text of the log message will be displayed in the toast.
@@ -48,27 +48,27 @@ namespace devils
             // Get proper icon and color for the toast based on the log level of the message
             const auto toastIcon = getIconFromLogLevel(logMessage.level);
             const auto toastColor = getColorFromLogLevel(logMessage.level);
-            
+
             // Create the toast as a button
             const auto button = lv_list_add_btn(
                 toastContainer,
                 toastIcon.c_str(),
                 logMessage.text.c_str());
             lv_obj_set_style_bg_color(button, toastColor, 0);
-            
+
             return button;
         }
 
         void onUpdate() override
         {
             // Log any new log messages as toasts
-            while (Logger::toastBuffer.size() > 0)
+            while (!Logger::toastBuffer.empty())
             {
                 onLogMessage(Logger::toastBuffer.top());
                 Logger::toastBuffer.pop();
             }
         }
-        
+
         /**
          * Called every time a log message is logged. 
          * If the log message is an error, it creates a toast for the error message and adds it to the screen.
@@ -79,7 +79,7 @@ namespace devils
             // Ignore messages that aren't at least the current log level
             if (logMessage.level < logLevel)
                 return;
-            
+
             // Check if the error is already being displayed
             for (auto& toast : activeToasts)
             {
@@ -90,7 +90,7 @@ namespace devils
                     return;
                 }
             }
-            
+
             // Add the toast to the list of active toasts
             activeToasts.push_back({
                 pros::millis(),
@@ -148,14 +148,14 @@ namespace devils
                 return lv_color_hex(0xA8A8A8);
             }
         }
-        
+
     private:
         static constexpr int OVERLAY_WIDTH = 440;
         static constexpr int OVERLAY_HEIGHT = 200;
-        
+
         Logger::LogLevel logLevel = Logger::WARN;
         lv_obj_t* toastContainer;
-        
+
         std::vector<ActiveToast> activeToasts = {};
     };
 };

@@ -107,7 +107,7 @@ namespace devils
                     currentPose.rotation = lastRotation;
                 }
             }
-            
+
             // Check for sensor errors
             if (!verticalResult.isSuccess() ||
                 !horizontalResult.isSuccess())
@@ -115,7 +115,7 @@ namespace devils
                 Logger::warn("Failed to get sensor angles for PerpendicularSensorOdometry.");
                 return;
             }
-            
+
             // Calculate arc length
             // rads * theta
             const float verticalRevolutions = Units::degToRad(verticalResult.value) * wheelRadius;
