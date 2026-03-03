@@ -33,7 +33,7 @@ namespace devils
             mainController.rightX.setOptions(joystickOptions);
             mainController.rightY.setOptions(joystickOptions);
 
-            mainController.up.setMode(ControllerButton::TOGGLED);
+            mainController.up.setMode(ControllerButton::JUST_PRESSED);
             mainController.right.setMode(ControllerButton::TOGGLED);
         }
 
@@ -87,7 +87,8 @@ namespace devils
                 intake.setStickStalled(stick.checkStalled());
 
                 // Stick pneumatic defaults
-                stick.setPTOExtended(ptoButton);
+                if (ptoButton)
+                    stick.setPTOExtended(!stick.getPTOExtended());
 
                 // For fancy stick controls once testing is done
                 if (stickFastButton)
