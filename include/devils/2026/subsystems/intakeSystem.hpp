@@ -36,7 +36,7 @@ namespace devils
                 return;;
             }
 
-            if (std::fabsf(speed) < INPUT_DEADZONE)
+            if (std::abs(speed) < INPUT_DEADZONE)
             {
                 sideRollers.move(0);
                 topRollers.move(IDLE_ROLLER_SPEED);

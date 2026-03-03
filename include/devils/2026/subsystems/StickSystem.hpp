@@ -105,6 +105,13 @@ namespace devils
                 return;
             }
 
+            // Don't move motor if retracting and homed
+            /*if (isStickHomed && currentState == RETRACTED)
+            {
+                moveStick(0);
+                return;
+            } */
+
             // Otherwise, go to the current state
             switch (currentState)
             {

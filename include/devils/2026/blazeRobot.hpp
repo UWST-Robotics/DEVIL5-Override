@@ -74,7 +74,7 @@ namespace devils
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Reverse the drive
-                if (std::fabsf(leftY) < MAX_ROBOT_SPEED_TO_SWITCH_DIRECTION)
+                if (std::abs(leftY) < MAX_ROBOT_SPEED_TO_SWITCH_DIRECTION)
                     isDriveReversed = driveReverseButton;
                 const auto driveDirection = isDriveReversed ? -1.0f : 1.0f;
 
@@ -100,7 +100,7 @@ namespace devils
                 stick.moveStick();
 
                 // Hood controls (might not be needed if the hood is a passive system)
-                tube.setTubeRaised(!tubeExtendButton);
+                tube.setTubeRaised(tubeExtendButton);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
