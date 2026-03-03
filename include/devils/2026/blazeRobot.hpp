@@ -2,6 +2,7 @@
 
 #include "../devils.h"
 #include "./autonomous/matchAuto.hpp"
+#include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/StickSystem.hpp"
 #include "./subsystems/tubeSystem.hpp"
@@ -39,7 +40,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube);
+            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube);
         }
 
         void opcontrol() override
