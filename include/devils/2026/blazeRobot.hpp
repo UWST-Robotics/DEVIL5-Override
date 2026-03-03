@@ -62,8 +62,8 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                const bool tubeExtendButton = mainController.y; // Tube extend/retract
-                const bool intakeArmExtendButton = mainController.l2;
+                const bool tubeExtendButton = mainController.l2; // Tube extend/retract
+                const bool intakeArmExtendButton = mainController.y;
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
 
