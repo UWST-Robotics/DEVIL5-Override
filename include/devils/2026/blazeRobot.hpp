@@ -2,6 +2,7 @@
 
 #include "../devils.h"
 #include "./autonomous/matchAuto.hpp"
+#include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/StickSystem.hpp"
 #include "./subsystems/tubeSystem.hpp"
@@ -33,14 +34,14 @@ namespace devils
             mainController.rightX.setOptions(joystickOptions);
             mainController.rightY.setOptions(joystickOptions);
 
-            mainController.up.setMode(ControllerButton::TOGGLED);
+            mainController.up.setMode(ControllerButton::JUST_PRESSED);
             mainController.right.setMode(ControllerButton::TOGGLED);
         }
 
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube);
+            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube);
         }
 
         void opcontrol() override
@@ -62,9 +63,9 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                const bool tubeExtendButton = mainController.y; // Tube extend/retract
-                const bool wingExtendButton = mainController.x; // Wing extend/retract
-                const bool intakeArmExtendButton = mainController.l2;
+                const bool tubeExtendButton = mainController.l2; // Tube extend/retract
+                const bool intakeArmExtendButton = mainController.y;
+                const bool wingExtendButton = mainController.x; // Wing raise/lower
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
 
@@ -88,7 +89,8 @@ namespace devils
                 intake.setStickStalled(stick.checkStalled());
 
                 // Stick pneumatic defaults
-                stick.setPTOExtended(ptoButton);
+                if (ptoButton)
+                    stick.setPTOExtended(!stick.getPTOExtended());
 
                 // For fancy stick controls once testing is done
                 if (stickFastButton)

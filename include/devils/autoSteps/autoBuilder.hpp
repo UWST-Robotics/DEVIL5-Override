@@ -101,8 +101,9 @@ namespace devils
             const auto currentVelocity = odom.getVelocity();
             const auto deltaPose = targetPose - currentPose;
             const auto dotProduct = deltaPose.x * currentVelocity.x + deltaPose.y * currentVelocity.y;
-            const auto velocityDirection = (dotProduct >= 0) ? 1.0f : 0.0f;
+            const auto velocityDirection = (dotProduct >= 0) ? 1.0f : 1.0f;
             const auto startingVelocity = velocityDirection * currentVelocity.magnitude();
+            Logger::info("Starting Velocity : " + std::to_string(startingVelocity) + " in/s");
 
             // Generate Path
             const auto distance = currentPose.distanceTo(targetPose);
@@ -113,7 +114,6 @@ namespace devils
                 isReversed);
 
             // Generate Trajectory
-            // const auto currentVelocity = odom.getVelocity().magnitude();
             const auto generator = TrajectoryGenerator({
                 .startingVelocity = startingVelocity,
                 .endingVelocity = endingVelocity

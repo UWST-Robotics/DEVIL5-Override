@@ -55,6 +55,19 @@ namespace devils
         void setState(const State state)
         {
             currentState = state;
+            if (currentState == EXTENDED_FAST || currentState == EXTENDED_SLOW || currentState == EXTEND_FOR_THREE)
+            {
+                pto.setExtended(false);
+            }
+        }
+
+        /**
+         * Gets whether the PTO is currently extended or not.
+         * @return True if the PTO is extended, false otherwise.
+         */
+        bool getPTOExtended() const
+        {
+            return pto.getExtended();
         }
 
         /**
