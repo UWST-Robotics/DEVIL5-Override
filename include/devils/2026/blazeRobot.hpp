@@ -5,6 +5,7 @@
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/StickSystem.hpp"
 #include "./subsystems/tubeSystem.hpp"
+#include "./subsystems/wingSystem.hpp"
 
 namespace devils
 {
@@ -62,6 +63,7 @@ namespace devils
                 const float rightX = mainController.rightX * 0.5f;
 
                 const bool tubeExtendButton = mainController.y; // Tube extend/retract
+                const bool wingExtendButton = mainController.x; // Wing extend/retract
                 const bool intakeArmExtendButton = mainController.l2;
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
@@ -98,8 +100,8 @@ namespace devils
 
                 stick.moveStick();
 
-                // Hood controls (might not be needed if the hood is a passive system)
                 tube.setTubeRaised(tubeExtendButton);
+                wings.setWingRaised(wingExtendButton);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -133,6 +135,7 @@ namespace devils
         SmartMotorGroup sideRollers = SmartMotorGroup("SideRollers", {-18, 17});
 
         ADIPneumatic tubePnematics = ADIPneumatic("TubePneumatics", 'C', false);
+        ADIPneumatic wingPnematics = ADIPneumatic("WingPneumatics", 'F', false);
         ADIPneumaticGroup intakePnematics = ADIPneumaticGroup("IntakePneumatics", {'D', 'E'}, false);
         ADIPneumaticGroup ptoPnematics = ADIPneumaticGroup("PTOPneumatics", {'A', 'B'}, false);
 
@@ -153,6 +156,7 @@ namespace devils
             rightMotors,
             stickHomeSensor);
         TubeSystem tube = TubeSystem(tubePnematics);
+        WingSystem wings = WingSystem(wingPnematics);
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
             verticalSensor,
