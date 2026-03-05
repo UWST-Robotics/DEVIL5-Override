@@ -249,7 +249,7 @@ namespace devils
         // Expected position of the stick when fully extended (in ticks)
         static constexpr float EXPECTED_POSITION_UP = -785.0f;
         // Expected position of the stick when extended for three (in ticks)
-        static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -500.0f;
+        static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -450.0f;
 
         ADIPneumaticGroup& pto;
         SmartMotorGroup& leftStickMotors;

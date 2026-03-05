@@ -19,8 +19,13 @@ namespace devils
                         OdomSource& odom,
                         StickSystem& stick,
                         IntakeSystem& intake,
-                        TubeSystem& tube)
+                        TubeSystem& tube,
+                        const bool isRight = false)
         {
+            TrajectoryConstraints::defaultConstraints = TrajectoryConstraints{
+                .maxVelocity = 50.0f
+            };
+
             const auto stickAutoStep = std::make_shared<StickAutoStep>(stick);
             stickAutoStep->start();
 
@@ -33,57 +38,58 @@ namespace devils
             //     https://auto.devilbots.org/
             // =====================================
 
-            const auto autoBuilder = AutoBuilder(chassis, odom);
-            odom.setPose({-46, -14, Units::degToRad(180)});
+            auto autoBuilder = AutoBuilder(chassis, odom);
+
+            if (isRight)
+                autoBuilder.setPoseTransformer(std::make_unique<MirrorTransformY>());
+
+            autoBuilder.jumpTo({-46, -14, Units::degToRad(180)});
+            tube.setTubeRaised(true);
 
             // Drop off at center goal
             stick.homeStick();
-            autoBuilder.driveTo({-14, -12, Units::degToRad(225)})->startSync();
-            stick.setState(StickSystem::State::EXTENDED_FAST);
+            if (isRight)
+                autoBuilder.driveTo({-19, -15, Units::degToRad(235)})->startSync();
+            else
+                autoBuilder.driveTo({-14, -12, Units::degToRad(225)})->startSync();
+            tube.setTubeRaised(false);
             pros::delay(500);
-            tube.setTubeRaised(true);
-            pros::delay(500);
+            stick.setState(StickSystem::State::EXTENDED_SLOWER);
+            pros::delay(1000);
 
             // Move to loader
             stick.setState(StickSystem::State::RETRACTED);
             intake.setArmsExtended(true);
             tube.setTubeRaised(true);
-            autoBuilder.driveTo({-50, -43, Units::degToRad(180)}, 20.0f)->startSync();
-            autoBuilder.driveTo({-58.5f, -43, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-50, -41, Units::degToRad(180)}, 20.0f)->startSync();
+            autoBuilder.driveTo({-60, -41, Units::degToRad(180)})->startSync();
 
             // Wiggle while picking up from loader
-            wiggle(chassis, 3.0f);
+            wiggle(chassis, 5.0f, 0.2f);
 
             // Move to long goal
-            autoBuilder.driveTo({-37.5f, -43.5f, Units::degToRad(180)})->startSync();
-            pros::delay(200);
-            stick.setState(StickSystem::State::EXTEND_FOR_THREE);
-            pros::delay(1000);
+            autoBuilder.driveTo({-37, -41, Units::degToRad(180)})->startSync();
+            scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
 
             //move to use wing
             autoBuilder.driveTo({-44, -50, Units::degToRad(255)})->startSync();
-            stick.setState(StickSystem::State::EXTENDED_SLOW);
+            // autoBuilder.rotateTo(315)->startSync();
             intakeAutoStep->setTargetSpeed(-1.0f);
-            autoBuilder.driveTo({-26, -36, Units::degToRad(180)}, 20.0f)->startSync();
+            autoBuilder.driveTo({-26, -34, Units::degToRad(180)}, 20.0f)->startSync();
             intakeAutoStep->setTargetSpeed(1.0f);
-            autoBuilder.driveTo({-6, -40, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-6, -38, Units::degToRad(180)})->startSync();
             stick.setState(StickSystem::State::RETRACTED);
             autoBuilder.driveTo({-28, -32, Units::degToRad(180)}, 20.0f)->startSync();
 
             // Move to Loader
-            autoBuilder.driveTo({-46, -47, Units::degToRad(180)}, 20.0f)->startSync();
-            autoBuilder.driveTo({-60, -47, Units::degToRad(180)})->startSync();
-            wiggle(chassis, 3.0f);
+            autoBuilder.driveTo({-46, -45.5f, Units::degToRad(180)}, 20.0f)->startSync();
+            autoBuilder.driveTo({-60, -45.5f, Units::degToRad(180)})->startSync();
+            wiggle(chassis, 5.0f, 0.2f);
 
             // Score in long goal
-            autoBuilder.driveTo({-32.5f, -48, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-32.5f, -45.5f, Units::degToRad(180)})->startSync();
+            scoreInLongGoal(chassis, stick);
             stick.setState(StickSystem::State::EXTENDED_FAST);
-
-            pros::delay(1000);
-            tube.setTubeRaised(false);
-            pros::delay(500);
-            tube.setTubeRaised(true);
-
 
             // =====================================
             //     End of WIP Match Auto
@@ -117,6 +123,22 @@ namespace devils
                 chassis.stop();
                 pros::delay(300);
             }
+        }
+
+        static void scoreInLongGoal(
+            TankChassis& chassis,
+            StickSystem& stick,
+            const StickSystem::State targetState = StickSystem::State::EXTENDED_SLOW)
+        {
+            // Apply pressure
+            chassis.move(-0.1f, 0, 0);
+
+            // Extend stick
+            stick.setState(targetState);
+            pros::delay(1000);
+
+            // Retract stick
+            stick.setState(StickSystem::State::RETRACTED);
         }
     };
 }

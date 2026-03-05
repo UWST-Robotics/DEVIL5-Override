@@ -41,7 +41,8 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, true);
+            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, true);
+            // SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, true);
         }
 
         void opcontrol() override
@@ -167,12 +168,12 @@ namespace devils
 
         // Displays
         std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
-        AutoPickerDisplay autoPickerDisplay = AutoPickerDisplay(
-            "PJ Robot",
-            {
-                AutoPickerDisplay::Routine{.id = 0, .displayName = "Match Auto", .requiresAllianceColor = false},
-                AutoPickerDisplay::Routine{.id = 1, .displayName = "Skills Auto", .requiresAllianceColor = false}
-            });
+        // AutoPickerDisplay autoPickerDisplay = AutoPickerDisplay(
+        //     "PJ Robot",
+        //     {
+        //         AutoPickerDisplay::Routine{.id = 0, .displayName = "Match Auto", .requiresAllianceColor = false},
+        //         AutoPickerDisplay::Routine{.id = 1, .displayName = "Skills Auto", .requiresAllianceColor = false}
+        //     });
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
     };
 }
