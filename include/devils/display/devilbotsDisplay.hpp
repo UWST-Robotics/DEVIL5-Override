@@ -1,12 +1,11 @@
 #pragma once
 
 #include "displayBase.hpp"
-#include "../utils/asyncTask.hpp"
-#include "devils/utils/backgroundService.hpp"
+#include "../utils/backgroundService.hpp"
 
 namespace devils
 {
-    class DevilBotsDisplay : 
+    class DevilBotsDisplay :
         public BackgroundService,
         public DisplayBase
     {
@@ -16,7 +15,7 @@ namespace devils
             fullScreenContainer = lv_obj_create(getRootContainer());
             lv_obj_set_style_bg_color(fullScreenContainer, lv_color_make(3, 36, 53), 0);
             lv_obj_set_size(fullScreenContainer, lv_pct(100), lv_pct(100));
-            
+
             eyesGroup = lv_obj_create(fullScreenContainer);
             lv_obj_set_size(eyesGroup, 340, 200);
             lv_obj_align(eyesGroup, LV_ALIGN_CENTER, 0, 0);
@@ -32,6 +31,7 @@ namespace devils
             leftEyebrow = makeEyebrow(-100, -85, 40, 130);
             rightEyebrow = makeEyebrow(100, -110, -40, 130);
         }
+
         ~DevilBotsDisplay() override
         {
             lv_obj_del(fullScreenContainer);
@@ -62,7 +62,7 @@ namespace devils
             const int16_t size) const
         {
             // Object
-            lv_obj_t *eye = lv_obj_create(eyesGroup);
+            lv_obj_t* eye = lv_obj_create(eyesGroup);
             lv_obj_set_size(eye, size, size);
             lv_obj_align(eye, LV_ALIGN_CENTER, 0, 0);
             lv_obj_set_pos(eye, x, y);
@@ -90,7 +90,7 @@ namespace devils
             const int16_t size) const
         {
             // Object
-            lv_obj_t *eyebrow = lv_obj_create(eyesGroup);
+            lv_obj_t* eyebrow = lv_obj_create(eyesGroup);
             lv_obj_set_size(eyebrow, size, size);
 
             // Style
@@ -108,12 +108,11 @@ namespace devils
         }
 
     private:
-        lv_obj_t *fullScreenContainer;
-        lv_obj_t *eyesGroup;
-        lv_obj_t *leftEye;
-        lv_obj_t *rightEye;
-        lv_obj_t *leftEyebrow;
-        lv_obj_t *rightEyebrow;
+        lv_obj_t* fullScreenContainer;
+        lv_obj_t* eyesGroup;
+        lv_obj_t* leftEye;
+        lv_obj_t* rightEye;
+        lv_obj_t* leftEyebrow;
+        lv_obj_t* rightEyebrow;
     };
-
 }

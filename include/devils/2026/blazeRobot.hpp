@@ -41,8 +41,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            // SkillsAuto::test(chassis, *odometry.get());
-            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, true);
+            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, false);
         }
 
         void opcontrol() override
@@ -166,6 +165,7 @@ namespace devils
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
 
+        // Displays
         std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
     };

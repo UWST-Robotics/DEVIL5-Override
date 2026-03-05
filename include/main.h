@@ -17,7 +17,7 @@
 #define PROS_USE_LITERALS     // Allows us to use 200_ms instead of pros::c::millisecond_t(200)
 
 // Add each robot definition here
-// #include "devils/2026/pjRobot.hpp"
+#include "devils/2026/pjRobot.hpp"
 #include "devils/2026/blazeRobot.hpp"
 #include "devils/2026/robinRobot.hpp"
 
@@ -28,13 +28,12 @@ using namespace devils;
  * that they can be called from user code (i.e. calling autonomous from a
  * button press in opcontrol() for testing purposes).
  */
-extern "C"
-{
-    inline std::shared_ptr<Robot> robot;
+extern "C" {
+inline std::shared_ptr<Robot> robot;
 
-    void autonomous(void);
-    void initialize(void);
-    void disabled(void);
-    void competition_initialize(void);
-    void opcontrol(void);
+void autonomous(void);
+void initialize(void);
+void disabled(void);
+void competition_initialize(void);
+void opcontrol(void);
 }

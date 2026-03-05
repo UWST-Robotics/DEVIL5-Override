@@ -63,6 +63,7 @@
 // Display
 #include "display/toastDisplay.hpp"
 #include "display/devilbotsDisplay.hpp"
+#include "display/autoPickerDisplay.hpp"
 // #include "display/eyesRenderer.hpp"
 
 // VEXBridge
