@@ -14,6 +14,7 @@ namespace devils
         {
             EXTENDED_FAST,
             EXTENDED_SLOW,
+            EXTENDED_SLOWER,
             RETRACTED,
             EXTEND_FOR_THREE,
             STOP
@@ -134,6 +135,9 @@ namespace devils
             case EXTENDED_SLOW:
                 moveToPosition(EXPECTED_POSITION_UP, SLOW_SPEED);
                 break;
+            case EXTENDED_SLOWER:
+                moveToPosition(EXPECTED_POSITION_UP, SLOWER_SPEED);
+                break;
             case RETRACTED:
                 moveToPosition(EXPECTED_POSITION_DOWN, RETRACTION_SPEED);
                 break;
@@ -233,6 +237,7 @@ namespace devils
     private:
         static constexpr float FAST_SPEED = 0.8f; // %
         static constexpr float SLOW_SPEED = 0.6f; // %
+        static constexpr float SLOWER_SPEED = 0.4f; // %
         static constexpr float RETRACTION_SPEED = 0.6f; // %
         static constexpr float HOMING_SPEED = 0.6f; // %
 

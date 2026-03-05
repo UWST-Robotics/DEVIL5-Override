@@ -90,17 +90,30 @@ namespace devils
             // =====================================
         }
 
-        static void wiggle(TankChassis& chassis, const float duration)
+        static void wiggle(TankChassis& chassis, const float duration, const float magnitude = 0.15f)
         {
             auto wiggleTimer = Timer(duration);
             wiggleTimer.start();
 
             while (!wiggleTimer.getIsFinished())
             {
-                chassis.move(-0.1f, 0.15f, 0);
+                chassis.move(0.1f, 0.15f, 0);
                 pros::delay(100);
-                chassis.move(0.3f, -0.15f, 0);
+                chassis.move(0.1f, -0.15f, 0);
                 pros::delay(100);
+                chassis.stop();
+                pros::delay(300);
+
+                if (wiggleTimer.getIsFinished())
+                    break;
+
+
+                chassis.move(0.1f, -magnitude, 0);
+                pros::delay(200);
+                chassis.stop();
+                pros::delay(300);
+                chassis.move(0.1f, magnitude, 0);
+                pros::delay(200);
                 chassis.stop();
                 pros::delay(300);
             }

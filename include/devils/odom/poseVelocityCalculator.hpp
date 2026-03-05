@@ -8,6 +8,8 @@ namespace devils
     class PoseVelocityCalculator
     {
     public:
+        virtual ~PoseVelocityCalculator() = default;
+
         /**
          * Gets current velocity of the robot.
          * @return The current velocity of the robot as a `PoseVelocity`.
@@ -26,7 +28,7 @@ namespace devils
         void updateVelocity(const Pose& pose)
         {
             // Calculate Time Delta
-            const uint32_t timestamp = pros::millis();
+            const auto timestamp = pros::millis();
             const auto dt = static_cast<float>(timestamp - lastTimestamp) / 1000.0f;
 
             // Initial update
@@ -38,7 +40,7 @@ namespace devils
             }
 
             // Skip if no time has passed
-            if (dt <= 0)
+            if (dt <= MIN_DELTA_TIME)
                 return;
 
             // Update Timestamp
@@ -61,6 +63,9 @@ namespace devils
         }
 
     private:
+        // Minimum time in seconds between velocity updates to prevent noise from small pose changes
+        static constexpr float MIN_DELTA_TIME = 0.05f;
+
         // Current state
         PoseVelocity currentVelocity = PoseVelocity();
 

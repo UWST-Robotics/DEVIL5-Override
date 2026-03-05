@@ -20,8 +20,8 @@ namespace devils
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
 
+            devilBotsDisplay->start();
             toastDisplay->start();
-            // devilBotsDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
                 .deadzone = 0.1f, // <-- Minimum input to register
@@ -41,7 +41,8 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube);
+            // SkillsAuto::test(chassis, *odometry.get());
+            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, true);
         }
 
         void opcontrol() override
@@ -165,15 +166,7 @@ namespace devils
             horizontalSensor,
             DEAD_WHEEL_RADIUS);
 
+        std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
-        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
-
-
-        // RobotAutoOptions autoOptions = RobotAutoOptions();
-        // std::vector<Routine> routines = {
-        //     {0, "Default", false},
-        // };
-        // // Renderer
-        // OptionsRenderer optionsRenderer = OptionsRenderer("Blaze", routines, &autoOptions);
     };
 }

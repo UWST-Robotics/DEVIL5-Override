@@ -7,6 +7,7 @@
 #include "../path/splinePath.hpp"
 #include "./steps/rotateMotionProfileStep.hpp"
 #include "./steps/driveRAMSETEStep.hpp"
+#include "../autoSteps/transformer/poseTransformer.hpp"
 
 namespace devils
 {
@@ -41,8 +42,10 @@ namespace devils
             const Pose& pose,
             const float endingVelocity = 0.0f) const
         {
+            const auto transformedPose = tryTransformPose(pose);
+
             // TODO: Auto switch between `AutoRamseteStep` and `AutoHolonomicDriveStep` depending on the chassis type (holonomic or not).
-            const auto trajectory = generateTrajectoryToPose(pose, endingVelocity);
+            const auto trajectory = generateTrajectoryToPose(transformedPose, endingVelocity);
             return std::make_shared<DriveRAMSETEStep>(chassis, odom, trajectory);
         }
 
@@ -58,6 +61,8 @@ namespace devils
         {
             const auto currentRotation = odom.getPose().rotation;
             const auto targetRotation = currentRotation + Units::degToRad(distance);
+            // TODO: Transform pose here
+
             return std::make_shared<RotateMotionProfileStep>(
                 chassis,
                 odom,
@@ -75,11 +80,32 @@ namespace devils
             const float heading,
             RotateMotionProfileStep::Options options = RotateMotionProfileStep::Options::defaultOptions) const
         {
+            const auto transformedPose = tryTransformPose(Pose(0, 0, Units::degToRad(heading)));
+
             return std::make_shared<RotateMotionProfileStep>(
                 chassis,
                 odom,
-                Units::degToRad(heading),
+                transformedPose.rotation,
                 options);
+        }
+
+        /**
+         * Sets the robot's current pose to a given pose. Useful for resetting odometry or "teleporting" the robot during autonomous.
+         * @param pose - The pose to set the robot to
+         */
+        void jumpTo(const Pose& pose) const
+        {
+            const auto transformedPose = tryTransformPose(pose);
+            odom.setPose(transformedPose);
+        }
+
+        /**
+         * Assigns a transformer to the auto builder to transform all poses used in the builder.
+         * @param newTransformer - The new transformer to use. Can be `nullptr` to remove the current transformer.
+         */
+        void setPoseTransformer(std::unique_ptr<PoseTransformer> newTransformer)
+        {
+            transformer = std::move(newTransformer);
         }
 
     protected:
@@ -101,7 +127,7 @@ namespace devils
             const auto currentVelocity = odom.getVelocity();
             const auto deltaPose = targetPose - currentPose;
             const auto dotProduct = deltaPose.x * currentVelocity.x + deltaPose.y * currentVelocity.y;
-            const auto velocityDirection = (dotProduct >= 0) ? 1.0f : 1.0f;
+            const auto velocityDirection = (dotProduct >= 0) ? 1.0f : -1.0f;
             const auto startingVelocity = velocityDirection * currentVelocity.magnitude();
             Logger::info("Starting Velocity : " + std::to_string(startingVelocity) + " in/s");
 
@@ -121,6 +147,24 @@ namespace devils
             const auto trajectory = generator.calc(path);
             return trajectory;
         }
+
+        /**
+         * Tries to transform a pose using the assigned transformer, if any
+         * @param pose - The pose to transform
+         * @returns The transformed pose
+         */
+        Pose tryTransformPose(Pose pose) const
+        {
+            // If a transformer is assigned, transform the pose
+            if (transformer)
+                return transformer->transform(pose);
+
+            // Otherwise, return the original pose
+            return pose;
+        }
+
+        /// @brief The active transformer used to transform poses
+        std::unique_ptr<PoseTransformer> transformer = nullptr;
 
         ChassisBase& chassis;
         OdomSource& odom;

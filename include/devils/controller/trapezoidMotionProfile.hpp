@@ -12,14 +12,14 @@ namespace devils
         {
             /// @brief The maximum velocity of the motion profile (typically inches/s or degrees/s).
             float maxVelocity;
-            
+
             /// @brief The maximum acceleration of the motion profile (typically inches/s^2 or degrees/s^2).
             float maxAcceleration;
-            
+
             /// @brief The maximum deceleration of the motion profile (typically inches/s^2 or degrees/s^2).
             float maxDeceleration;
         };
-        
+
         /// @brief An enum representing the current phase of the motion profile.
         enum Phase
         {
@@ -28,7 +28,7 @@ namespace devils
             DECELERATING,
             COMPLETE
         };
-        
+
         /// @brief A struct representing the state of the motion profile at a given time.
         struct State
         {
@@ -72,49 +72,53 @@ namespace devils
                 constraints.maxAcceleration <= 0 ||
                 constraints.maxDeceleration <= 0)
             {
-                Logger::warn("TrapezoidMotionProfile: One or more constraints are zero or negative. Adjusting to default values.");
+                Logger::warn(
+                    "TrapezoidMotionProfile: One or more constraints are zero or negative. Adjusting to default values.");
                 constraints.maxVelocity = std::max(constraints.maxVelocity, 1.0f);
                 constraints.maxAcceleration = std::max(constraints.maxAcceleration, 1.0f);
                 constraints.maxDeceleration = std::max(constraints.maxDeceleration, 1.0f);
             }
-            
+
             startingVelocity = newStartingVelocity;
             endingVelocity = newEndingVelocity;
-            
+
             // Calculate the time to accelerate/decelerate to/from the peak velocity
             peakVelocity = constraints.maxVelocity;
             accelerationTime = (peakVelocity - startingVelocity) / constraints.maxAcceleration;
             decelerationTime = (peakVelocity - endingVelocity) / constraints.maxDeceleration;
 
-            accelerationDistance = calculateDistance(0, startingVelocity, constraints.maxAcceleration, accelerationTime);
+            accelerationDistance =
+                calculateDistance(0, startingVelocity, constraints.maxAcceleration, accelerationTime);
             decelerationDistance = calculateDistance(0, peakVelocity, -constraints.maxDeceleration, decelerationTime);
-            
+
             // Calculate the distance covered during the cruising velocity phase
             const auto positiveGoalDistance = std::abs(goalDistance);
             cruisingDistance = positiveGoalDistance - accelerationDistance - decelerationDistance;
             cruisingTime = cruisingDistance / peakVelocity;
-            
+
             // Check if this is a triangular profile 
             if (cruisingDistance < 0)
             {
                 // Recalculate the peak velocity for a triangular profile
                 peakVelocity = 2 * positiveGoalDistance +
-                                startingVelocity * startingVelocity / constraints.maxAcceleration +
-                                endingVelocity * endingVelocity / constraints.maxDeceleration;
+                    startingVelocity * startingVelocity / constraints.maxAcceleration +
+                    endingVelocity * endingVelocity / constraints.maxDeceleration;
                 peakVelocity /= 1 / constraints.maxAcceleration + 1 / constraints.maxDeceleration;
                 peakVelocity = std::sqrt(peakVelocity);
-                
+
                 // Recalculate the times for the triangular profile
                 accelerationTime = (peakVelocity - startingVelocity) / constraints.maxAcceleration;
                 decelerationTime = (peakVelocity - endingVelocity) / constraints.maxDeceleration;
-                
-                accelerationDistance = calculateDistance(0, startingVelocity, constraints.maxAcceleration, accelerationTime);
-                decelerationDistance = calculateDistance(0, peakVelocity, -constraints.maxDeceleration, decelerationTime);
-                
+
+                accelerationDistance = calculateDistance(0, startingVelocity, constraints.maxAcceleration,
+                                                         accelerationTime);
+                decelerationDistance = calculateDistance(0, peakVelocity, -constraints.maxDeceleration,
+                                                         decelerationTime);
+
                 cruisingTime = 0;
                 cruisingDistance = 0;
             }
-            
+
             // Safety check if the calculated times are negative (which can happen if the starting/ending velocities are too high)
             if (accelerationTime < 0)
             {
@@ -128,7 +132,7 @@ namespace devils
                 decelerationTime = 0;
                 peakVelocity = endingVelocity;
             }
-            
+
             // Copy the sign of the goal distance to the distances and velocities
             const float goalSign = (goalDistance >= 0) ? 1 : -1;
             accelerationDistance *= goalSign;
@@ -154,7 +158,7 @@ namespace devils
                 return DECELERATING;
             return COMPLETE;
         }
-        
+
         /**
          * Gets the state of the motion profile at a given time.
          * @param t - The time at which to get the state of the motion profile (typically seconds).
@@ -165,31 +169,32 @@ namespace devils
             float localT;
             const auto currentPhase = getPhase(t);
             State state{t, 0, 0, 0};
-            
+
             switch (currentPhase)
             {
-                case ACCELERATING:
-                    state.position = calculateDistance(0, startingVelocity, acceleration, t);
-                    state.velocity = startingVelocity + acceleration * t;
-                    state.acceleration = acceleration;
-                    break;
-                case CRUISING:
-                    localT = t - accelerationTime;
-                    state.position = calculateDistance(accelerationDistance, peakVelocity, 0, localT);
-                    state.velocity = peakVelocity;
-                    state.acceleration = 0;
-                    break;
-                case DECELERATING:
-                    localT = t - accelerationTime - cruisingTime;
-                    state.position = calculateDistance(accelerationDistance + cruisingDistance, peakVelocity, deceleration, localT);
-                    state.velocity = peakVelocity + deceleration * localT;
-                    state.acceleration = deceleration;
-                    break;
-                case COMPLETE:
-                    state.position = accelerationDistance + cruisingDistance + decelerationDistance;
-                    state.velocity = endingVelocity;
-                    state.acceleration = 0;
-                    break;
+            case ACCELERATING:
+                state.position = calculateDistance(0, startingVelocity, acceleration, t);
+                state.velocity = startingVelocity + acceleration * t;
+                state.acceleration = acceleration;
+                break;
+            case CRUISING:
+                localT = t - accelerationTime;
+                state.position = calculateDistance(accelerationDistance, peakVelocity, 0, localT);
+                state.velocity = peakVelocity;
+                state.acceleration = 0;
+                break;
+            case DECELERATING:
+                localT = t - accelerationTime - cruisingTime;
+                state.position = calculateDistance(accelerationDistance + cruisingDistance, peakVelocity, deceleration,
+                                                   localT);
+                state.velocity = peakVelocity + deceleration * localT;
+                state.acceleration = deceleration;
+                break;
+            case COMPLETE:
+                state.position = accelerationDistance + cruisingDistance + decelerationDistance;
+                state.velocity = endingVelocity;
+                state.acceleration = 0;
+                break;
             }
             return state;
         }
@@ -202,7 +207,7 @@ namespace devils
         {
             return accelerationTime + cruisingTime + decelerationTime;
         }
-        
+
     protected:
         /**
          * Calculates the distance covered during a segment of motion given an initial velocity, constant acceleration, and time.
@@ -220,23 +225,23 @@ namespace devils
         {
             return initialPosition + initialVelocity * time + 0.5f * acceleration * time * time;
         }
-        
+
     private:
         float startingVelocity;
         float endingVelocity;
         Constraints constraints;
-        
+
         float accelerationDistance;
         float cruisingDistance;
         float decelerationDistance;
-        
+
         float accelerationTime;
         float cruisingTime;
         float decelerationTime;
-        
+
         float acceleration;
         float deceleration;
-        
+
         float peakVelocity;
     };
 }
