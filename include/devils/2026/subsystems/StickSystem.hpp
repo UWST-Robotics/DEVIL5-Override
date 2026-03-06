@@ -101,8 +101,7 @@ namespace devils
             }
 
             // Check if we are homed
-            const auto stickHomeSensorResult = stickHomeSensor.getValue();
-            const auto isStickHomed = stickHomeSensorResult.isSuccess() && stickHomeSensorResult.value;
+            const auto isStickHomed = getIsStickHomed();
             const auto didHomeTimeout = stickHomingTimer.getIsFinished();
 
             if (isStickHoming && (isStickHomed || didHomeTimeout))
@@ -234,6 +233,32 @@ namespace devils
             moveStick(output); // Move the stick based on the PID output
         }
 
+        /**
+         * Gets whether the stick is currently homed or not. 
+         * @return True if the stick is homed, false otherwise. 
+         */
+        bool getIsStickHomed()
+        {
+            const auto stickHomeSensorResult = stickHomeSensor.getValue();
+            if (!stickHomeSensorResult.isSuccess())
+            {
+                Logger::warn("Failed to get stick home sensor value");
+                return false;
+            }
+
+            const bool isHomed = stickHomeSensorResult.value;
+            if (stickHomedTimer.getIsFinished())
+                return true;
+
+            if (isHomed && !stickHomedTimer.getIsRunning())
+                stickHomedTimer.start();
+
+            if (!isHomed)
+                stickHomedTimer.stop();
+
+            return false;
+        }
+
     private:
         static constexpr float FAST_SPEED = 0.8f; // %
         static constexpr float SLOW_SPEED = 0.6f; // %
@@ -241,30 +266,31 @@ namespace devils
         static constexpr float RETRACTION_SPEED = 0.6f; // %
         static constexpr float HOMING_SPEED = 0.6f; // %
 
-        static constexpr float RETRACTION_STALL_CURRENT = 1.5f; // amps
+        static constexpr float RETRACTION_STALL_CURRENT = 1.6f; // amps
         static constexpr float PTO_PAUSE_DURATION = 0.2f; // seconds
 
         // Expected position of the stick when fully retracted (in ticks)
-        static constexpr float EXPECTED_POSITION_DOWN = 30.0f;
+        static constexpr float EXPECTED_POSITION_DOWN = -10.0f;
         // Expected position of the stick when fully extended (in ticks)
-        static constexpr float EXPECTED_POSITION_UP = -785.0f;
+        static constexpr float EXPECTED_POSITION_UP = -830.0f;
         // Expected position of the stick when extended for three (in ticks)
         static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -450.0f;
 
+        // Hardware
         ADIPneumaticGroup& pto;
         SmartMotorGroup& leftStickMotors;
         SmartMotorGroup& rightStickMotors;
-
         SmartMotorGroup& leftDriveMotors;
         SmartMotorGroup& rightDriveMotors;
-
         ADIDigitalInput& stickHomeSensor;
 
-        PIDController stickPID{0.005f, 0.0f, 0.0f}; // PID controller for stick position control
+        PIDController stickPID{0.0035f, 0.0f, 0.0f}; // PID controller for stick position control
 
         State currentState{RETRACTED};
         Timer ptoActuationTimer = Timer(PTO_PAUSE_DURATION); // Pauses the stick movement while the pto actuates
-        Timer stickHomingTimer = Timer(1.0f); // Timer to prevent infinite homing if the sensor fails
+        Timer stickHomedTimer = Timer(0.1f);
+        Timer stickHomingTimer = Timer(1.0f);
+        // Timer to hold the home for a brief period to ensure we are actually homed
 
         bool wasPTOExtended = false;
         bool isStickHoming = false;

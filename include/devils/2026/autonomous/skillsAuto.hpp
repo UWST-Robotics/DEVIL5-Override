@@ -2,6 +2,7 @@
 
 #include "devils/devils.h"
 #include "matchAuto.hpp"
+#include "../subsystems/wingSystem.hpp"
 
 namespace devils
 {
@@ -13,6 +14,7 @@ namespace devils
                         StickSystem& stick,
                         IntakeSystem& intake,
                         TubeSystem& tube,
+                        WingSystem& wings,
                         const bool isRight = false)
         {
             auto defaultSpeed = TrajectoryConstraints::defaultConstraints;
@@ -23,6 +25,7 @@ namespace devils
 
             const auto intakeAutoStep = std::make_shared<AutoIntakeStep>(intake, stick);
             intakeAutoStep->start();
+            intakeAutoStep->setTargetSpeed(1.0f);
 
             // =====================================
             //     Skills Auto (Purdue Slam & Jam)
@@ -41,8 +44,19 @@ namespace devils
                 autoBuilder.jumpTo({-44, -14, Units::degToRad(0)});
             stick.homeStick();
 
+            // 0. Deploy PJ
+            if (isRight)
+            {
+                tube.setTubeRaised(true);
+                wings.setWingRaised(true);
+            }
+
             // 1. Pickup N Blocks
             autoBuilder.driveTo({-6, -16, Units::degToRad(0)})->startSync();
+
+            tube.setTubeRaised(false);
+            wings.setWingRaised(false);
+
             TrajectoryConstraints::defaultConstraints = slowSpeed;
             autoBuilder.driveTo({2, -24, Units::degToRad(-90)})->startSync();
             autoBuilder.driveTo({2, -48, Units::degToRad(-90)})->startSync();
@@ -100,8 +114,8 @@ namespace devils
             // 4. N Long Goal
             autoBuilder.driveTo({-33, isRight ? -62.0f : -61.0f, Units::degToRad(180)}, 40.0f)->startSync();
             autoBuilder.driveTo({39, -60, Units::degToRad(180)})->startSync();
-            autoBuilder.driveTo({45, isRight ? -48.5f : -48.0f, Units::degToRad(360)}, 20.0f)->startSync();
-            autoBuilder.driveTo({32, isRight ? -48.5f : -48.0f, Units::degToRad(360)})->startSync();
+            autoBuilder.driveTo({45, isRight ? -49 : -48.0f, Units::degToRad(360)}, 20.0f)->startSync();
+            autoBuilder.driveTo({32, isRight ? -49.5f : -48.0f, Units::degToRad(360)})->startSync();
             scoreInLongGoal(chassis, stick);
 
             // 5. NE Loader
@@ -109,7 +123,7 @@ namespace devils
             MatchAuto::wiggle(chassis, 4.0f);
 
             // 6. N Long Goal
-            autoBuilder.driveTo({33, isRight ? -48.5f : -48.0f, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({33, isRight ? -50 : -48.0f, Units::degToRad(0)})->startSync();
             scoreInLongGoal(chassis, stick);
             intake.setArmsExtended(false);
 

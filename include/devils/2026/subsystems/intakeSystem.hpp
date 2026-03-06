@@ -29,14 +29,7 @@ namespace devils
          */
         void runIntake(float speed)
         {
-            if (isStickStalled)
-            {
-                topRollers.move(-IDLE_ROLLER_SPEED);
-                sideRollers.move(0);
-                return;;
-            }
-
-            if (std::abs(speed) < INPUT_DEADZONE)
+            if (std::abs(speed) < INPUT_DEADZONE && !isStickStalled)
             {
                 sideRollers.move(0);
                 topRollers.move(IDLE_ROLLER_SPEED);
@@ -47,7 +40,11 @@ namespace devils
             speed = std::clamp(speed, -1.0f, 1.0f);
 
             sideRollers.move(speed * SIDE_ROLLER_SPEED);
-            topRollers.move(speed * TOP_ROLLER_SPEED);
+
+            if (isStickStalled)
+                topRollers.move(-IDLE_ROLLER_SPEED);
+            else
+                topRollers.move(speed * TOP_ROLLER_SPEED);
         }
 
         /**
