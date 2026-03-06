@@ -4,6 +4,7 @@
 #include "../subsystems/StickSystem.hpp"
 #include "../subsystems/intakeSystem.hpp"
 #include "../subsystems/tubeSystem.hpp"
+#include "../subsystems/wingSystem.hpp"
 #include "stickAutoStep.hpp"
 #include "autoIntakeStep.hpp"
 
@@ -20,6 +21,7 @@ namespace devils
                         StickSystem& stick,
                         IntakeSystem& intake,
                         TubeSystem& tube,
+                        WingSystem& wings,
                         const bool isRight = false)
         {
             TrajectoryConstraints::defaultConstraints = TrajectoryConstraints{
@@ -46,48 +48,56 @@ namespace devils
             autoBuilder.jumpTo({-46, -14, Units::degToRad(180)});
             tube.setTubeRaised(true);
 
+
+            // 0. Deploy PJ
+            if (isRight)
+            {
+                tube.setTubeRaised(true);
+                wings.setWingRaised(true);
+            }
+
             // Drop off at center goal
             stick.homeStick();
             if (isRight)
-                autoBuilder.driveTo({-19, -15, Units::degToRad(235)})->startSync();
+                autoBuilder.driveTo({-19.5f, -16, Units::degToRad(235)})->startSync();
             else
-                autoBuilder.driveTo({-14, -12, Units::degToRad(225)})->startSync();
+                autoBuilder.driveTo({-15, -13, Units::degToRad(225)})->startSync();
             tube.setTubeRaised(false);
-            pros::delay(500);
-            stick.setState(StickSystem::State::EXTENDED_SLOWER);
+            wings.setWingRaised(false);
+            stick.setState(StickSystem::State::EXTENDED_SLOW);
             pros::delay(1000);
 
             // Move to loader
             stick.setState(StickSystem::State::RETRACTED);
             intake.setArmsExtended(true);
+            const auto backupFromGoalStep = autoBuilder.driveTo({-50, -42, Units::degToRad(180)}, 40.0f)->start();
+            pros::delay(100);
             tube.setTubeRaised(true);
-            autoBuilder.driveTo({-50, -41, Units::degToRad(180)}, 20.0f)->startSync();
-            autoBuilder.driveTo({-60, -41, Units::degToRad(180)})->startSync();
+            backupFromGoalStep->join();
+            autoBuilder.driveTo({-62, isRight ? -41 : -42.0f, Units::degToRad(180)})->startSync();
 
             // Wiggle while picking up from loader
-            wiggle(chassis, 5.0f, 0.2f);
+            wiggle(chassis, 3.5f, 0.2f);
 
             // Move to long goal
-            autoBuilder.driveTo({-37, -41, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-37, isRight ? -40.5f : -42.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
 
-            //move to use wing
-            autoBuilder.driveTo({-44, -50, Units::degToRad(255)})->startSync();
-            // autoBuilder.rotateTo(315)->startSync();
+            // Spit blocks
+            autoBuilder.driveTo({-45, isRight ? -40 : -42.0f, Units::degToRad(180)})->startSync();
             intakeAutoStep->setTargetSpeed(-1.0f);
-            autoBuilder.driveTo({-26, -34, Units::degToRad(180)}, 20.0f)->startSync();
-            intakeAutoStep->setTargetSpeed(1.0f);
-            autoBuilder.driveTo({-6, -38, Units::degToRad(180)})->startSync();
+            autoBuilder.rotateTo(300)->startSync();
+            stick.setState(StickSystem::State::EXTENDED_FAST);
+            autoBuilder.rotateTo(180)->startSync();
             stick.setState(StickSystem::State::RETRACTED);
-            autoBuilder.driveTo({-28, -32, Units::degToRad(180)}, 20.0f)->startSync();
+            intakeAutoStep->setTargetSpeed(1.0f);
 
-            // Move to Loader
-            autoBuilder.driveTo({-46, -45.5f, Units::degToRad(180)}, 20.0f)->startSync();
-            autoBuilder.driveTo({-60, -45.5f, Units::degToRad(180)})->startSync();
-            wiggle(chassis, 5.0f, 0.2f);
+            // Move to loader
+            autoBuilder.driveTo({-60, isRight ? -41 : -43.0f, Units::degToRad(180)})->startSync();
+            wiggle(chassis, 3.5f, 0.2f);
 
             // Score in long goal
-            autoBuilder.driveTo({-32.5f, -45.5f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-37, isRight ? -40.5f : -43.5f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick);
             stick.setState(StickSystem::State::EXTENDED_FAST);
 
@@ -136,8 +146,10 @@ namespace devils
             // Extend stick
             stick.setState(targetState);
             pros::delay(1000);
-
-            // Retract stick
+            stick.setState(StickSystem::State::RETRACTED);
+            pros::delay(500);
+            stick.setState(targetState);
+            pros::delay(1000);
             stick.setState(StickSystem::State::RETRACTED);
         }
     };

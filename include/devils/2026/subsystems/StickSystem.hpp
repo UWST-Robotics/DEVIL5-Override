@@ -266,7 +266,7 @@ namespace devils
         static constexpr float RETRACTION_SPEED = 0.6f; // %
         static constexpr float HOMING_SPEED = 0.6f; // %
 
-        static constexpr float RETRACTION_STALL_CURRENT = 1.6f; // amps
+        static constexpr float RETRACTION_STALL_CURRENT = 1.7f; // amps
         static constexpr float PTO_PAUSE_DURATION = 0.2f; // seconds
 
         // Expected position of the stick when fully retracted (in ticks)
