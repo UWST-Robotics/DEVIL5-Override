@@ -41,8 +41,8 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
-            // SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
+            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
+            // MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
         }
 
         void opcontrol() override

@@ -261,7 +261,7 @@ namespace devils
 
     private:
         static constexpr float FAST_SPEED = 0.8f; // %
-        static constexpr float SLOW_SPEED = 0.6f; // %
+        static constexpr float SLOW_SPEED = 0.5f; // %
         static constexpr float SLOWER_SPEED = 0.4f; // %
         static constexpr float RETRACTION_SPEED = 0.6f; // %
         static constexpr float HOMING_SPEED = 0.6f; // %
