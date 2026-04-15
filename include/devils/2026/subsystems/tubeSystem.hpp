@@ -21,6 +21,11 @@ namespace devils
             tube.setExtended(extended);
         }
 
+        bool getTubeRaised() const
+        {
+            return tube.getExtended();
+        }
+        
     private:
         ADIPneumatic& tube;
     };

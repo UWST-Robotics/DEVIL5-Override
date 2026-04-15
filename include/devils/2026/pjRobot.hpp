@@ -103,8 +103,16 @@ namespace devils
 
                 stick.moveStick();
 
+                wings.setWingRaised(tube.getTubeRaised() == wingExtendButton);
+                // if (!tube.getTubeRaised())
+                //     wings.setWingRaised(!wingExtendButton);
+                // else
+                //     wings.setWingRaised(wingExtendButton);
+
                 tube.setTubeRaised(tubeExtendButton);
-                wings.setWingRaised(wingExtendButton);
+                //wings.setWingRaised(wingExtendButton);
+
+
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
