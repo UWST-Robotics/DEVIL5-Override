@@ -3,6 +3,7 @@
 #include "../devils.h"
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
+#include "./autonomous/pjAutoDeploy.hpp"
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/StickSystem.hpp"
 #include "./subsystems/tubeSystem.hpp"
@@ -50,6 +51,8 @@ namespace devils
             // Home the stick
             stick.homeStick();
 
+            //ONLY USE FOR DRIVER SKILLS (upload to file 2)
+            pjAutoDeploy::run(chassis, *odometry.get(), stick, intake, tube, wings, mainController);
             // Stop autonomous
             AutoStep::stopAll();
 

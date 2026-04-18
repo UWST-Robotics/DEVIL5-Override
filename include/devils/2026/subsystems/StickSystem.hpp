@@ -17,6 +17,7 @@ namespace devils
             EXTENDED_SLOWER,
             RETRACTED,
             EXTEND_FOR_THREE,
+            EXTEND_FOR_PJ_DEPLOY,
             STOP
         };
 
@@ -56,7 +57,10 @@ namespace devils
         void setState(const State state)
         {
             currentState = state;
-            if (currentState == EXTENDED_FAST || currentState == EXTENDED_SLOW || currentState == EXTEND_FOR_THREE)
+            if (currentState == EXTENDED_FAST ||
+                currentState == EXTENDED_SLOW ||
+                currentState == EXTEND_FOR_THREE ||
+                currentState == EXTEND_FOR_PJ_DEPLOY)
             {
                 pto.setExtended(false);
             }
@@ -126,22 +130,26 @@ namespace devils
             } */
 
             // Otherwise, go to the current state
+            auto expectedPosition = getExpectedPosition();
             switch (currentState)
             {
             case EXTENDED_FAST:
-                moveToPosition(EXPECTED_POSITION_UP, FAST_SPEED);
+                moveToPosition(expectedPosition, FAST_SPEED);
                 break;
             case EXTENDED_SLOW:
-                moveToPosition(EXPECTED_POSITION_UP, SLOW_SPEED);
+                moveToPosition(expectedPosition, SLOW_SPEED);
                 break;
             case EXTENDED_SLOWER:
-                moveToPosition(EXPECTED_POSITION_UP, SLOWER_SPEED);
+                moveToPosition(expectedPosition, SLOWER_SPEED);
                 break;
             case RETRACTED:
-                moveToPosition(EXPECTED_POSITION_DOWN, RETRACTION_SPEED);
+                moveToPosition(expectedPosition, RETRACTION_SPEED);
                 break;
             case EXTEND_FOR_THREE:
-                moveToPosition(EXPECTED_POSITION_EXTEND_FOR_THREE, FAST_SPEED);
+                moveToPosition(expectedPosition, FAST_SPEED);
+                break;
+            case EXTEND_FOR_PJ_DEPLOY:
+                moveToPosition(expectedPosition, FAST_SPEED);
                 break;
             case STOP:
                 moveStick(0);
@@ -213,6 +221,50 @@ namespace devils
         }
 
         /**
+         * Checks if the stick is currently busy moving to a position. 
+         * This is determined by checking if the current position of the stick is within a certain tolerance of the expected position based on the current state. 
+         * If the position cannot be determined, we assume the stick is busy.
+         * @return True if the stick is busy, false otherwise.
+         */
+        bool getIsBusy()
+        {
+            const auto stickPosition = getStickPosition();
+            const auto targetPosition = getExpectedPosition();
+            if (!stickPosition.isSuccess())
+                return true;
+
+            const float positionError = std::abs(stickPosition - targetPosition);
+            if (positionError > POSITION_TOLERANCE)
+                return true;
+            return false;
+        }
+
+        /**
+         * Gets the expected position of the stick based on the current state. 
+         * This is used for logging and debugging purposes to 
+         * know where we expect the stick to be based on the current state.
+         * @return The expected position of the stick in ticks based on the current state. If the state is unknown, returns 0.0f.
+         */
+        float getExpectedPosition()
+        {
+            switch (currentState)
+            {
+                case EXTENDED_FAST:
+                case EXTENDED_SLOW:
+                case EXTENDED_SLOWER:
+                    return EXPECTED_POSITION_UP;
+                case RETRACTED:
+                    return EXPECTED_POSITION_DOWN;
+                case EXTEND_FOR_THREE:
+                    return EXPECTED_POSITION_EXTEND_FOR_THREE;
+                case EXTEND_FOR_PJ_DEPLOY:
+                    return EXPECTED_POSITION_UP_DEPLOY;
+                default:
+                    return 0.0f;
+            };
+        }
+
+        /**
          * Moves the stick to a target position using a PID controller. The speed of the movement is limited by the `speed` parameter. If the PTO is extended, the stick will not move.
          * @param targetPosition - The target position for the stick to move to (in ticks). This should be set based on the expected positions of the stick when fully extended and fully retracted.
          * @param speed - The maximum speed at which the stick should move (from 0 to 1). This limits the output of the PID controller to prevent the stick from moving too fast.
@@ -273,8 +325,13 @@ namespace devils
         static constexpr float EXPECTED_POSITION_DOWN = -10.0f;
         // Expected position of the stick when fully extended (in ticks)
         static constexpr float EXPECTED_POSITION_UP = -830.0f;
+        
+        // Expected position of the stick when extended for pj's deploy
+        static constexpr float EXPECTED_POSITION_UP_DEPLOY = -674.0f;
         // Expected position of the stick when extended for three (in ticks)
         static constexpr float EXPECTED_POSITION_EXTEND_FOR_THREE = -450.0f;
+
+        static constexpr float POSITION_TOLERANCE = 20.0f; // ticks
 
         // Hardware
         ADIPneumaticGroup& pto;
