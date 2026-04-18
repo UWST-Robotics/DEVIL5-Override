@@ -21,7 +21,7 @@ namespace devils
             odometry->start();
 
             toastDisplay->start();
-            devilBotsDisplay->start();
+            // devilBotsDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
                 .deadzone = 0.1f, // <-- Minimum input to register
@@ -41,8 +41,8 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
-            // MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
+            //SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
+            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
         }
 
         void opcontrol() override
@@ -175,7 +175,7 @@ namespace devils
             DEAD_WHEEL_RADIUS);
 
         // Displays
-        std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         // AutoPickerDisplay autoPickerDisplay = AutoPickerDisplay(
         //     "PJ Robot",
         //     {

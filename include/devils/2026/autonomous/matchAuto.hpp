@@ -43,44 +43,80 @@ namespace devils
             auto autoBuilder = AutoBuilder(chassis, odom);
 
             if (isRight)
+            {
                 autoBuilder.setPoseTransformer(std::make_unique<MirrorTransformY>());
-
-            autoBuilder.jumpTo({-46, -14, Units::degToRad(180)});
+                autoBuilder.jumpTo({-46, -14, Units::degToRad(0)});
+            }
+            else
+                autoBuilder.jumpTo({-46, -14, Units::degToRad(180)});
             tube.setTubeRaised(true);
 
 
             // 0. Deploy PJ
-            if (isRight)
+            /*if (isRight)
             {
                 tube.setTubeRaised(true);
                 wings.setWingRaised(true);
-            }
+            } */
 
             // Drop off at center goal
             stick.homeStick();
+            //deploy pj
             if (isRight)
-                autoBuilder.driveTo({-19.5f, -16, Units::degToRad(235)})->startSync();
+            {
+                tube.setTubeRaised(true);
+                //opwn hood later
+                //stick.setState(StickSystem::State::EXTEND_FOR_PJ_DEPLOY);
+            }  
+            //drives to center goal, pj faces forwards
+            if (isRight)
+                autoBuilder.driveTo({-14.5f, -11, Units::degToRad(45)})->startSync();
             else
                 autoBuilder.driveTo({-15, -13, Units::degToRad(225)})->startSync();
-            tube.setTubeRaised(false);
-            wings.setWingRaised(false);
-            stick.setState(StickSystem::State::EXTENDED_SLOW);
-            pros::delay(1000);
+            stick.setState(StickSystem::State::RETRACTED);
+            
+            //score center goal, pj uses intake
+            if (isRight)
+            {
+                intake.setArmsExtended(true);
+                intakeAutoStep->setTargetSpeed(-1.0f);
+                pros::delay(1000);
+            }
+            else
+            {
+                tube.setTubeRaised(false);
+                wings.setWingRaised(false);
+                stick.setState(StickSystem::State::EXTENDED_SLOW);
+                pros::delay(1000);
+            }
 
             // Move to loader
             stick.setState(StickSystem::State::RETRACTED);
             intake.setArmsExtended(true);
+            if (isRight)
+            {
+                stick.setState(StickSystem::State::EXTENDED_FAST);
+                pros::delay(500);
+                tube.setTubeRaised(false);
+                autoBuilder.driveTo({-19.5, -16, Units::degToRad(45)})->startSync();
+                stick.setState(StickSystem::State::RETRACTED);
+                tube.setTubeRaised(true);
+            }
             const auto backupFromGoalStep = autoBuilder.driveTo({-50, -42, Units::degToRad(180)}, 40.0f)->start();
+
             pros::delay(100);
+            intakeAutoStep->setTargetSpeed(1.0f);
+            autoBuilder.rotateTo(180)->startSync();
             tube.setTubeRaised(true);
             backupFromGoalStep->join();
-            autoBuilder.driveTo({-62, isRight ? -41 : -42.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-62, isRight ? -42 : -44.0f, Units::degToRad(180)})->startSync();
 
             // Wiggle while picking up from loader
             wiggle(chassis, 3.5f, 0.2f);
 
             // Move to long goal
-            autoBuilder.driveTo({-37, isRight ? -40.5f : -42.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.rotateTo(180)->startSync();
+            autoBuilder.driveTo({-37, isRight ? -42.5f : -42.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
 
             // Spit blocks
@@ -97,7 +133,7 @@ namespace devils
             wiggle(chassis, 3.5f, 0.2f);
 
             // Score in long goal
-            autoBuilder.driveTo({-37, isRight ? -40.5f : -43.5f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-37, isRight ? -42.5f : -43.5f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick);
             stick.setState(StickSystem::State::EXTENDED_FAST);
 

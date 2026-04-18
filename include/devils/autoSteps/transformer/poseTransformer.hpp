@@ -19,7 +19,7 @@ namespace devils
         virtual Pose transform(Pose pose) = 0;
     };
 
-    /// @brief Transforms the robot's pose by mirroring it over the x-axis
+    /// @brief Transforms the robot's pose by mirroring it over the y-axis
     class MirrorTransformX : public PoseTransformer
     {
         Pose transform(const Pose pose) override
@@ -31,7 +31,7 @@ namespace devils
         }
     };
 
-    /// @brief Transforms the robot's pose by mirroring it over the y-axis
+    /// @brief Transforms the robot's pose by mirroring it over the x-axis
     class MirrorTransformY : public PoseTransformer
     {
         Pose transform(const Pose pose) override
