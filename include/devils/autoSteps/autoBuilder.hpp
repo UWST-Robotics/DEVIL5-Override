@@ -100,6 +100,18 @@ namespace devils
         }
 
         /**
+         * Sets the robot's current position to a given pose but keeps the current rotation. Useful for resetting odometry or "teleporting" the robot during autonomous without changing its heading.
+         * @param pose - The pose to set the robot to (only x and y will be used)
+         */
+        void jumpToWithoutRotation(const Pose& pose) const
+        {
+            const auto transformedPose = tryTransformPose(pose);
+            const auto currentPose = odom.getPose();
+
+            odom.setPose({transformedPose.x, transformedPose.y, currentPose.rotation});
+        }
+
+        /**
          * Assigns a transformer to the auto builder to transform all poses used in the builder.
          * @param newTransformer - The new transformer to use. Can be `nullptr` to remove the current transformer.
          */

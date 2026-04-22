@@ -52,7 +52,7 @@ namespace devils
             }
 
             // 1. Pickup N Blocks
-            autoBuilder.driveTo({-6, -16, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({-6, -18, Units::degToRad(0)})->startSync();
 
             tube.setTubeRaised(false);
             wings.setWingRaised(false);
@@ -68,13 +68,11 @@ namespace devils
             // 2. Center Goal
             if (!isRight)
             {
-                auto step2 = autoBuilder.driveTo({-11, -22, Units::degToRad(0)})->start();
-                pros::delay(500);
+                autoBuilder.driveTo({-11, -20.5, Units::degToRad(0)})->startSync();
                 tube.setTubeRaised(true);
-                step2->join();
 
-                autoBuilder.rotateTo(230)->startSync();
-                autoBuilder.driveTo({-10, -18, Units::degToRad(230)})->startSync();
+                autoBuilder.rotateTo(220)->startSync();
+                //autoBuilder.driveTo({-10, -16, Units::degToRad(220)})->startSync();
 
                 tube.setTubeRaised(false);
                 pros::delay(200);
@@ -103,27 +101,45 @@ namespace devils
                 intakeAutoStep->setTargetSpeed(1.0f);
 
                 autoBuilder.driveTo({-14, -21, Units::degToRad(0)})->startSync();
+                stick.setState(StickSystem::State::EXTENDED_FAST);
+                pros::delay(250);
+                tube.setTubeRaised(false);
+                //autoBuilder.driveTo({-19.5, -16, Units::degToRad(45)})->startSync();
+                pros::delay(400);
+                stick.setState(StickSystem::State::RETRACTED);
+                tube.setTubeRaised(true);
                 autoBuilder.rotateTo(230)->startSync();
             }
 
             // 3. NW Loader
-            intake.setArmsExtended(true);
-            autoBuilder.driveTo({-58.5f, -48, Units::degToRad(180)})->startSync();
-            MatchAuto::wiggle(chassis, 4.0f);
+            if (!isRight)
+            {
+                intake.setArmsExtended(true);
+                autoBuilder.driveTo({-58.5f, -49, Units::degToRad(180)})->startSync();
+                MatchAuto::wiggle(chassis, 4.0f);
+            }
+            else
+            {
+                intake.setArmsExtended(true);
+                autoBuilder.driveTo({-58.5f, -48, Units::degToRad(180)})->startSync();
+                MatchAuto::wiggle(chassis, 4.0f);
+            }
+
 
             // 4. N Long Goal
-            autoBuilder.driveTo({-33, isRight ? -62.0f : -61.0f, Units::degToRad(180)}, 40.0f)->startSync();
-            autoBuilder.driveTo({39, -60, Units::degToRad(180)})->startSync();
-            autoBuilder.driveTo({45, isRight ? -49 : -48.0f, Units::degToRad(360)}, 20.0f)->startSync();
-            autoBuilder.driveTo({33, isRight ? -49.5f : -48.0f, Units::degToRad(360)})->startSync();
+            autoBuilder.driveTo({-33, isRight ? -63.0f : -63.0f, Units::degToRad(180)}, 40.0f)->startSync();
+            autoBuilder.driveTo({39, -62, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({45, isRight ? -51 : -48.5f, Units::degToRad(360)}, 20.0f)->startSync();
+            autoBuilder.rotateTo(360)->startSync();
+            autoBuilder.driveTo({33, isRight ? -50.5f : -48.5f, Units::degToRad(360)})->startSync();
             scoreInLongGoal(chassis, stick);
 
             // 5. NE Loader
-            autoBuilder.driveTo({62, isRight ? -48.5f : -49.0f, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({62, isRight ? -49.0f : -51.0f, Units::degToRad(0)})->startSync();
             MatchAuto::wiggle(chassis, 4.0f);
 
             // 6. N Long Goal
-            autoBuilder.driveTo({34, isRight ? -50 : -49.0f, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({34, isRight ? -51 : -49.0f, Units::degToRad(0)})->startSync();
             scoreInLongGoal(chassis, stick);
             intake.setArmsExtended(false);
 
@@ -133,8 +149,8 @@ namespace devils
                 autoBuilder.driveTo({56, -42, Units::degToRad(0)})->startSync();
                 autoBuilder.driveTo({30, -28, Units::degToRad(0)}, 40.0f)->startSync();
                 autoBuilder.driveTo({-40, -38, Units::degToRad(0)}, 40.0f)->startSync();
-                autoBuilder.driveTo({-58, -22, Units::degToRad(-90)}, 20.0f)->startSync();
-                autoBuilder.driveTo({-59, -18, Units::degToRad(-90)})->startSync();
+                autoBuilder.driveTo({-56, -22, Units::degToRad(-90)}, 20.0f)->startSync();
+                autoBuilder.driveTo({-57, -18, Units::degToRad(-90)})->startSync();
 
                 intake.setArmsExtended(false);
                 tube.setTubeRaised(false);
@@ -179,11 +195,11 @@ namespace devils
                 chassis.stop();
 
                 pros::delay(1000);
-                autoBuilder.jumpTo({64, 32, Units::degToRad(-90)});
-                autoBuilder.driveTo({40, 40, Units::degToRad(45)})->startSync();
-                autoBuilder.driveTo({-40, 38, Units::degToRad(0)}, 40.0f)->startSync();
-                autoBuilder.driveTo({-60.5f, 20, Units::degToRad(90)}, 20.0f)->startSync();
-                autoBuilder.driveTo({-61.5f, 16, Units::degToRad(90)})->startSync();
+                autoBuilder.jumpToWithoutRotation({64, 32});
+                autoBuilder.driveTo({40, 38, Units::degToRad(45)})->startSync();
+                autoBuilder.driveTo({-40, 36, Units::degToRad(0)}, 40.0f)->startSync();
+                autoBuilder.driveTo({-62.0f, 20, Units::degToRad(90)}, 20.0f)->startSync();
+                autoBuilder.driveTo({-63.0f, 16, Units::degToRad(90)})->startSync();
 
                 // Align to park zone
                 chassis.move(-0.2f, 0, 0);
