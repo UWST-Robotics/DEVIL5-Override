@@ -165,6 +165,7 @@ namespace devils
      */
     class Controller : HardwareBase
     {
+        pros::controller_id_e_t port;
     public:
         Controller(const std::string& name, const pros::controller_id_e_t port)
             : HardwareBase(name, "Controller", controllerPortToString(port)),
@@ -187,7 +188,8 @@ namespace devils
               leftY(port, pros::E_CONTROLLER_ANALOG_LEFT_Y),
               leftX(port, pros::E_CONTROLLER_ANALOG_LEFT_X),
               rightY(port, pros::E_CONTROLLER_ANALOG_RIGHT_Y),
-              rightX(port, pros::E_CONTROLLER_ANALOG_RIGHT_X)
+              rightX(port, pros::E_CONTROLLER_ANALOG_RIGHT_X), 
+              port(port)
         {
         }
 
@@ -224,5 +226,19 @@ namespace devils
                 return "Unknown";
             }
         }
+
+    public:
+        /**
+         * Rumbles the controller with a given pattern.
+         * @param pattern The rumble pattern to use. This should be a string of '.' and '-' characters
+         */
+        void rumble(const std::string& pattern) const
+        {
+            pros::c::controller_rumble(port, pattern.c_str());
+        }
     };
+
+
+
+
 }

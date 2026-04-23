@@ -12,6 +12,9 @@ namespace devils
 {
     struct PJRobot : Robot
     {
+        //for rising edge detection
+        bool prevTubeInput = false;
+
         PJRobot()
         {
             imu.calibrate();
@@ -35,7 +38,7 @@ namespace devils
             mainController.rightY.setOptions(joystickOptions);
 
             mainController.up.setMode(ControllerButton::JUST_PRESSED);
-            mainController.right.setMode(ControllerButton::TOGGLED);
+            mainController.right.setMode(ControllerButton::JUST_PRESSED);
         }
 
         void autonomous() override
@@ -71,7 +74,7 @@ namespace devils
                 const bool stickSlowButton = mainController.r2;
 
                 const bool driveReverseButton = mainController.b; // Reverse controls
-                const bool ptoButton = mainController.up; // PTO extend/retract (for testing)
+                const bool ptoButton = mainController.right; // PTO extend/retract (for testing)
 
                 // Combine Left and Right X Joystick Inputs
                 const float combinedX = Math::largestMagnitude({leftX, rightX});
@@ -88,6 +91,7 @@ namespace devils
                 intake.runIntake(rightY);
                 intake.setArmsExtended(intakeArmExtendButton);
                 intake.setStickStalled(stick.checkStalled());
+                stick.rumbleIfStalled(mainController);
 
                 // Stick pneumatic defaults
                 if (ptoButton)
@@ -109,7 +113,9 @@ namespace devils
                 // else
                 //     wings.setWingRaised(wingExtendButton);
 
-                tube.setTubeRaised(tubeExtendButton);
+                if (tubeExtendButton && !prevTubeInput)
+                    tube.setTubeRaised(!tube.getTubeRaised());
+                prevTubeInput = tubeExtendButton;
                 //wings.setWingRaised(wingExtendButton);
 
 

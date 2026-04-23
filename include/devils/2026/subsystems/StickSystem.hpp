@@ -201,6 +201,12 @@ namespace devils
             return false;
         }
 
+        void rumbleIfStalled(Controller& mainController) const
+        {
+            if (checkStalled())
+                mainController.rumble("...");
+        }
+
         /**
          * Gets the current position of the stick.
          * This is done by checking the position of the stick motor encoders.
