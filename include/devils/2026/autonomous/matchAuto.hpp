@@ -79,7 +79,7 @@ namespace devils
             if (isRight)
             {
                 intake.setArmsExtended(true);
-                intakeAutoStep->setTargetSpeed(-.75f);
+                intakeAutoStep->setTargetSpeed(-.65f);
                 pros::delay(1000);
             }
             else
@@ -101,7 +101,7 @@ namespace devils
                 autoBuilder.driveTo({-19.5, -16, Units::degToRad(45)})->startSync();
                 stick.setState(StickSystem::State::RETRACTED);
                 tube.setTubeRaised(true);
-                const auto backupFromGoalStep = autoBuilder.driveTo({-50, -42, Units::degToRad(180)}, 40.0f)->start();
+                const auto backupFromGoalStep = autoBuilder.driveTo({-50, -45, Units::degToRad(180)}, 40.0f)->start();
                 pros::delay(100);
                 intakeAutoStep->setTargetSpeed(1.0f);
                 autoBuilder.rotateTo(180)->startSync();
@@ -137,14 +137,14 @@ namespace devils
             intakeAutoStep->setTargetSpeed(1.0f);
 
             // Move to loader
-            autoBuilder.driveTo({-60, isRight ? -42 : -43.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-60, isRight ? -43 : -43.0f, Units::degToRad(180)})->startSync();
             wiggle(chassis, 3.5f, 0.2f);
 
             // Score in long goal
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-37, isRight ? -43.0f : -44.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-37, isRight ? -44.0f : -44.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick);
-            stick.setState(StickSystem::State::EXTENDED_FAST);
+            stick.setState(StickSystem::State::EXTEND_FOR_THREE);
 
             // =====================================
             //     End of WIP Match Auto
