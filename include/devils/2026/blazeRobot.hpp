@@ -88,6 +88,7 @@ namespace devils
                 intake.runIntake(rightY);
                 intake.setArmsExtended(intakeArmExtendButton);
                 intake.setStickStalled(stick.checkStalled());
+                stick.rumbleIfStalled(mainController);
 
                 // Stick pneumatic defaults
                 if (ptoButton)
