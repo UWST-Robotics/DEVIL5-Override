@@ -124,7 +124,7 @@ namespace devils
 
             // Move to long goal
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-37, isRight ? -41.5f : -43.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-37, isRight ? -43.0f : -43.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
 
             // Spit blocks
@@ -137,12 +137,12 @@ namespace devils
             intakeAutoStep->setTargetSpeed(1.0f);
 
             // Move to loader
-            autoBuilder.driveTo({-60, isRight ? -41 : -43.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-60, isRight ? -42 : -43.0f, Units::degToRad(180)})->startSync();
             wiggle(chassis, 3.5f, 0.2f);
 
             // Score in long goal
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-37, isRight ? -42.5f : -44.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-37, isRight ? -43.0f : -44.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick);
             stick.setState(StickSystem::State::EXTENDED_FAST);
 
