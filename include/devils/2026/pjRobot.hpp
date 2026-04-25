@@ -73,6 +73,9 @@ namespace devils
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
 
+                const bool partnerA = partnerController.a;
+                const bool partnerB = partnerController.b;
+
                 const bool driveReverseButton = mainController.b; // Reverse controls
                 const bool ptoButton = mainController.right; // PTO extend/retract (for testing)
 
@@ -88,7 +91,15 @@ namespace devils
                 chassis.move(leftY * driveDirection, combinedX * 0.75f, 0);
 
                 // Intake controls
-                intake.runIntake(rightY);
+                if (std::abs(rightY) > 0.1) // <-- Stick Deadzone
+                    intake.runIntake(rightY);
+                else if (partnerA)
+                    intake.runIntake(1.0f);
+                else if (partnerB)
+                    intake.runIntake(-1.0f);
+                else
+                    intake.runIntake(rightY);
+
                 intake.setArmsExtended(intakeArmExtendButton);
                 intake.setStickStalled(stick.checkStalled());
                 stick.rumbleIfStalled(mainController);

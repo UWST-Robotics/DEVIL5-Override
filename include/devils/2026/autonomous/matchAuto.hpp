@@ -79,7 +79,7 @@ namespace devils
             if (isRight)
             {
                 intake.setArmsExtended(true);
-                intakeAutoStep->setTargetSpeed(-1.0f);
+                intakeAutoStep->setTargetSpeed(-.75f);
                 pros::delay(1000);
             }
             else
@@ -117,14 +117,14 @@ namespace devils
                 autoBuilder.rotateTo(180)->startSync();
                 tube.setTubeRaised(true);
             }
-            autoBuilder.driveTo({-62, isRight ? -42 : -43.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-62, isRight ? -43 : -43.0f, Units::degToRad(180)})->startSync();
 
             // Wiggle while picking up from loader
             wiggle(chassis, 3.5f, 0.2f);
 
             // Move to long goal
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-37, isRight ? -43.0f : -43.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-37, isRight ? -44.0f : -43.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
 
             // Spit blocks
