@@ -113,10 +113,14 @@ namespace devils
                 // else
                 //     wings.setWingRaised(wingExtendButton);
 
-                if (tubeExtendButton && !prevTubeInput)
-                    tube.setTubeRaised(!tube.getTubeRaised());
-                prevTubeInput = tubeExtendButton;
+                // if (tubeExtendButton && !prevTubeInput)
+                //     tube.setTubeRaised(!tube.getTubeRaised());
+                // prevTubeInput = tubeExtendButton;
                 //wings.setWingRaised(wingExtendButton);
+                if (tubeExtendButton)
+                    tube.setTubeRaised(true);
+                else
+                    tube.setTubeRaised(false);
 
 
 
