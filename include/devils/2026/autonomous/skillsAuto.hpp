@@ -9,6 +9,11 @@ namespace devils
     class SkillsAuto
     {
     public:
+        static void runEmergencyMode(IntakeSystem& intake) {
+            intake.runIntake(1.0f);
+            pros::delay(1000);
+        }
+
         static void run(TankChassis& chassis,
                         OdomSource& odom,
                         StickSystem& stick,
@@ -108,7 +113,7 @@ namespace devils
 
             // 3. NW Loader
             intake.setArmsExtended(true);
-            autoBuilder.driveTo({-58.5f, -48, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-58.5f, -44, Units::degToRad(180)})->startSync();
             MatchAuto::wiggle(chassis, 4.0f);
 
             // 4. N Long Goal

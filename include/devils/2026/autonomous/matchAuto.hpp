@@ -142,9 +142,9 @@ namespace devils
 
             // Score in long goal
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-37, isRight ? -44.0f : -44.0f, Units::degToRad(180)})->startSync();
-            scoreInLongGoal(chassis, stick);
-            stick.setState(StickSystem::State::EXTEND_FOR_THREE);
+            autoBuilder.driveTo({-37, isRight ? -43.0f : -44.0f, Units::degToRad(180)})->startSync();
+            scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
+            //stick.setState(StickSystem::State::EXTEND_FOR_THREE);
 
             // =====================================
             //     End of WIP Match Auto
