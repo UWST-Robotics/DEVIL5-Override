@@ -137,7 +137,7 @@ namespace devils
             intakeAutoStep->setTargetSpeed(1.0f);
 
             // Move to loader
-            autoBuilder.driveTo({-60, isRight ? -43 : -43.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-60, isRight ? -42.5 : -43.0f, Units::degToRad(180)})->startSync();
             wiggle(chassis, 3.5f, 0.2f);
 
             // Score in long goal
