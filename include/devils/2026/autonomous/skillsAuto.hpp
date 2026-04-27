@@ -101,8 +101,8 @@ namespace devils
                 tube.setTubeRaised(true);
                 step2->join();
 
-                autoBuilder.rotateTo(45)->startSync();
-                autoBuilder.driveTo({-12.5f, -16, Units::degToRad(45)})->startSync();
+                autoBuilder.rotateTo(47)->startSync();
+                autoBuilder.driveTo({-12.5f, -16, Units::degToRad(47)})->startSync();
                 intakeAutoStep->setTargetSpeed(-0.9f);
                 pros::delay(2500);
                 intakeAutoStep->setTargetSpeed(1.0f);
