@@ -27,6 +27,8 @@ namespace devils
             TrajectoryConstraints::defaultConstraints = TrajectoryConstraints{
                 .maxVelocity = 50.0f
             };
+            auto slowSpeed = TrajectoryConstraints{.maxVelocity = 15.0f};
+            TrajectoryConstraints::defaultConstraints = slowSpeed;
 
             const auto stickAutoStep = std::make_shared<StickAutoStep>(stick);
             stickAutoStep->start();
@@ -117,14 +119,14 @@ namespace devils
                 autoBuilder.rotateTo(180)->startSync();
                 tube.setTubeRaised(true);
             }
-            autoBuilder.driveTo({-62, isRight ? -43 : -43.0f, Units::degToRad(180)})->startSync();
-
+            autoBuilder.driveTo({-62, isRight ? -41 : -43.0f, Units::degToRad(180)})->startSync();
             // Wiggle while picking up from loader
-            wiggle(chassis, 3.5f, 0.2f);
+            //wiggle(chassis, 3.5f, 0.2f);
+            pros::delay(1500);
 
             // Move to long goal
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-37, isRight ? -44.0f : -43.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-32, isRight ? -42.0f : -43.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
 
             // Spit blocks
@@ -137,12 +139,13 @@ namespace devils
             intakeAutoStep->setTargetSpeed(1.0f);
 
             // Move to loader
-            autoBuilder.driveTo({-60, isRight ? -42.5 : -43.0f, Units::degToRad(180)})->startSync();
-            wiggle(chassis, 3.5f, 0.2f);
+            autoBuilder.driveTo({-61.5f, isRight ? -41 : -43.0f, Units::degToRad(180)})->startSync();
+            //wiggle(chassis, 3.5f, 0.2f);
+            pros::delay(2000);
 
             // Score in long goal
             autoBuilder.rotateTo(180)->startSync();
-            autoBuilder.driveTo({-37, isRight ? -43.0f : -44.0f, Units::degToRad(180)})->startSync();
+            autoBuilder.driveTo({-32, isRight ? -42.0f : -44.0f, Units::degToRad(180)})->startSync();
             scoreInLongGoal(chassis, stick, StickSystem::State::EXTEND_FOR_THREE);
             //stick.setState(StickSystem::State::EXTEND_FOR_THREE);
 
