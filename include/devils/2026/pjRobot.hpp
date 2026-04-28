@@ -79,16 +79,13 @@ namespace devils
                 const bool driveReverseButton = mainController.b; // Reverse controls
                 const bool ptoButton = mainController.right; // PTO extend/retract (for testing)
 
-                // Combine Left and Right X Joystick Inputs
-                const float combinedX = Math::largestMagnitude({leftX, rightX});
-
                 // Reverse the drive
                 if (std::abs(leftY) < MAX_ROBOT_SPEED_TO_SWITCH_DIRECTION)
                     isDriveReversed = driveReverseButton;
                 const auto driveDirection = isDriveReversed ? -1.0f : 1.0f;
 
                 // Drive the robot with the left joystick
-                chassis.move(leftY * driveDirection, combinedX * 0.75f, 0);
+                chassis.move(leftY * driveDirection, leftX * 0.75f, 0);
 
                 // Intake controls
                 if (std::abs(rightY) > 0.1) // <-- Stick Deadzone
