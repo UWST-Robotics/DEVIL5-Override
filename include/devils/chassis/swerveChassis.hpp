@@ -21,18 +21,23 @@ namespace devils
          * @param frontRight The swerve module for the front right wheel.
          * @param backLeft The swerve module for the back left wheel.
          * @param backRight The swerve module for the back right wheel.
+         * @param length The length of the robot in inches.
+         * @param width The width of the robot in inches.
          */
         SwerveChassis(
             SwerveModule& frontLeft,
             SwerveModule& frontRight,
             SwerveModule& backLeft,
-            SwerveModule& backRight)
+            SwerveModule& backRight, float length, float width)
             : frontLeft(frontLeft),
               frontRight(frontRight),
               backLeft(backLeft),
-              backRight(backRight)
+              backRight(backRight),
+              length(length),
+              width(width)
         {
-            
+            // Calculate the distance from the center of the robot to each wheel using the Pythagorean theorem
+            R = std::sqrt((length * length) + (width * width));
         }
 
         /**
@@ -46,7 +51,32 @@ namespace devils
             const float turn,
             const float strafe) override
         {
-            
+            // Calculate the speed and angle for each wheel based on the forward, turn, and strafe inputs using swerve drive kinematics
+            float A = strafe - turn * (length / R);
+            float B = strafe + turn * (length / R);
+            float C = strafe - turn * (width / R);
+            float D = strafe + turn * (width / R);
+
+            // Calculate the speed and angle for each wheel using the variables calulated above
+            float frontLeftSpeed = std::sqrt((B * B) + (D * D));
+            float frontRightSpeed = std::sqrt((B * B) + (C * C));
+            float backLeftSpeed = std::sqrt((A * A) + (D * D));
+            float backRightSpeed = std::sqrt((A * A) + (C * C));
+
+            float frontLeftAngle = std::atan2(B, D) * 180 / M_PI;
+            float frontRightAngle = std::atan2(B, C) * 180 / M_PI;
+            float backLeftAngle = std::atan2(A, D) * 180 / M_PI;
+            float backRightAngle = std::atan2(A, C) * 180 / M_PI;
+
+            // TODO - Normalize the wheel speeds if any of them are greater than 1
+            // TODO - Add field-oriented control using the IMU to adjust the angles based on the robot's heading
+            // TODO - Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
+
+            // Move each wheel to the calculated angle and speed
+            frontLeft.move(frontLeftAngle, frontLeftSpeed);
+            frontRight.move(frontRightAngle, frontRightSpeed);
+            backLeft.move(backLeftAngle, backLeftSpeed);
+            backRight.move(backRightAngle, backRightSpeed);
         }
 
         /**
@@ -63,6 +93,9 @@ namespace devils
         SwerveModule& frontRight;
         SwerveModule& backLeft;
         SwerveModule& backRight;
+        float length;
+        float width;
+        float R;
     };
 
     /**

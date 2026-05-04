@@ -33,8 +33,8 @@ namespace devils
             odometry->setTicksPerRevolution(300);
 
             //brake modes
-            claw.setBrakeMode(MOTOR_BRAKE_HOLD); // Set the claw motors to hold position when no power is applied
-            dr4b.setBrakeMode(MOTOR_BRAKE_HOLD); // Set the dr4b motors to hold position when no power is applied
+            claw.setBrakeMode(MOTOR_BRAKE_BRAKE); // Set the claw motors to hold position when no power is applied
+            dr4b.setBrakeMode(MOTOR_BRAKE_BRAKE); // Set the dr4b motors to hold position when no power is applied
         }
 
         void autonomous() override
@@ -52,24 +52,31 @@ namespace devils
                 const float rightX = mainController.rightX * 0.5f;
 
                 //stick movement buttons, will replace later with macros to move stick to preset rotations
-                const bool dr4bButtonUp = mainController.r1; //temp button to move stick
-                const bool dr4bButtonDown = mainController.r2; //temp button to move stick
+                const bool dr4bButtonUp = mainController.x; //temp button to move stick
+                const bool dr4bButtonDown = mainController.b; //temp button to move stick
                 const bool clawButtonOpen = mainController.l1; //temp button to open claw
                 const bool clawButtonClose = mainController.l2; //temp button to close claw
+                const bool armButtonUp = mainController.r1; //temp button to move arm up
+                const bool armButtonDown = mainController.r2; //temp button to move arm down
 
-                if (dr4bButtonUp) dr4b.move(0.7f);
-                else if (dr4bButtonDown) dr4b.move(-0.5f);
-                else dr4b.move(0.0f);
+                // if (dr4bButtonUp) dr4b.move(1.0f);
+                // else if (dr4bButtonDown) dr4b.move(-1.0f);
+                // else dr4b.move(0.0f);
+                dr4b.move(rightY);
 
-                if (clawButtonOpen) claw.move(1.0f);
-                else if (clawButtonClose) claw.move(-1.0f);
+                if (clawButtonOpen) claw.move(-0.25f);
+                else if (clawButtonClose) claw.move(1.0f);
                 else claw.move(0.0f);
 
+                if (armButtonUp) arm.move(0.7f);
+                else if (armButtonDown) arm.move(-0.7f);
+                else arm.move(0.0f);
+
                 // Combine Left and Right X Joystick Inputs
-                const float combinedX = Math::largestMagnitude({leftX, rightX});
+                //const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Drive normally
-                chassis.move(leftY, combinedX * 0.5f, 0);
+                chassis.move(leftY, leftX * 0.5f, 0);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -81,11 +88,11 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
-        SmartMotorGroup dr4b = SmartMotorGroup("DR4B", {-6, 5});
-        SmartMotorGroup claw = SmartMotorGroup("Claw", {-4});
-        SmartMotorGroup arm = SmartMotorGroup("Arm", {7});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17, 18, -19, 20});
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-11, 12, -13, 14, -15});
+        SmartMotorGroup dr4b = SmartMotorGroup("DR4B", {-7, 9});
+        SmartMotorGroup claw = SmartMotorGroup("Claw", {-2});
+        SmartMotorGroup arm = SmartMotorGroup("Arm", {1});
         InertialSensor imu = InertialSensor("IMU", 1);
 
 
