@@ -14,6 +14,7 @@
 #include "chassis/hDriveChassis.hpp"
 #include "chassis/xDriveChassis.hpp"
 #include "chassis/dummyChassis.hpp"
+#include "chassis/swerveChassis.hpp"
 
 // Hardware
 #include "hardware/inertialSensor.hpp"

@@ -134,6 +134,26 @@ namespace devils
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {10, -9, 8, -7, 6});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-1, 2, -3, 4, -5});
 
+        // Swerve Modules
+        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
+        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
+        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {3});
+        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {4});
+        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {5});
+        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
+        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+
+        HallEffectEncoder frontLeftEncoder = HallEffectEncoder("FrontLeftEncoder");
+        HallEffectEncoder frontRightEncoder = HallEffectEncoder("FrontRightEncoder");
+        HallEffectEncoder backLeftEncoder = HallEffectEncoder("BackLeftEncoder");
+        HallEffectEncoder backRightEncoder = HallEffectEncoder("BackRightEncoder");
+        
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder);
+
         SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-20});
         SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {19});
 
@@ -153,6 +173,9 @@ namespace devils
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
+
+        SwerveChassis swerveChassis = SwerveChassis(frontLeftModule, frontRightModule, backLeftModule, backRightModule, 15.0, 15.0);
+
         IntakeSystem intake = IntakeSystem(intakePnematics, sideRollers, topRoller);
         StickSystem stick = StickSystem(
             ptoPnematics,
