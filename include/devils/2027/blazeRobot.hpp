@@ -83,7 +83,7 @@ namespace devils
 
                 // Drive the robot with the left joystick
                 chassis.move(leftY * driveDirection, combinedX * 0.75f, 0);
-
+                
                 // Intake controls
                 intake.runIntake(rightY);
                 intake.setArmsExtended(intakeArmExtendButton);
@@ -119,7 +119,7 @@ namespace devils
             // Stop the robot
             chassis.stop();
 
-            // Stop autonomous
+            // Stop autonomousMain
             AutoStep::stopAll();
         }
 

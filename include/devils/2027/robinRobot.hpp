@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../devils.h"
+#include "./subsystems/clawSystem.hpp"
 
 namespace devils
 {
@@ -32,9 +33,9 @@ namespace devils
             odometry->useIMU(&imu);
             odometry->setTicksPerRevolution(300);
 
-            //brake modes
-            claw.setBrakeMode(MOTOR_BRAKE_BRAKE); // Set the claw motors to hold position when no power is applied
-            dr4b.setBrakeMode(MOTOR_BRAKE_BRAKE); // Set the dr4b motors to hold position when no power is applied
+            mainController.l1.setMode(ControllerButton::TOGGLED);
+            mainController.l2.setMode(ControllerButton::TOGGLED);
+            mainController.x.setMode(ControllerButton::TOGGLED);
         }
 
         void autonomous() override
@@ -51,29 +52,17 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                //stick movement buttons, will replace later with macros to move stick to preset rotations
-                const bool dr4bButtonUp = mainController.x; //temp button to move stick
-                const bool dr4bButtonDown = mainController.b; //temp button to move stick
-                const bool clawButtonOpen = mainController.l1; //temp button to open claw
-                const bool clawButtonClose = mainController.l2; //temp button to close claw
-                const bool armButtonUp = mainController.r1; //temp button to move arm up
-                const bool armButtonDown = mainController.r2; //temp button to move arm down
+                const bool liftButton = mainController.r1; //temp button to move lift
+                const bool clawButton = mainController.l1; //temp button to open/close claw
+                const bool doorButton = mainController.x; //temp button to close door
+                const bool clawFlipButton = mainController.l2; //temp button to flip claw
 
-                // if (dr4bButtonUp) dr4b.move(1.0f);
-                // else if (dr4bButtonDown) dr4b.move(-1.0f);
-                // else dr4b.move(0.0f);
-                dr4b.move(rightY);
+                intake.move(rightY);
 
-                if (clawButtonOpen) claw.move(-0.25f);
-                else if (clawButtonClose) claw.move(1.0f);
-                else claw.move(0.0f);
-
-                if (armButtonUp) arm.move(0.7f);
-                else if (armButtonDown) arm.move(-0.7f);
-                else arm.move(0.0f);
-
-                // Combine Left and Right X Joystick Inputs
-                //const float combinedX = Math::largestMagnitude({leftX, rightX});
+                claw.setClawClosed(clawButton);
+                claw.setDoorClosed(doorButton);
+                claw.setClawFlipped(clawFlipButton);
+                liftPneumatics.setExtended(liftButton);
 
                 // Drive normally
                 chassis.move(leftY, leftX * 0.5f, 0);
@@ -88,16 +77,19 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17, 18, -19, 20});
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-11, 12, -13, 14, -15});
-        SmartMotorGroup dr4b = SmartMotorGroup("DR4B", {-7, 9});
-        SmartMotorGroup claw = SmartMotorGroup("Claw", {-2});
-        SmartMotorGroup arm = SmartMotorGroup("Arm", {1});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17});
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-14, 15});
+        SmartMotorGroup intake = SmartMotorGroup("Intake", {8, -9}); //Main intake first, floating roller second (reversed)
+        ADIPneumaticGroup clawPneumatics = ADIPneumaticGroup("ClawPneumatics", {'A'}, false);
+        ADIPneumaticGroup clawFlipPneumatics = ADIPneumaticGroup("ClawFlipPneumatics", {'B'}, false);
+        ADIPneumaticGroup doorPneumatics = ADIPneumaticGroup("DoorPneumatics", {'C'}, false);
+        ADIPneumaticGroup liftPneumatics = ADIPneumaticGroup("LiftPneumatics", {'D'}, false);
         InertialSensor imu = InertialSensor("IMU", 1);
 
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
+        ClawSystem claw = ClawSystem(clawPneumatics, clawFlipPneumatics, doorPneumatics);
 
         // Auto
         std::shared_ptr<TankChassisOdom> odometry = std::make_shared<TankChassisOdom>(chassis, 1.375, 11);
