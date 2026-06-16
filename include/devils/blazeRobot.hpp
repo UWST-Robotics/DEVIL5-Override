@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../devils.h"
+#include "./devils.h"
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
@@ -10,12 +10,9 @@
 
 namespace devils
 {
-    struct PJRobot : Robot
+    struct BlazeRobot : Robot
     {
-        //for rising edge detection
-        bool prevTubeInput = false;
-
-        PJRobot()
+        BlazeRobot()
         {
             imu.calibrate();
 
@@ -23,8 +20,8 @@ namespace devils
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
 
+            devilBotsDisplay->start();
             toastDisplay->start();
-            // devilBotsDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
                 .deadzone = 0.1f, // <-- Minimum input to register
@@ -38,14 +35,14 @@ namespace devils
             mainController.rightY.setOptions(joystickOptions);
 
             mainController.up.setMode(ControllerButton::JUST_PRESSED);
-            mainController.right.setMode(ControllerButton::JUST_PRESSED);
+            mainController.right.setMode(ControllerButton::TOGGLED);
         }
 
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            //SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
-            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
+            //SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, false);
+            MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, false);
         }
 
         void opcontrol() override
@@ -73,11 +70,11 @@ namespace devils
                 const bool stickFastButton = mainController.r1;
                 const bool stickSlowButton = mainController.r2;
 
-                const bool partnerA = partnerController.a;
-                const bool partnerB = partnerController.b;
-
                 const bool driveReverseButton = mainController.b; // Reverse controls
-                const bool ptoButton = mainController.right; // PTO extend/retract (for testing)
+                const bool ptoButton = mainController.up; // PTO extend/retract (for testing)
+
+                // Combine Left and Right X Joystick Inputs
+                const float combinedX = Math::largestMagnitude({leftX, rightX});
 
                 // Reverse the drive
                 if (std::abs(leftY) < MAX_ROBOT_SPEED_TO_SWITCH_DIRECTION)
@@ -85,18 +82,10 @@ namespace devils
                 const auto driveDirection = isDriveReversed ? -1.0f : 1.0f;
 
                 // Drive the robot with the left joystick
-                chassis.move(leftY * driveDirection, leftX * 0.75f, 0);
-
+                chassis.move(leftY * driveDirection, combinedX * 0.75f, 0);
+                
                 // Intake controls
-                if (std::abs(rightY) > 0.1) // <-- Stick Deadzone
-                    intake.runIntake(rightY);
-                else if (partnerA)
-                    intake.runIntake(1.0f);
-                else if (partnerB)
-                    intake.runIntake(-1.0f);
-                else
-                    intake.runIntake(rightY);
-
+                intake.runIntake(rightY);
                 intake.setArmsExtended(intakeArmExtendButton);
                 intake.setStickStalled(stick.checkStalled());
                 stick.rumbleIfStalled(mainController);
@@ -116,21 +105,9 @@ namespace devils
                 stick.moveStick();
 
                 wings.setWingRaised(tube.getTubeRaised() == wingExtendButton);
-                // if (!tube.getTubeRaised())
-                //     wings.setWingRaised(!wingExtendButton);
-                // else
-                //     wings.setWingRaised(wingExtendButton);
-
-                // if (tubeExtendButton && !prevTubeInput)
-                //     tube.setTubeRaised(!tube.getTubeRaised());
-                // prevTubeInput = tubeExtendButton;
-                //wings.setWingRaised(wingExtendButton);
-                if (tubeExtendButton)
-                    tube.setTubeRaised(true);
-                else
-                    tube.setTubeRaised(false);
-
-
+                
+                tube.setTubeRaised(tubeExtendButton);
+                
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -142,7 +119,7 @@ namespace devils
             // Stop the robot
             chassis.stop();
 
-            // Stop autonomous
+            // Stop autonomousMain
             AutoStep::stopAll();
         }
 
@@ -156,6 +133,27 @@ namespace devils
         // Hardware
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {10, -9, 8, -7, 6});
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-1, 2, -3, 4, -5});
+
+        // Swerve Modules
+        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
+        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
+        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {3});
+        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {4});
+        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {5});
+        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
+        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+
+        HallEffectEncoder frontLeftEncoder = HallEffectEncoder("FrontLeftEncoder");
+        HallEffectEncoder frontRightEncoder = HallEffectEncoder("FrontRightEncoder");
+        HallEffectEncoder backLeftEncoder = HallEffectEncoder("BackLeftEncoder");
+        HallEffectEncoder backRightEncoder = HallEffectEncoder("BackRightEncoder");
+        
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder);
+        
 
         SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-20});
         SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {19});
@@ -176,6 +174,9 @@ namespace devils
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
+
+        SwerveChassis swerveChassis = SwerveChassis(frontLeftModule, frontRightModule, backLeftModule, backRightModule, 15.0, 15.0);
+
         IntakeSystem intake = IntakeSystem(intakePnematics, sideRollers, topRoller);
         StickSystem stick = StickSystem(
             ptoPnematics,
@@ -193,13 +194,7 @@ namespace devils
             DEAD_WHEEL_RADIUS);
 
         // Displays
-        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
-        // AutoPickerDisplay autoPickerDisplay = AutoPickerDisplay(
-        //     "PJ Robot",
-        //     {
-        //         AutoPickerDisplay::Routine{.id = 0, .displayName = "Match Auto", .requiresAllianceColor = false},
-        //         AutoPickerDisplay::Routine{.id = 1, .displayName = "Skills Auto", .requiresAllianceColor = false}
-        //     });
+        std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
     };
 }

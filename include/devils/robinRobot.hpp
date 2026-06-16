@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../devils.h"
+#include "./devils.h"
+#include "./subsystems/clawSystem.hpp"
 
 namespace devils
 {
@@ -10,7 +11,7 @@ namespace devils
     struct RobinRobot : Robot
     {
         /**
-         * Creates a new instance of Blaze.
+         * Creates a new instance of Robin.
          */
         RobinRobot()
         {
@@ -31,6 +32,10 @@ namespace devils
             // Configue odometry options
             odometry->useIMU(&imu);
             odometry->setTicksPerRevolution(300);
+
+            mainController.l1.setMode(ControllerButton::TOGGLED);
+            mainController.l2.setMode(ControllerButton::TOGGLED);
+            mainController.x.setMode(ControllerButton::TOGGLED);
         }
 
         void autonomous() override
@@ -47,21 +52,20 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                //stick movement buttons, will replace later with macros to move stick to preset rotations
-                const bool stickScoreButton = mainController.r1; //temp button to move stick
-                const bool stickResetButton = mainController.r2; //temp button to move stick
+                const bool liftButton = mainController.r1; //temp button to move lift
+                const bool clawButton = mainController.l1; //temp button to open/close claw
+                const bool doorButton = mainController.x; //temp button to close door
+                const bool clawFlipButton = mainController.l2; //temp button to flip claw
 
-                if (stickScoreButton) stick.move(0.7f);
-                else if (stickResetButton) stick.move(-0.5f);
-                else stick.move(0.0f);
+                intake.move(rightY);
 
-                floatingRollers.move(rightY);
-
-                // Combine Left and Right X Joystick Inputs
-                const float combinedX = Math::largestMagnitude({leftX, rightX});
+                claw.setClawClosed(clawButton);
+                claw.setDoorClosed(doorButton);
+                claw.setClawFlipped(clawFlipButton);
+                liftPneumatics.setExtended(liftButton);
 
                 // Drive normally
-                chassis.move(leftY, combinedX * 0.5f, 0);
+                chassis.move(leftY, leftX * 0.5f, 0);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(20);
@@ -73,14 +77,19 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {16, -17, 18, -19, 20});
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-11, 12, -13, 14, -15});
-        SmartMotorGroup floatingRollers = SmartMotorGroup("FloatingRoller", {-6});
-        SmartMotorGroup stick = SmartMotorGroup("Stick", {-4});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17});
+        SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-14, 15});
+        SmartMotorGroup intake = SmartMotorGroup("Intake", {8, -9}); //Main intake first, floating roller second (reversed)
+        ADIPneumaticGroup clawPneumatics = ADIPneumaticGroup("ClawPneumatics", {'A'}, false);
+        ADIPneumaticGroup clawFlipPneumatics = ADIPneumaticGroup("ClawFlipPneumatics", {'B'}, false);
+        ADIPneumaticGroup doorPneumatics = ADIPneumaticGroup("DoorPneumatics", {'C'}, false);
+        ADIPneumaticGroup liftPneumatics = ADIPneumaticGroup("LiftPneumatics", {'D'}, false);
         InertialSensor imu = InertialSensor("IMU", 1);
+
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
+        ClawSystem claw = ClawSystem(clawPneumatics, clawFlipPneumatics, doorPneumatics);
 
         // Auto
         std::shared_ptr<TankChassisOdom> odometry = std::make_shared<TankChassisOdom>(chassis, 1.375, 11);

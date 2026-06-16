@@ -9,6 +9,44 @@
 namespace devils
 {
     /**
+     * Represents a single swerve module, which consists of two motors that can rotate independently to allow for omnidirectional movement and strafing.
+     * This module is used in the SwerveChassis to control the movement of the robot.
+     */
+    struct SwerveModule
+    {
+        SmartMotorGroup& motorA;
+        SmartMotorGroup& motorB;
+        HallEffectEncoder& encoder;
+
+        /// @brief The offset of the swerve module from the center of the robot in inches
+        Vector2 moduleOffset;
+
+        SwerveModule(SmartMotorGroup& motorA, SmartMotorGroup& motorB, HallEffectEncoder& encoder)
+            : motorA(motorA), motorB(motorB), encoder(encoder)
+        {
+            // Disable brake mode by default to prevent overheating
+            motorA.setBrakeMode(false);
+            motorB.setBrakeMode(false);
+        }
+
+        /**
+        * Moves the swerve module to the specified angle and magnitude.
+        * @param angle The target angle in degrees.
+        * @param magnitude The magnitude of the movement from -1 to 1.
+        */
+        void move(float angle, float magnitude)
+        {
+            // TODO - Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
+            float angleDelta = angleController.update(angle - encoder.getRotation());
+            motorA.move(magnitude + angleDelta);
+            motorB.move(magnitude - angleDelta);
+        }
+
+        private:
+            PIDController angleController = PIDController(0.0f, 0.0f, 0.0f); // TODO: Tune these values
+    };
+        
+    /**
      * Represents a chassis driven by four sets of wheels that can rotate independently, allowing for omnidirectional movement and strafing.
      * This chassis is holonomic, allowing for omnidirectional movement and strafing.
     */
@@ -70,7 +108,6 @@ namespace devils
 
             // TODO - Normalize the wheel speeds if any of them are greater than 1
             // TODO - Add field-oriented control using the IMU to adjust the angles based on the robot's heading
-            // TODO - Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
 
             // Move each wheel to the calculated angle and speed
             frontLeft.move(frontLeftAngle, frontLeftSpeed);
@@ -96,42 +133,5 @@ namespace devils
         float length;
         float width;
         float R;
-    };
-
-    /**
-     * Represents a single swerve module, which consists of two motors that can rotate independently to allow for omnidirectional movement and strafing.
-     * This module is used in the SwerveChassis to control the movement of the robot.
-     */
-    struct SwerveModule
-    {
-        SmartMotorGroup& motorA;
-        SmartMotorGroup& motorB;
-        HallEffectEncoder& encoder;
-
-        /// @brief The offset of the swerve module from the center of the robot in inches
-        Vector2 moduleOffset;
-
-        SwerveModule(SmartMotorGroup& motorA, SmartMotorGroup& motorB, HallEffectEncoder& encoder)
-            : motorA(motorA), motorB(motorB), encoder(encoder)
-        {
-            // Disable brake mode by default to prevent overheating
-            motorA.setBrakeMode(false);
-            motorB.setBrakeMode(false);
-        }
-
-        /**
-         * Moves the swerve module to the specified angle and magnitude.
-         * @param angle The target angle in degrees.
-         * @param magnitude The magnitude of the movement from -1 to 1.
-         */
-        void move(float angle, float magnitude)
-        {
-            float angleDelta = angleController.update(angle - encoder.getRotation());
-            motorA.move(magnitude + angleDelta);
-            motorB.move(magnitude - angleDelta);
-        }
-
-        private:
-            PIDController angleController = PIDController(0.0f, 0.0f, 0.0f); // TODO: Tune these values
     };
 }
