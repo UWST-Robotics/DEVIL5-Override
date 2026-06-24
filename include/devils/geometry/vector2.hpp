@@ -137,6 +137,15 @@ namespace devils
         }
 
         /**
+         * Rotates the vector, positive is counterclockwise
+         * @return The rotated vector
+         */
+        Vector2 rotate(const float& angle) const
+        {
+            return {x*cos(angle) - y*sin(angle), x*sin(angle + y*cos(angle))};
+        }
+
+        /**
          * Prints the vector to a string
          * @return The vector as a string
          */

@@ -135,6 +135,7 @@ namespace devils
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {-1, 2, -3, 4, -5});
 
         // Swerve Modules
+        /*
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
         SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
         SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {3});
@@ -153,7 +154,7 @@ namespace devils
         SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder);
         SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder);
         SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder);
-        
+        */
 
         SmartMotorGroup stickMotorsRight = SmartMotorGroup("StickMotorsRight", {-20});
         SmartMotorGroup stickMotorsLeft = SmartMotorGroup("StickMotorsLeft", {19});
@@ -175,7 +176,7 @@ namespace devils
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
 
-        SwerveChassis swerveChassis = SwerveChassis(frontLeftModule, frontRightModule, backLeftModule, backRightModule, 15.0, 15.0);
+        //SwerveChassis swerveChassis = SwerveChassis(frontLeftModule, frontRightModule, backLeftModule, backRightModule, 15.0, 15.0);
 
         IntakeSystem intake = IntakeSystem(intakePnematics, sideRollers, topRoller);
         StickSystem stick = StickSystem(
