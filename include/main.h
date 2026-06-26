@@ -20,6 +20,7 @@
 #include "devils/pjRobot.hpp"
 #include "devils/blazeRobot.hpp"
 #include "devils/robinRobot.hpp"
+#include "devils/swerveTestRobot.hpp"
 
 using namespace devils;
 

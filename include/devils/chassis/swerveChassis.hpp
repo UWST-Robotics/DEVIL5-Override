@@ -37,7 +37,10 @@ namespace devils
         void move(float targetAngle, float drivespeed)
         {
             float currentAngle = analogToAngle(encoder.getValue());
-            
+            std::cout << "current angle: " << currentAngle;
+            std::cout << "\n";
+            std::cout << "target angle: " << targetAngle;
+            std::cout << "\n";
             // Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
             bool enableRotationOptimization = false;
             if (enableRotationOptimization){
@@ -60,16 +63,18 @@ namespace devils
             motorB.move(motorBPower / maxPower);
         }
 
-        float analogToAngle(int input){
-            // input is from 0-4095 (12 bit), remap that range to 0-2PI
-            // 0 points to the front of the module, clockwise is positive
+        float analogToAngle(float input){
+            // remap input to 0-2PI, 0 points to the front of the module, clockwise is positive
             // Add calibration offset and make sure the result is less than 2PI
-            return fmod((input * ((2* M_PI) / 4095) + encoderCalibrationOffsetAngle), 2*M_PI);
+            return fmod(((input * 2* M_PI) + encoderCalibrationOffsetAngle), 2*M_PI);
         }
 
         float getAngleError(float currentAngle, float targetAngle){
-            // Handle weirdness that happens at the discontinuity where 0 meets 2PI
+            // Normalize any weird target angles over 2PI
+            targetAngle  = fmod(targetAngle, 2*M_PI);
+            
             float rawAngleDifference = currentAngle - targetAngle;
+            // Handle weirdness that happens at the discontinuity where 0 meets 2PI
             // Error greater than 180 is impossible, if we see that then we have to go the other way around the circle
             if (abs(rawAngleDifference) > M_PI){
                 // Subtract the large slice of the pie from the whole pie to get the small slice, then make sure the sign is right
@@ -78,7 +83,7 @@ namespace devils
         }
 
         private:
-            PIDController angleController = PIDController(0.0f, 0.0f, 0.0f); // TODO: Tune these values
+            PIDController angleController = PIDController(1.0f, 0.0f, 0.0f); // TODO: Tune these values
     };
         
     /**
@@ -178,6 +183,10 @@ namespace devils
         bool isHolonomic() const override
         {
             return true;
+        }
+
+        void printDebug(){
+            //std:cout << 
         }
 
     protected:
