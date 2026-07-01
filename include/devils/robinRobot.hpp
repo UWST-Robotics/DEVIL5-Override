@@ -2,6 +2,7 @@
 
 #include "./devils.h"
 #include "./subsystems/clawSystem.hpp"
+#include "./subsystems/armSystem.hpp"
 
 namespace devils
 {
@@ -84,7 +85,8 @@ namespace devils
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17});
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-14, 15});
         SmartMotorGroup intake = SmartMotorGroup("Intake", {8}); //Main intake first, floating roller second (reversed)
-        SmartMotorGroup lift = SmartMotorGroup("Lift", {9}); //Main lift first, secondary lift second (reversed)
+        SmartMotorGroup lift = SmartMotorGroup("Lift", {9}); //Main lift control
+        SmartMotorGroup chainBar = SmartMotorGroup("ChainBar", {10}); //Chainbar at the end of the lift
         ADIPneumaticGroup clawPneumatics = ADIPneumaticGroup("ClawPneumatics", {'A'}, false);
         InertialSensor imu = InertialSensor("IMU", 1);
 
@@ -92,6 +94,7 @@ namespace devils
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
         ClawSystem claw = ClawSystem(clawPneumatics); // Claw flip and door pneumatics are not used in this robot
+        ArmSystem arm = ArmSystem(lift, chainBar); // Arm system for lift and chain bar control
 
         // Auto
         std::shared_ptr<TankChassisOdom> odometry = std::make_shared<TankChassisOdom>(chassis, 1.375, 11);
