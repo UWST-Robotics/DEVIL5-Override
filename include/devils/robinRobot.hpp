@@ -91,7 +91,7 @@ namespace devils
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        ClawSystem claw = ClawSystem(clawPneumatics, null, null); // Claw flip and door pneumatics are not used in this robot
+        ClawSystem claw = ClawSystem(clawPneumatics); // Claw flip and door pneumatics are not used in this robot
 
         // Auto
         std::shared_ptr<TankChassisOdom> odometry = std::make_shared<TankChassisOdom>(chassis, 1.375, 11);

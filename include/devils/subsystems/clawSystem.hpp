@@ -7,9 +7,8 @@ namespace devils
     class ClawSystem
     {
     public:
-        ClawSystem(ADIPneumaticGroup& clawPneumatics, ADIPneumaticGroup& clawFlipPneumatics, 
-            ADIPneumaticGroup& doorPneumatics)
-            :claw(clawPneumatics), clawFlip(clawFlipPneumatics), door(doorPneumatics)
+        ClawSystem(ADIPneumaticGroup& clawPneumatics)
+            :claw(clawPneumatics)
         {
         }
 
@@ -22,27 +21,7 @@ namespace devils
             claw.setExtended(extended);
         }
 
-        /**
-         * Flips the claw between its normal and flipped positions.
-         * @param flipped - True to flip the claw, false to return it to its normal position.
-         */
-        void setClawFlipped(const bool flipped) const
-        {
-            clawFlip.setExtended(flipped);
-        }
-
-        /**
-         * Closes and opens the door
-         * @param extended - True to close the door, false to open it.
-         */
-        void setDoorClosed(const bool extended) const
-        {
-            door.setExtended(extended);
-        }
-
     private:
         ADIPneumaticGroup& claw;
-        ADIPneumaticGroup& clawFlip;
-        ADIPneumaticGroup& door;
     };
 }
