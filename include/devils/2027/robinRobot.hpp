@@ -52,17 +52,21 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
-                const bool liftButton = mainController.r1; //temp button to move lift
+                const bool liftUpButton = mainController.r1; //temp button to move lift
+                const bool liftDownButton = mainController.r2; //temp button to move lift
                 const bool clawButton = mainController.l1; //temp button to open/close claw
-                const bool doorButton = mainController.x; //temp button to close door
-                const bool clawFlipButton = mainController.l2; //temp button to flip claw
 
                 intake.move(rightY);
 
                 claw.setClawClosed(clawButton);
-                claw.setDoorClosed(doorButton);
-                claw.setClawFlipped(clawFlipButton);
-                liftPneumatics.setExtended(liftButton);
+
+                if (liftUpButton)
+                    lift.move(1.0f);
+                else if (liftDownButton)
+                    lift.move(-1.0f);
+                else
+                    lift.stop();
+
 
                 // Drive normally
                 chassis.move(leftY, leftX * 0.5f, 0);
@@ -79,17 +83,15 @@ namespace devils
         // Hardware
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17});
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-14, 15});
-        SmartMotorGroup intake = SmartMotorGroup("Intake", {8, -9}); //Main intake first, floating roller second (reversed)
+        SmartMotorGroup intake = SmartMotorGroup("Intake", {8}); //Main intake first, floating roller second (reversed)
+        SmartMotorGroup lift = SmartMotorGroup("Lift", {9}); //Main lift first, secondary lift second (reversed)
         ADIPneumaticGroup clawPneumatics = ADIPneumaticGroup("ClawPneumatics", {'A'}, false);
-        ADIPneumaticGroup clawFlipPneumatics = ADIPneumaticGroup("ClawFlipPneumatics", {'B'}, false);
-        ADIPneumaticGroup doorPneumatics = ADIPneumaticGroup("DoorPneumatics", {'C'}, false);
-        ADIPneumaticGroup liftPneumatics = ADIPneumaticGroup("LiftPneumatics", {'D'}, false);
         InertialSensor imu = InertialSensor("IMU", 1);
 
 
         // Subsystems
         TankChassis chassis = TankChassis(leftMotors, rightMotors);
-        ClawSystem claw = ClawSystem(clawPneumatics, clawFlipPneumatics, doorPneumatics);
+        ClawSystem claw = ClawSystem(clawPneumatics, null, null); // Claw flip and door pneumatics are not used in this robot
 
         // Auto
         std::shared_ptr<TankChassisOdom> odometry = std::make_shared<TankChassisOdom>(chassis, 1.375, 11);
