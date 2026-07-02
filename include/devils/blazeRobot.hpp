@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./devils.h"
+#include "./devilLib/devils.h"
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"

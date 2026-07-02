@@ -1,12 +1,13 @@
 #pragma once
 
-#include "./devils.h"
+#include "./devilLib/devils.h"
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/StickSystem.hpp"
 #include "./subsystems/tubeSystem.hpp"
 #include "./subsystems/wingSystem.hpp"
+#include "./subsystems/swerveDisplay.hpp"
 
 namespace devils
 {
@@ -24,7 +25,7 @@ namespace devils
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, M_PI);
 
         // Display (don't know how to use this Austin)
-        std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
+        std::shared_ptr<SwerveDisplay> swerveDisplay = std::make_shared<SwerveDisplay>();
 
         float pointingAngle = 0.0;
 
@@ -32,8 +33,7 @@ namespace devils
         SwerveTestRobot()
         {
 
-            toastDisplay->start();
-            // devilBotsDisplay->start();
+            swerveDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
                 .deadzone = 0.1f, // <-- Minimum input to register

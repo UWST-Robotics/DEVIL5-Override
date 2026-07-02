@@ -38,6 +38,15 @@
 #include "utils/timer.hpp"
 #include "utils/stopwatch.hpp"
 
+// Geometry
+#include "geometry/lerp.hpp"
+#include "geometry/math.hpp"
+#include "geometry/pose.hpp"
+#include "geometry/poseVelocity.hpp"
+#include "geometry/units.hpp"
+#include "geometry/vector2.hpp"
+#include "geometry/vector3.hpp"
+
 // Path
 #include "path/path.hpp"
 #include "path/linearPath.hpp"

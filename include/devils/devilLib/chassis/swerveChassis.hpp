@@ -16,10 +16,19 @@ namespace devils
      */
     struct SwerveModule
     {
+        // MotorA is top, MotorB is bottom
         SmartMotorGroup& motorA;
         SmartMotorGroup& motorB;
         ADIAnalogInput& encoder;
         float encoderCalibrationOffsetAngle;
+
+        // Geartrain parameters
+        float cartRatio = 6.0;
+        int drivePulleyTeeth = 33;
+        int drivenPulleyTeeth = 91;
+        int sandwichBevelTeeth = 57;
+        int wheelBevelTeeth = 25;
+        float wheelRadius = (70.0/25.4)/2.0; // 70mm wheel convert to inches
 
         SwerveModule(SmartMotorGroup& motorA, SmartMotorGroup& motorB, ADIAnalogInput& encoder, float encoderCalibrationOffsetAngle)
             : motorA(motorA), motorB(motorB), encoder(encoder), encoderCalibrationOffsetAngle(encoderCalibrationOffsetAngle)
@@ -27,6 +36,9 @@ namespace devils
             // Disable brake mode by default to prevent overheating
             motorA.setBrakeMode(false);
             motorB.setBrakeMode(false);
+            // Zero encoders
+            motorA.setPosition(0);
+            motorB.setPosition(0);
         }
 
         /**
@@ -36,22 +48,21 @@ namespace devils
         */
         void move(float targetAngle, float drivespeed)
         {
-            float currentAngle = analogToAngle(encoder.getValue());
-            std::cout << "current angle: " << currentAngle;
+            std::cout << "current angle: " << getPodAngle();
             std::cout << "\n";
             std::cout << "target angle: " << targetAngle;
             std::cout << "\n";
             // Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
             bool enableRotationOptimization = false;
             if (enableRotationOptimization){
-                if(abs(getAngleError(currentAngle, targetAngle)) > 90){
+                if(abs(getAngleError(getPodAngle(), targetAngle)) > 90){
                     // TODO - this will not work but it's the general idea
                     targetAngle += M_PI;
                     drivespeed *= -1;
                 }
             }
             
-            float steeringPower = angleController.update(getAngleError(currentAngle, targetAngle));
+            float steeringPower = angleController.update(getAngleError(getPodAngle(), targetAngle));
             // Normalize motor powers so the module rotates well even if we're commanding it to drive at a high speed
             float motorAPower = drivespeed + steeringPower;
             float motorBPower = drivespeed - steeringPower;
@@ -80,6 +91,20 @@ namespace devils
                 // Subtract the large slice of the pie from the whole pie to get the small slice, then make sure the sign is right
                 return ((2*M_PI) - abs(rawAngleDifference)) * -(rawAngleDifference / abs(rawAngleDifference));
             } else return rawAngleDifference;
+        }
+        
+        float getPodAngle(){
+            return analogToAngle(encoder.getValue());
+        }
+
+        float getDistanceDriven(){
+            // Uses the motor encoders and geartrain geometry to calculate the total distance a wheel has traveled in inches. Useful for odometry.
+            // Vex motors have 50 ticks per rev at the plastic cartridge input gear
+            float topBevelRotations = ((motorA.getPosition()/50.0) / cartRatio) * (drivePulleyTeeth / drivenPulleyTeeth);
+            float bottomBevelRotations = -((motorB.getPosition()/50.0) / cartRatio) * (drivePulleyTeeth / drivenPulleyTeeth);
+            // TODO: Not sure if this next line is correct
+            float wheelRotations = (sandwichBevelTeeth / wheelBevelTeeth) * (0.5*(topBevelRotations - bottomBevelRotations));
+            return (wheelRotations * 2 * M_PI) * wheelRadius;
         }
 
         private:
@@ -132,8 +157,8 @@ namespace devils
             // Calculate the drivespeed and angle for each wheel based on the forward, turn, and strafe inputs using swerve drive kinematics
             float A = strafe - turn * (length / R);
             float B = strafe + turn * (length / R);
-            float C = strafe - turn * (width / R);
-            float D = strafe + turn * (width / R);
+            float C = forward - turn * (width / R);
+            float D = forward + turn * (width / R);
 
             // Calculate the drivespeed and angle for each wheel using the variables calulated above
             float frontLeftSpeed = std::sqrt((B * B) + (D * D));
@@ -174,6 +199,11 @@ namespace devils
             Vector2 inputVector = Vector2(strafe, forward);
             inputVector.rotate(-heading);
             move(inputVector.y, turn, inputVector.x);
+        }
+
+        // Returns an array containing wheel distances traveled and module angles
+        void getWheelPositionInfo(){
+            
         }
 
         /**

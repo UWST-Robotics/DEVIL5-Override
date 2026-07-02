@@ -1,6 +1,6 @@
 #pragma once
 
-#include "devils/geometry/pose.hpp"
+#include "../geometry/pose.hpp"
 #include "pros/rtos.hpp"
 
 namespace devils

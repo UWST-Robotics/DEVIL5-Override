@@ -7,6 +7,7 @@ namespace devils
 {
     /**
      * Represents a pose in 2D space.
+     * Coordinate system convention is red alliance on the left, 0deg to the right, positive is clockwise. Which is weird Austin.
      */
     struct Pose : Vector2
     {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./devils.h"
+#include "./devilLib/devils.h"
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/armSystem.hpp"
 

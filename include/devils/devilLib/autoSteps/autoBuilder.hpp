@@ -7,7 +7,8 @@
 #include "../path/splinePath.hpp"
 #include "./steps/rotateMotionProfileStep.hpp"
 #include "./steps/driveRAMSETEStep.hpp"
-#include "../autoSteps/transformer/poseTransformer.hpp"
+#include "./steps/driveHolonomicStep.hpp"
+#include "./transformer/poseTransformer.hpp"
 
 namespace devils
 {
@@ -44,9 +45,13 @@ namespace devils
         {
             const auto transformedPose = tryTransformPose(pose);
 
-            // TODO: Auto switch between `AutoRamseteStep` and `AutoHolonomicDriveStep` depending on the chassis type (holonomic or not).
             const auto trajectory = generateTrajectoryToPose(transformedPose, endingVelocity);
-            return std::make_shared<DriveRAMSETEStep>(chassis, odom, trajectory);
+            // Auto switch between `AutoRamseteStep` and `AutoHolonomicDriveStep` depending on the chassis type (holonomic or not).
+            if (chassis.isHolonomic()){
+                return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
+            } else {
+                return std::make_shared<DriveRAMSETEStep>(chassis, odom, trajectory);
+            }
         }
 
         /**

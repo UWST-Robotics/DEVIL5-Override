@@ -5,7 +5,7 @@
 #include "../../chassis/chassisBase.hpp"
 #include "../../geometry/math.hpp"
 #include "../../controller/pidController.hpp"
-#include "devils/controller/profiledPIDController.hpp"
+#include "../../controller/profiledPIDController.hpp"
 
 namespace devils
 {

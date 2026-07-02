@@ -1,6 +1,6 @@
 #pragma once
 
-#include "devils/devils.h"
+#include "devils/devilLib/devils.h"
 #include "matchAuto.hpp"
 #include "../subsystems/wingSystem.hpp"
 

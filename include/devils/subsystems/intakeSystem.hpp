@@ -1,6 +1,6 @@
 #pragma once
 
-#include "devils/devils.h"
+#include "devils/devilLib/devils.h"
 #include <algorithm>
 
 namespace devils
