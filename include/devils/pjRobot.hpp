@@ -19,42 +19,29 @@ namespace devils
         SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
         SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {3});
         SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {4});
-        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {5});
-        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
-        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
+        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {6});
+        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {7});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {9});
         SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', false);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', false);
-        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', false);
-        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder",'D', false);
+        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'D', false);
+        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder",'C', false);
 
         // Drivetrain
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, 0);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 0);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 2*M_PI);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 2*M_PI);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -1.4);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 1.3+3.14);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 3.2);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, -1.57);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
-            13.0,
-            13.0
+            9.0,
+            4.5
         );
 
         // Subsystems
-
-        // Odo
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 12);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
-        InertialSensor imu = InertialSensor("IMU", 13);
-
-        static constexpr float DEAD_WHEEL_RADIUS = 1;
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-1.8, 0);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, -2.2);
-
-        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
-            verticalSensor,
-            horizontalSensor,
-            DEAD_WHEEL_RADIUS);
+        //InertialSensor imu = InertialSensor("IMU", 13);
 
         // Displays
         // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
@@ -64,19 +51,13 @@ namespace devils
         //         AutoPickerDisplay::Routine{.id = 0, .displayName = "Match Auto", .requiresAllianceColor = false},
         //         AutoPickerDisplay::Routine{.id = 1, .displayName = "Skills Auto", .requiresAllianceColor = false}
         //     });
-        std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
+        //std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
 
         // Ok acutal code now
         PJRobot()
         {
-            imu.calibrate();
-
-            odometry->useIMU(&imu);
-            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
-            odometry->start();
-
-            toastDisplay->start();
+            //toastDisplay->start();
             // devilBotsDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
@@ -96,7 +77,7 @@ namespace devils
 
         void autonomous() override
         {
-            imu.waitUntilDoneCalibrated();
+            //imu.waitUntilDoneCalibrated();
             //SkillsAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
             //MatchAuto::run(chassis, *odometry.get(), stick, intake, tube, wings, true);
         }
@@ -119,7 +100,7 @@ namespace devils
                 swerve.move(leftY, rightX, leftX);
 
                 // Delay to prevent the CPU from being overloaded
-                pros::delay(5);
+                pros::delay(10);
             }
         }
 

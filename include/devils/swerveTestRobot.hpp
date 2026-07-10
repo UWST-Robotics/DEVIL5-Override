@@ -25,7 +25,7 @@ namespace devils
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, M_PI);
 
         // Display (don't know how to use this Austin)
-        std::shared_ptr<SwerveDisplay> swerveDisplay = std::make_shared<SwerveDisplay>();
+        //std::shared_ptr<SwerveDisplay> swerveDisplay = std::make_shared<SwerveDisplay>();
 
         float pointingAngle = 0.0;
 
@@ -33,7 +33,7 @@ namespace devils
         SwerveTestRobot()
         {
 
-            swerveDisplay->start();
+            //swerveDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
                 .deadzone = 0.1f, // <-- Minimum input to register
