@@ -24,7 +24,7 @@ namespace devils
         SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {8});
         SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {9});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'H', false);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'D', true);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder",'C', true);
@@ -97,7 +97,12 @@ namespace devils
                 const float rightX = mainController.rightX * 0.5f;
 
                 // Drive the robot
-                swerve.move(leftY, rightX, leftX);
+                // Plant if we aren't moving
+                if(leftY == 0 && leftX == 0 && rightX == 0){
+                    swerve.plant();
+                } else {
+                    swerve.move(leftY, rightX, leftX);
+                }
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);

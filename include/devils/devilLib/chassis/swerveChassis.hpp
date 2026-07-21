@@ -108,7 +108,7 @@ namespace devils
         }
 
         private:
-            PIDController angleController = PIDController(1.0f, 0.0f, 0.0f); // TODO: Tune these values
+            PIDController angleController = PIDController(0.5f, 0.0f, 0.0f); // TODO: Tune these values
     };
         
     /**
