@@ -1,15 +1,14 @@
 #pragma once
 #include "../odom/odomSource.hpp"
 #include "../geometry/units.hpp"
-#include "../utils/runnable.hpp"
-#include "vexbridge/vexbridge.h"
+#include "./vexbridge.h"
 
 namespace devils
 {
     /**
      * Syncs odometry data to VEXBridge.
      */
-    class VBOdom : private Runnable
+    class VBOdom : private AsyncTask
     {
     public:
         /**
@@ -27,7 +26,7 @@ namespace devils
               length(group.addValue("length", 15.0f)),
               speed(group.addValue("speed", 0.0f))
         {
-            this->runAsync();
+            this->start();
         }
 
         /**

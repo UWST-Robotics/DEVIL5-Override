@@ -78,4 +78,5 @@
 
 // VEXBridge
 // TODO: VEXBridge is currently broken
-// #include "../vexbridge/vexbridge.h"
+#include "vexbridge/vexbridge.h"
+#include "vexbridge/VBOdom.hpp"

@@ -19,13 +19,19 @@ namespace devils
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
         SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', false);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'H', false);
 
         // Drivetrain
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, M_PI);
 
         // Display (don't know how to use this Austin)
         //std::shared_ptr<SwerveDisplay> swerveDisplay = std::make_shared<SwerveDisplay>();
+
+        // Vexbridge (yikes)
+        VEXBridge bridge = VEXBridge();
+        // Dummy Chassis
+        DummyChassis dummyChassis = DummyChassis();
+        VBOdom dummyOdomNT = VBOdom("DummyOdom", dummyChassis);
 
         float pointingAngle = 0.0;
 

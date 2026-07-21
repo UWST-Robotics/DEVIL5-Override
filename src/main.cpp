@@ -9,7 +9,7 @@
 void initialize()
 {
     Logger::info("==== Initialize ====");
-    robot = std::make_shared<PJRobot>(); // <-- Change this to the target robot
+    robot = std::make_shared<SwerveTestRobot>(); // <-- Change this to the target robot
     Logger::info("Robot created");
 }
 
