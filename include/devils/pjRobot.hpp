@@ -21,19 +21,19 @@ namespace devils
         SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {4});
         SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {6});
         SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {7});
-        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {9});
-        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {8});
+        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {9});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', false);
-        ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', false);
-        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'D', false);
-        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder",'C', false);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
+        ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
+        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'D', true);
+        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder",'C', true);
 
         // Drivetrain
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -1.4);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 1.3+3.14);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 3.2);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, -1.57);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -1.8);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, -1.4);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, -0.1);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, -2.9);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
@@ -51,19 +51,19 @@ namespace devils
         //         AutoPickerDisplay::Routine{.id = 0, .displayName = "Match Auto", .requiresAllianceColor = false},
         //         AutoPickerDisplay::Routine{.id = 1, .displayName = "Skills Auto", .requiresAllianceColor = false}
         //     });
-        //std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
+        std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
 
         // Ok acutal code now
         PJRobot()
         {
-            //toastDisplay->start();
+            toastDisplay->start();
             // devilBotsDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
-                .deadzone = 0.1f, // <-- Minimum input to register
-                .startingValue = 0.15f, // <-- Jumps to 15% to overcome motor friction
-                .exponent = 3.0f // <-- Cubes the input for finer control at low speeds
+                .deadzone = 0.05f, // <-- Minimum input to register
+                .startingValue = 0.05f, // <-- Jumps to 15% to overcome motor friction
+                .exponent = 1.0f // <-- Cubes the input for finer control at low speeds
             };
 
             mainController.leftX.setOptions(joystickOptions);

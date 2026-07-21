@@ -64,8 +64,8 @@ namespace devils
             
             float steeringPower = angleController.update(getAngleError(getPodAngle(), targetAngle));
             // Normalize motor powers so the module rotates well even if we're commanding it to drive at a high speed
-            float motorAPower = drivespeed + steeringPower;
-            float motorBPower = drivespeed - steeringPower;
+            float motorAPower = drivespeed - steeringPower;
+            float motorBPower = drivespeed + steeringPower;
             float maxPower = 1.0;
             if(abs(motorAPower) > maxPower) maxPower = abs(motorAPower);
             if (abs(motorBPower) > maxPower) maxPower = abs(motorBPower);
@@ -154,22 +154,32 @@ namespace devils
             const float turn,
             const float strafe) override
         {
-            // Calculate the drivespeed and angle for each wheel based on the forward, turn, and strafe inputs using swerve drive kinematics
-            float A = strafe - turn * (length / R);
-            float B = strafe + turn * (length / R);
-            float C = forward - turn * (width / R);
-            float D = forward + turn * (width / R);
+            // This entire function is very ugly right now, ideally we do all this stuff in for loops (and then we can have drivetrains with arbitrary numbers of modules and module locations)
+            // Calculate the drive vectors for each wheel based on the forward, turn, and strafe inputs using swerve drive kinematics
+            // See https://strykeforce.github.io/classroom/swerve/#/wheel-position-and-speed
+            Vector2 translateVect = Vector2(strafe, forward);
+            // Each wheel has a different vector that is applied when turning happens
+            Vector2 flTurnVect = Vector2(-width/2.0, length/2.0).rotate(-M_PI/2.0).normalize() * turn;
+            Vector2 frTurnVect = Vector2(width/2.0, length/2.0).rotate(-M_PI/2.0).normalize() * turn;
+            Vector2 blTurnVect = Vector2(-width/2.0, -length/2.0).rotate(-M_PI/2.0).normalize() * turn;
+            Vector2 brTurnVect = Vector2(width/2.0, -length/2.0).rotate(-M_PI/2.0).normalize() * turn;
 
+            Vector2 flVect = translateVect + flTurnVect;
+            Vector2 frVect = translateVect + frTurnVect;
+            Vector2 blVect = translateVect + blTurnVect;
+            Vector2 brVect = translateVect + brTurnVect;
             // Calculate the drivespeed and angle for each wheel using the variables calulated above
-            float frontLeftSpeed = std::sqrt((B * B) + (D * D));
-            float frontRightSpeed = std::sqrt((B * B) + (C * C));
-            float backLeftSpeed = std::sqrt((A * A) + (D * D));
-            float backRightSpeed = std::sqrt((A * A) + (C * C));
-
-            float frontLeftAngle = std::atan2(B, D);
-            float frontRightAngle = std::atan2(B, C);
-            float backLeftAngle = std::atan2(A, D);
-            float backRightAngle = std::atan2(A, C);
+            float frontLeftSpeed = flVect.magnitude();
+            float frontRightSpeed = frVect.magnitude();
+            float backLeftSpeed = blVect.magnitude();
+            float backRightSpeed = brVect.magnitude();
+            // Convert from East-counterclockwise system used by vector2 to North-clockwise system used by swerve modules
+            // Yes it would be nice if they used the same angle system but I don't want to break everything
+            float angleOffset = M_PI/2.0;
+            float frontLeftAngle = -flVect.angleToX() + angleOffset;
+            float frontRightAngle = -frVect.angleToX() + angleOffset;
+            float backLeftAngle = -blVect.angleToX() + angleOffset;
+            float backRightAngle = -brVect.angleToX() + angleOffset;
 
             // Normalize the wheel speeds if any of them are greater than 1
             // Yes this is what arrays are for but maybe we'll make it pretty later (almost certainly a lie, never gonna have time for that)
@@ -199,6 +209,13 @@ namespace devils
             Vector2 inputVector = Vector2(strafe, forward);
             inputVector.rotate(-heading);
             move(inputVector.y, turn, inputVector.x);
+        }
+        // Rotate all wheels to 45deg (circle configuration) and stop them. This can be used to prevent the drivetrain from being pushed.
+        void plant(){
+            frontLeft.move(M_PI/4.0, 0);
+            frontRight.move(M_PI*3.0/4.0, 0);
+            backLeft.move(-M_PI/4.0, 0);
+            backRight.move(-M_PI*3.0/4.0, 0);
         }
 
         // Returns an array containing wheel distances traveled and module angles

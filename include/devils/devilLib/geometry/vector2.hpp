@@ -127,6 +127,15 @@ namespace devils
         }
 
         /**
+         * Calculates the angle of the vector to the x-axis
+         * @return The angle of the vector in radians
+         */
+        float angleToX() const
+        {
+            return atan2(y,x);
+        }
+
+        /**
          * Normalizes the vector
          * @return The normalized vector
          */
