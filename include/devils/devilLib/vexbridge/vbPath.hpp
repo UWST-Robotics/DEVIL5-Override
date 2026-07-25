@@ -1,5 +1,5 @@
 #pragma once
-#include "vexbridge/vexbridge.h"
+#include "vexbridge.h"
 #include "../path/path.hpp"
 
 namespace devils

@@ -8,6 +8,8 @@ namespace devils
     /**
      * Syncs odometry data to VEXBridge.
      */
+     // TODO: This used to use "Runnable" instead of "AsyncTask". It would seem that AsyncTask is the newer version of Runnable,
+     // So I swapped it in but I think this is what crashes the brain.
     class VBOdom : private AsyncTask
     {
     public:

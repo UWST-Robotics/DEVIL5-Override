@@ -22,6 +22,9 @@ namespace devils
         ADIAnalogInput& encoder;
         float encoderCalibrationOffsetAngle;
 
+        float storedTargetAngle;
+        float storedError;
+
         // Geartrain parameters
         float cartRatio = 6.0;
         int drivePulleyTeeth = 33;
@@ -48,10 +51,6 @@ namespace devils
         */
         void move(float targetAngle, float drivespeed)
         {
-            std::cout << "current angle: " << getPodAngle();
-            std::cout << "\n";
-            std::cout << "target angle: " << targetAngle;
-            std::cout << "\n";
             // Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
             bool enableRotationOptimization = false;
             if (enableRotationOptimization){
@@ -72,29 +71,42 @@ namespace devils
 
             motorA.move(motorAPower / maxPower);
             motorB.move(motorBPower / maxPower);
+
+            storedTargetAngle = targetAngle;
         }
 
         float analogToAngle(float input){
             // remap input to 0-2PI, 0 points to the front of the module, clockwise is positive
             // Add calibration offset and make sure the result is less than 2PI
-            return fmod(((input * 2* M_PI) + encoderCalibrationOffsetAngle), 2*M_PI);
+            return fmod(((input * 2* M_PI) - encoderCalibrationOffsetAngle), 2*M_PI);
         }
 
         float getAngleError(float currentAngle, float targetAngle){
             // Normalize any weird target angles over 2PI
-            targetAngle  = fmod(targetAngle, 2*M_PI);
-            
+            targetAngle = fmod(targetAngle, 2*M_PI);
             float rawAngleDifference = currentAngle - targetAngle;
+            float output;
             // Handle weirdness that happens at the discontinuity where 0 meets 2PI
             // Error greater than 180 is impossible, if we see that then we have to go the other way around the circle
             if (abs(rawAngleDifference) > M_PI){
                 // Subtract the large slice of the pie from the whole pie to get the small slice, then make sure the sign is right
-                return ((2*M_PI) - abs(rawAngleDifference)) * -(rawAngleDifference / abs(rawAngleDifference));
-            } else return rawAngleDifference;
+                output = ((2*M_PI) - abs(rawAngleDifference)) * -(rawAngleDifference / abs(rawAngleDifference));
+            } else output = rawAngleDifference;
+
+            storedError = output;
+            return output;
         }
         
         float getPodAngle(){
             return analogToAngle(encoder.getValue());
+        }
+
+        float getTargetAngle(){
+            return storedTargetAngle;
+        }
+
+        float getStoredError(){
+            return storedError;
         }
 
         float getDistanceDriven(){
@@ -108,7 +120,7 @@ namespace devils
         }
 
         private:
-            PIDController angleController = PIDController(0.5f, 0.0f, 0.0f); // TODO: Tune these values
+            PIDController angleController = PIDController(0.9f, 0.0f, 0.0f); // TODO: Tune these values
     };
         
     /**
@@ -212,10 +224,10 @@ namespace devils
         }
         // Rotate all wheels to 45deg (circle configuration) and stop them. This can be used to prevent the drivetrain from being pushed.
         void plant(){
-            frontLeft.move(M_PI/4.0, 0);
-            frontRight.move(M_PI*3.0/4.0, 0);
-            backLeft.move(-M_PI/4.0, 0);
-            backRight.move(-M_PI*3.0/4.0, 0);
+            frontLeft.move(-M_PI/4.0, 0);
+            frontRight.move(M_PI/4.0, 0);
+            backLeft.move(M_PI/4.0, 0);
+            backRight.move(-M_PI/4.0, 0);
         }
 
         // Returns an array containing wheel distances traveled and module angles

@@ -31,8 +31,10 @@ namespace devils
         VEXBridge bridge = VEXBridge();
         // Dummy Chassis
         DummyChassis dummyChassis = DummyChassis();
-        VBOdom dummyOdomNT = VBOdom("DummyOdom", dummyChassis);
-
+        // Odom currently crashes the brain for some reason
+        //VBOdom dummyOdomNT = VBOdom("DummyOdom", dummyChassis);
+        VBValue<float> testval = VBValue("test", 12.0f);
+        VBValue<float> vbAngle = VBValue("angle", pointingAngle);
         float pointingAngle = 0.0;
 
         // Ok acutal code now
@@ -83,6 +85,7 @@ namespace devils
                 //std::cout << "pointing angle: " << pointingAngle;
                 //std:cout << "\n";
 
+                vbAngle.set(pointingAngle);
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
             }

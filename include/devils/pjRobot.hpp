@@ -24,16 +24,16 @@ namespace devils
         SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {8});
         SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {9});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'H', false);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'H', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'D', true);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder",'C', true);
 
         // Drivetrain
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -1.8);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, -1.4);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, -0.1);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, -2.9);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -0.6);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 0.25);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 2.9);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 0.8);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
@@ -52,6 +52,12 @@ namespace devils
         //         AutoPickerDisplay::Routine{.id = 1, .displayName = "Skills Auto", .requiresAllianceColor = false}
         //     });
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
+
+        // Vexbridge (yikes)
+        VEXBridge bridge = VEXBridge();
+        VBValue<float> targetAngle = VBValue("target angle", 0.0f);
+        VBValue<float> currentAngle = VBValue("current angle", 0.0f);
+        VBValue<float> error = VBValue("error", 0.0f);
 
 
         // Ok acutal code now
@@ -100,9 +106,15 @@ namespace devils
                 // Plant if we aren't moving
                 if(leftY == 0 && leftX == 0 && rightX == 0){
                     swerve.plant();
+                    //swerve.move(0, 0, 0);
                 } else {
                     swerve.move(leftY, rightX, leftX);
                 }
+
+                // FL pod debug info
+                targetAngle.set(frontLeftModule.getTargetAngle());
+                currentAngle.set(frontLeftModule.getPodAngle());
+                error.set(frontLeftModule.getStoredError());
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);

@@ -17,8 +17,11 @@ namespace devils
     public:
         struct Options
         {
-            /// @brief The PID parameters for translation. Uses delta inches as the error.
-            PIDController::Options translationPID = {0.1, 0.0, 0.0};
+            /// @brief The PID parameters for translation in the X (forward/backward) direction. Uses delta inches as the error.
+            PIDController::Options translationPIDX = {0.1, 0.0, 0.0};
+
+            /// @brief The PID parameters for translation in the Y (left/right) direction. Uses delta inches as the error.
+            PIDController::Options translationPIDY = {0.1, 0.0, 0.0};
 
             /// @brief The PID parameters for rotation. Uses delta radians as the error.
             PIDController::Options rotationPID = {0.05, 0.0, 0.0};
@@ -59,7 +62,8 @@ namespace devils
               trajectory(trajectory),
               internalTimer(trajectory->duration()),
               rotationPID(options.rotationPID),
-              translationPID(options.translationPID),
+              translationPIDX(options.translationPIDX),
+              translationPIDY(options.translationPIDY),
               options(options)
         {
         }
@@ -69,7 +73,8 @@ namespace devils
         {
             // Reset PID Controllers
             rotationPID.reset();
-            translationPID.reset();
+            translationPIDX.reset();
+            translationPIDY.reset();
 
             internalTimer.start();
         }
@@ -99,7 +104,7 @@ namespace devils
                 Units::diffRad(feedbackSetpoint.pose.rotation, currentPosition.rotation));
 
             // Move Chassis using PID controllers with local error as the input
-            chassis.move(translationPID.update(localError.x), rotationPID.update(localError.rotation), translationPID.update(localError.y));
+            chassis.move(translationPIDX.update(localError.x), rotationPID.update(localError.rotation), translationPIDY.update(localError.y));
         }
 
         void onStop() override
@@ -129,6 +134,7 @@ namespace devils
          * @param distanceToTarget The distance to the target in inches
          * @returns The target speed in inches per second
          */
+        /*
         virtual float getSpeed(const float distanceToTarget)
         {
             // Calculate output speed
@@ -143,12 +149,13 @@ namespace devils
 
             return outputSpeed;
         }
-
+        */
         // Params
         ChassisBase& chassis;
         OdomSource& odomSource;
         PIDController rotationPID;
-        PIDController translationPID;
+        PIDController translationPIDX;
+        PIDController translationPIDY;
         std::shared_ptr<Trajectory> trajectory;
         Timer internalTimer;
         Options options;
