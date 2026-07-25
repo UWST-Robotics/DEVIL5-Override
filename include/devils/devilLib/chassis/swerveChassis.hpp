@@ -230,6 +230,10 @@ namespace devils
             backRight.move(-M_PI/4.0, 0);
         }
 
+        void stop(){
+            plant();
+        }
+
         // Returns an array containing wheel distances traveled and module angles
         void getWheelPositionInfo(){
             
