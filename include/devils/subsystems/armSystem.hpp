@@ -17,6 +17,8 @@ namespace devils
             : liftMotors(liftMotors),
               chainBarMotors(chainBarMotors)
         {
+            liftMotors.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+            chainBarMotors.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
         }
 
     /**
@@ -29,8 +31,17 @@ namespace devils
         chainBarMotors.move(speed * CHAINBAR_LIFT_SPEED_RATIO);
     }
 
+    /**
+     * Stops the lift and chain bar motors.
+     */
+    void stopLift()
+    {
+        liftMotors.stop();
+        chainBarMotors.stop();
+    }
+
     private:
-        static constexpr float CHAINBAR_LIFT_SPEED_RATIO = 2.0f; // The chain bar moves at twice the speed of the lift
+        static constexpr float CHAINBAR_LIFT_SPEED_RATIO = 1.0f /*0.375f*/; // The chain bar moves at 0.375 times the speed of the lift
 
         SmartMotorGroup& liftMotors;
         SmartMotorGroup& chainBarMotors;
