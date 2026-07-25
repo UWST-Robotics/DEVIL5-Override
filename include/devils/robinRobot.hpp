@@ -57,17 +57,16 @@ namespace devils
                 const bool liftDownButton = mainController.r2; //temp button to move lift
                 const bool clawButton = mainController.l1; //temp button to open/close claw
 
-                intake.move(rightY);
+                intake.move(rightY * 0.8f);
 
                 claw.setClawClosed(clawButton);
 
                 if (liftUpButton)
-                    lift.move(1.0f);
+                    arm.moveLift(0.5f);
                 else if (liftDownButton)
-                    lift.move(-1.0f);
+                    arm.moveLift(-0.3f);
                 else
-                    lift.stop();
-
+                    arm.stopLift();
 
                 // Drive normally
                 chassis.move(leftY, leftX * 0.5f, 0);
@@ -82,9 +81,9 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {16, -17});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {18, -17});
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-14, 15});
-        SmartMotorGroup intake = SmartMotorGroup("Intake", {8}); //Main intake first, floating roller second (reversed)
+        SmartMotorGroup intake = SmartMotorGroup("Intake", {-8, -12}); //Main intake first, floating roller second (reversed)
         SmartMotorGroup lift = SmartMotorGroup("Lift", {9}); //Main lift control
         SmartMotorGroup chainBar = SmartMotorGroup("ChainBar", {10}); //Chainbar at the end of the lift
         ADIPneumaticGroup clawPneumatics = ADIPneumaticGroup("ClawPneumatics", {'A'}, false);
