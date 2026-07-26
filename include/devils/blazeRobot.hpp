@@ -44,7 +44,7 @@ namespace devils
         ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'E'}, false);
 
         // Motors
-        SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {9, 10});
+        SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {9, -10});
 
         // Subsystems
         LiftSystem lift = LiftSystem(liftMotors, 15.0f);
@@ -70,6 +70,9 @@ namespace devils
         VBValue<float> odoXPos = VBValue("X", 0.0f);
         VBValue<float> odoYPos = VBValue("Y", 0.0f);
         VBValue<float> odoHeading = VBValue("Heading", 0.0f);
+
+        VBValue<float> currentLiftPosition = VBValue("LiftPosition", 0.0f);
+        VBValue<float> targetLiftPosition = VBValue("LiftTarget", 0.0f);
 
         BlazeRobot()
         {
@@ -135,8 +138,8 @@ namespace devils
                     swerve.plant();
                     //swerve.move(0, 0, 0);
                 } else {
-                    swerve.move(leftY, rightX, leftX);
-                    //swerve.moveFieldCentric(leftY, rightX, leftX, heading);
+                    //swerve.move(leftY, rightX, leftX);
+                    swerve.moveFieldCentric(leftY, rightX, leftX, heading);
                 }
                 //swerve.home();
 
@@ -157,6 +160,9 @@ namespace devils
                 odoXPos.set(odometry->getPose().x);
                 odoYPos.set(odometry->getPose().y);
                 odoHeading.set(odometry->getPose().rotation);
+
+                currentLiftPosition.set(lift.getPosition());
+                targetLiftPosition.set(lift.getTargetPosition());
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);

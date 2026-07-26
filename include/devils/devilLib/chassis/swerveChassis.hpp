@@ -219,8 +219,8 @@ namespace devils
         {
             // Rotate translation vector by negative heading
             Vector2 inputVector = Vector2(strafe, forward);
-            inputVector.rotate(-heading);
-            move(inputVector.y, turn, inputVector.x);
+            Vector2 rotatedVector = inputVector.rotate(-heading);
+            move(rotatedVector.y, turn, rotatedVector.x);
         }
         // Rotate all wheels to 45deg (circle configuration) and stop them. This can be used to prevent the drivetrain from being pushed.
         void plant(){

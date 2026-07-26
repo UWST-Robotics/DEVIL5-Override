@@ -5,7 +5,8 @@
 
 namespace devils
 {
-    PIDController liftPID(0.0005, 0.0001, 0.0001);
+    PIDController liftPID(0.1, 0.0000, 0.0000); // PID controller for the lift system
+    float targetLiftPosition; // Target position for the lift in inches
 
     /**
      * Represents the lift system of the robot.
@@ -35,6 +36,8 @@ namespace devils
      */
     void moveToPosition(const float targetPosition)
     {
+        targetLiftPosition = targetPosition; // Store the target position for telemetry
+        
         const float targetInches = convertToInches(targetPosition);
         const auto currentPosition = getPosition();
     
@@ -44,6 +47,11 @@ namespace devils
         float output = liftPID.update(error); // Calculate the PID output
 
         moveLift(output); // Move the lift based on the PID output
+    }
+    
+    float getTargetPosition() const
+    {
+        return targetLiftPosition;
     }
 
     /**
