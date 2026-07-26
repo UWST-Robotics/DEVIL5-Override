@@ -52,6 +52,12 @@ namespace devils
         std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
+        // Vexbridge (yikes)
+        VEXBridge bridge = VEXBridge();
+        VBValue<float> odoXPos = VBValue("X", 0.0f);
+        VBValue<float> oodYPos = VBValue("Y", 0.0f);
+        VBValue<float> odoHeading = VBValue("Heading", 0.0f);
+
         BlazeRobot()
         {
             imu.calibrate();
@@ -113,6 +119,10 @@ namespace devils
                 // }
                 swerve.home();
                 
+                // Odo telemetry for tuning (vbOdom is curretly broken)
+                odoXPos.set(odometry.getPose().x);
+                odoYPos.set(odometry.getPose().y);
+                odoHeading.set(odometry.getPose().rotation);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
