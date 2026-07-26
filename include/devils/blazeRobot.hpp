@@ -3,6 +3,8 @@
 #include "./devilLib/devils.h"
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
+#include "./subsystems/liftSystem.hpp"
+#include "./subsystems/clawSystem.hpp"
 
 namespace devils
 {
@@ -10,8 +12,8 @@ namespace devils
     {
         // Constants
         static constexpr float DEAD_WHEEL_RADIUS = 1;
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-1.8, 0);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0, -2.2);
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-5, 0.5f);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(4, 0);
 
         // Swerve Modules
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
@@ -29,14 +31,25 @@ namespace devils
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
         
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, 8.1f);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 3.5f);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 1.9f);
         SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 4.9f);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 4.5f);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 4.7f);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
             10.5
         );
+
+        // Pneumatics
+        ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'E'}, false);
+
+        // Motors
+        SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {9, 10});
+
+        // Subsystems
+        LiftSystem lift = LiftSystem(liftMotors, 15.0f);
+        ClawSystem claw = ClawSystem(clawPiston);
+
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", 12);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
@@ -55,7 +68,7 @@ namespace devils
         // Vexbridge (yikes)
         VEXBridge bridge = VEXBridge();
         VBValue<float> odoXPos = VBValue("X", 0.0f);
-        VBValue<float> oodYPos = VBValue("Y", 0.0f);
+        VBValue<float> odoYPos = VBValue("Y", 0.0f);
         VBValue<float> odoHeading = VBValue("Heading", 0.0f);
 
         BlazeRobot()
@@ -80,8 +93,9 @@ namespace devils
             mainController.rightX.setOptions(joystickOptions);
             mainController.rightY.setOptions(joystickOptions);
 
-            mainController.up.setMode(ControllerButton::JUST_PRESSED);
-            mainController.right.setMode(ControllerButton::TOGGLED);
+            mainController.l1.setMode(ControllerButton::TOGGLED);
+
+            lift.calibrateLift();
         }
 
         void autonomous() override
@@ -105,24 +119,44 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
+                bool upOnePinButton = mainController.right;
+                bool downOnePinButton = mainController.left;
+                bool maxHeightButton = mainController.y;
+                bool minHeightButton = mainController.b;
+                bool clawToggleButton = mainController.l1;
+
                 const float heading = imu.getHeading();
 
                 // Drive the robot with the left joystick
-                //swerve.moveFieldCentric(leftY, rightX, leftX, heading);
+                // Turn the robot with the right joystick
                 // Drive the robot
                 // Plant if we aren't moving
-                // if(leftY == 0 && leftX == 0 && rightX == 0){
-                //     swerve.plant();
-                //     //swerve.move(0, 0, 0);
-                // } else {
-                //     swerve.move(leftY, rightX, leftX);
-                // }
-                swerve.home();
-                
+                if(leftY == 0 && leftX == 0 && rightX == 0){
+                    swerve.plant();
+                    //swerve.move(0, 0, 0);
+                } else {
+                    swerve.move(leftY, rightX, leftX);
+                    //swerve.moveFieldCentric(leftY, rightX, leftX, heading);
+                }
+                //swerve.home();
+
+                if (upOnePinButton)
+                    lift.moveToPosition(lift.getPosition() + 1); // Move up one pin
+                else if (downOnePinButton)
+                    lift.moveToPosition(lift.getPosition() - 1); // Move down one pin
+                else if (maxHeightButton)
+                    lift.moveToPosition(25.0f); // Move to max height (in pins)
+                else if (minHeightButton)
+                    lift.moveToPosition(0.0f); // Move to min height (in pins)
+
+                if (clawToggleButton) {
+                    claw.setClawClosed(clawToggleButton); // Toggle the claw state
+                }
+
                 // Odo telemetry for tuning (vbOdom is curretly broken)
-                odoXPos.set(odometry.getPose().x);
-                odoYPos.set(odometry.getPose().y);
-                odoHeading.set(odometry.getPose().rotation);
+                odoXPos.set(odometry->getPose().x);
+                odoYPos.set(odometry->getPose().y);
+                odoHeading.set(odometry->getPose().rotation);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
