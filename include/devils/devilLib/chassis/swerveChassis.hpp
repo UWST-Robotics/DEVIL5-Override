@@ -136,8 +136,8 @@ namespace devils
          * @param frontRight The swerve module for the front right wheel.
          * @param backLeft The swerve module for the back left wheel.
          * @param backRight The swerve module for the back right wheel.
-         * @param length The length of the robot in inches.
-         * @param width The width of the robot in inches.
+         * @param length The length of the robot in inches, measured from center of front swerve pod to center of back swerve pod.
+         * @param width The width of the robot in inches, measured from center of left swerve pod to center of right swerve pod.
          */
         SwerveChassis(
             SwerveModule& frontLeft,
@@ -228,6 +228,13 @@ namespace devils
             frontRight.move(M_PI/4.0, 0);
             backLeft.move(M_PI/4.0, 0);
             backRight.move(-M_PI/4.0, 0);
+        }
+
+        void home(){
+            frontLeft.move(0, 0);
+            frontRight.move(0, 0);
+            backLeft.move(0, 0);
+            backRight.move(0, 0);
         }
 
         void stop(){

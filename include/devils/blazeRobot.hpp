@@ -23,19 +23,19 @@ namespace devils
         SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
         SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", true);
-        ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", true);
-        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", true);
-        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", true);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
+        ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
+        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
+        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
         
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, 0.0f);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 0.0f);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 0.0f);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 0.0f);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, 8.1f);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 3.5f);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 4.9f);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 4.5f);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
-            9.0
+            10.5
         );
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", 12);
@@ -99,8 +99,19 @@ namespace devils
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
 
+                const float heading = imu.getHeading();
+
                 // Drive the robot with the left joystick
-                swerve.move(leftY, rightX, leftX);
+                //swerve.moveFieldCentric(leftY, rightX, leftX, heading);
+                // Drive the robot
+                // Plant if we aren't moving
+                // if(leftY == 0 && leftX == 0 && rightX == 0){
+                //     swerve.plant();
+                //     //swerve.move(0, 0, 0);
+                // } else {
+                //     swerve.move(leftY, rightX, leftX);
+                // }
+                swerve.home();
                 
 
                 // Delay to prevent the CPU from being overloaded
