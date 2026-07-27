@@ -260,7 +260,7 @@
     },
     "upload_options": {
       "description": "DevilBots VEX-U Robot Code",
-      "icon": "planet",
+      "icon": "DevilBots",
       "slot": 1
     },
     "use_early_access": false

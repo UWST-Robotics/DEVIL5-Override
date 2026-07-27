@@ -2,14 +2,45 @@
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
- *
+ * 
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
+ * TODO: Automatically detect which robot is plugged in and set the robot variable to the correct robot class.
  */
 void initialize()
 {
-    Logger::info("==== Initialize ====");
+    Logger::info("==== Initialize ===="); // <-- Change this to the target robot
     robot = std::make_shared<BlazeRobot>(); // <-- Change this to the target robot
+
+    // Reads the ROBOT_NAME constant from generated_robot.hpp and creates the correct robot 
+    // class based on that name. This automatically detects which robot is plugged in and sets 
+    // the robot variable to the correct robot class.
+    // This probably doesn't work and the files were confusing me
+
+    // if (ROBOT_NAME == "Blaze")
+    // {
+    //     robot = std::make_shared<BlazeRobot>();
+    // }
+    // else if (ROBOT_NAME == "PJ")
+    // {
+    //     robot = std::make_shared<PJRobot>();
+    // }
+    // else if (ROBOT_NAME == "Robin")
+    // {
+    //     robot = std::make_shared<RobinRobot>();
+    // }
+    // else if (ROBOT_NAME == "SwerveTest")
+    // {
+    //     robot = std::make_shared<SwerveTestRobot>();
+    // }
+    // else
+    // {
+    //     Logger::error("Unknown robot name: " + std::string(ROBOT_NAME));
+    //     Logger::error("Please check the ROBOT_NAME constant in generated_robot.hpp");
+    //     Logger::error("Defaulting to BlazeRobot");
+    //     robot = std::make_shared<BlazeRobot>(); 
+    // }
+
     Logger::info("Robot created");
 }
 
