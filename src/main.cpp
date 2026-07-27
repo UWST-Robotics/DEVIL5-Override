@@ -5,41 +5,29 @@
  * 
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
- * TODO: Automatically detect which robot is plugged in and set the robot variable to the correct robot class.
  */
 void initialize()
 {
-    Logger::info("==== Initialize ===="); // <-- Change this to the target robot
-    robot = std::make_shared<BlazeRobot>(); // <-- Change this to the target robot
+    Logger::info("==== Initialize ====");
+    //robot = std::make_shared<BlazeRobot>(); // <-- Change this to the target robot
 
-    // Reads the ROBOT_NAME constant from generated_robot.hpp and creates the correct robot 
-    // class based on that name. This automatically detects which robot is plugged in and sets 
-    // the robot variable to the correct robot class.
-    // This probably doesn't work and the files were confusing me
-
-    // if (ROBOT_NAME == "Blaze")
-    // {
-    //     robot = std::make_shared<BlazeRobot>();
-    // }
-    // else if (ROBOT_NAME == "PJ")
-    // {
-    //     robot = std::make_shared<PJRobot>();
-    // }
-    // else if (ROBOT_NAME == "Robin")
-    // {
-    //     robot = std::make_shared<RobinRobot>();
-    // }
-    // else if (ROBOT_NAME == "SwerveTest")
-    // {
-    //     robot = std::make_shared<SwerveTestRobot>();
-    // }
-    // else
-    // {
-    //     Logger::error("Unknown robot name: " + std::string(ROBOT_NAME));
-    //     Logger::error("Please check the ROBOT_NAME constant in generated_robot.hpp");
-    //     Logger::error("Defaulting to BlazeRobot");
-    //     robot = std::make_shared<BlazeRobot>(); 
-    // }
+    // Makes a new card reader and reads the robot name from the card.
+    // This is used to set the robot name in the generated header file.
+    // Then uses the robot name to upload the correct robot data.
+    devils::ReadFromCard reader;
+    std::string robotName = reader.readFile("robotName.txt"); // IMPORTANT: This file must be on the SD card for the robot to work correctly. It should contain the name of the robot (BLAZE, PJ, ROBIN, etc.)
+    if (robotName == "BLAZE")
+        robot = std::make_shared<BlazeRobot>();
+    else if (robotName == "PJ")
+        robot = std::make_shared<PJRobot>();
+    else if (robotName == "ROBIN")
+        robot = std::make_shared<RobinRobot>();
+    else
+    {
+        Logger::warn("Robot name not found on SD card. Using default name.");
+        robotName = "ROBOT NAME NOT FOUND";
+        robot = std::make_shared<BlazeRobot>();
+    }
 
     Logger::info("Robot created");
 }
