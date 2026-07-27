@@ -12,8 +12,8 @@ namespace devils
     {
         // Constants
         static constexpr float DEAD_WHEEL_RADIUS = 1;
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.1f, 0.0f);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -10.0f);
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.0f, 0.0f);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -4.0f);
 
         // Swerve Modules
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
@@ -96,8 +96,8 @@ namespace devils
             toastDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
-                .deadzone = 0.1f, // <-- Minimum input to register
-                .startingValue = 0.15f, // <-- Jumps to 15% to overcome motor friction
+                .deadzone = 0.05f, // <-- Minimum input to register
+                .startingValue = 0.05f, // <-- Jumps to 15% to overcome motor friction
                 .exponent = 3.0f // <-- Cubes the input for finer control at low speeds
             };
             // Drive controls

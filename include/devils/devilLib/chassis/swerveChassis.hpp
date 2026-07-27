@@ -220,7 +220,7 @@ namespace devils
             // Rotate translation vector by negative heading
             globalHeading = heading;
             Vector2 inputVector = Vector2(-strafe, forward);
-            move(inputVector.rotate(-heading).x, turn, inputVector.rotate(-heading).y);
+            move(inputVector.rotate(-heading + fieldCentricHeadingOffset).x, turn, inputVector.rotate(-heading + fieldCentricHeadingOffset).y);
         }
 
         void calibrateFieldCentric(){
