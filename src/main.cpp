@@ -14,8 +14,8 @@ void initialize()
     // Makes a new card reader and reads the robot name from the card.
     // This is used to set the robot name in the generated header file.
     // Then uses the robot name to upload the correct robot data.
-    devils::ReadFromCard reader;
-    std::string robotName = reader.readFile("robotName.txt"); // IMPORTANT: This file must be on the SD card for the robot to work correctly. It should contain the name of the robot (BLAZE, PJ, ROBIN, etc.)
+    devils::SDCardHandler cardHandler;
+    std::string robotName = cardHandler.readFile("robotName.txt"); // IMPORTANT: This file must be on the SD card for the robot to work correctly. It should contain the name of the robot (BLAZE, PJ, ROBIN, etc.)
     if (robotName == "BLAZE")
         robot = std::make_shared<BlazeRobot>();
     else if (robotName == "PJ")

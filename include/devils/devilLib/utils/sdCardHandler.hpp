@@ -3,7 +3,7 @@
 
 namespace devils
 {
-    class ReadFromCard
+    class SDCardHandler
     {
     public:
         std::string readFile(const std::string& filename)
@@ -21,6 +21,18 @@ namespace devils
 
             file.close();
             return dataGrabbed;
+        }
+        
+        void writeFile(const std::string& filename, const std::string& data)
+        {
+            std::ofstream file("/usd/" + filename);
+
+            if (!file.is_open()) {
+                return;
+            }
+
+            file << data;
+            file.close();
         }
     };
 }
