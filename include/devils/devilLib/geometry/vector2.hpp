@@ -151,7 +151,8 @@ namespace devils
          */
         Vector2 rotate(const float& angle) const
         {
-            return {x*cos(angle) - y*sin(angle), x*sin(angle + y*cos(angle))};
+            return {x*cos(angle) - y*sin(angle),
+                    x*sin(angle) + y*cos(angle)};
         }
 
         /**

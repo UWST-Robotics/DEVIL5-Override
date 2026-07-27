@@ -12,8 +12,8 @@ namespace devils
     {
         // Constants
         static constexpr float DEAD_WHEEL_RADIUS = 1;
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(-5, 0.5f);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(4, 0);
+        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.1f, 0.0f);
+        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -10.0f);
 
         // Swerve Modules
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
@@ -41,18 +41,18 @@ namespace devils
         );
 
         // Pneumatics
-        ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'E'}, false);
+        ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'G'}, false);
 
         // Motors
         SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {9, -10});
 
         // Subsystems
-        LiftSystem lift = LiftSystem(liftMotors, 15.0f);
+        LiftSystem lift = LiftSystem(liftMotors, 31.0f);
         ClawSystem claw = ClawSystem(clawPiston);
 
 
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", 12);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 11);
         InertialSensor imu = InertialSensor("IMU", 13);
 
 
@@ -62,7 +62,7 @@ namespace devils
             DEAD_WHEEL_RADIUS);
 
         // Displays
-        std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+        //std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
         // Vexbridge (yikes)
@@ -73,6 +73,16 @@ namespace devils
 
         VBValue<float> currentLiftPosition = VBValue("LiftPosition", 0.0f);
         VBValue<float> targetLiftPosition = VBValue("LiftTarget", 0.0f);
+        VBValue<float> liftError = VBValue("Lift Error", 0.0f);
+
+        VBValue<float> fcHeading = VBValue("FC Heading", 0.0f);
+
+        VBValue<float> fcStickInX = VBValue("Stick X", 0.0f);
+        VBValue<float> fcStickInY = VBValue("Stick Y", 0.0f);
+
+        VBValue<float> fcOutX = VBValue("Out X", 0.0f);
+        VBValue<float> fcOutY = VBValue("Out Y", 0.0f);
+        
 
         BlazeRobot()
         {
@@ -82,7 +92,7 @@ namespace devils
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
 
-            devilBotsDisplay->start();
+            //devilBotsDisplay->start();
             toastDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
@@ -90,13 +100,19 @@ namespace devils
                 .startingValue = 0.15f, // <-- Jumps to 15% to overcome motor friction
                 .exponent = 3.0f // <-- Cubes the input for finer control at low speeds
             };
-
+            // Drive controls
             mainController.leftX.setOptions(joystickOptions);
             mainController.leftY.setOptions(joystickOptions);
             mainController.rightX.setOptions(joystickOptions);
             mainController.rightY.setOptions(joystickOptions);
-
-            mainController.l1.setMode(ControllerButton::TOGGLED);
+            // Lift controls
+            mainController.l1.setMode(ControllerButton::JUST_PRESSED);
+            mainController.right.setMode(ControllerButton::JUST_PRESSED);
+            mainController.down.setMode(ControllerButton::JUST_PRESSED);
+            mainController.y.setMode(ControllerButton::JUST_PRESSED);
+            mainController.b.setMode(ControllerButton::JUST_PRESSED);
+            // Field centric button
+            mainController.left.setMode(ControllerButton::JUST_PRESSED);
 
             lift.calibrateLift();
         }
@@ -121,14 +137,16 @@ namespace devils
                 const float leftX = mainController.leftX;
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.5f;
-
+                // Lift inputs
                 bool upOnePinButton = mainController.right;
-                bool downOnePinButton = mainController.left;
+                bool downOnePinButton = mainController.down;
                 bool maxHeightButton = mainController.y;
                 bool minHeightButton = mainController.b;
                 bool clawToggleButton = mainController.l1;
 
-                const float heading = imu.getHeading();
+                bool resetFieldCentricButton = mainController.left;
+
+                float heading = odometry->getPose().rotation;
 
                 // Drive the robot with the left joystick
                 // Turn the robot with the right joystick
@@ -143,18 +161,24 @@ namespace devils
                 }
                 //swerve.home();
 
+                if(resetFieldCentricButton){
+                    swerve.calibrateFieldCentric();
+                }
+
                 if (upOnePinButton)
-                    lift.moveToPosition(lift.getPosition() + 1); // Move up one pin
-                else if (downOnePinButton)
-                    lift.moveToPosition(lift.getPosition() - 1); // Move down one pin
-                else if (maxHeightButton)
+                    lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) + 1); // Move up one pin
+                if (downOnePinButton)
+                    lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) - 1); // Move down one pin
+                if (maxHeightButton)
                     lift.moveToPosition(25.0f); // Move to max height (in pins)
-                else if (minHeightButton)
+                if (minHeightButton)
                     lift.moveToPosition(0.0f); // Move to min height (in pins)
 
                 if (clawToggleButton) {
-                    claw.setClawClosed(clawToggleButton); // Toggle the claw state
+                    claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
                 }
+
+                lift.update();
 
                 // Odo telemetry for tuning (vbOdom is curretly broken)
                 odoXPos.set(odometry->getPose().x);
@@ -163,6 +187,17 @@ namespace devils
 
                 currentLiftPosition.set(lift.getPosition());
                 targetLiftPosition.set(lift.getTargetPosition());
+                liftError.set(lift.getError());
+
+                fcHeading.set(heading);
+
+                fcStickInX.set(leftX);
+                fcStickInY.set(leftY);
+
+                Vector2 inputVect = Vector2(leftX, leftY);
+
+                fcOutX.set(inputVect.rotate(-heading).x);
+                fcOutY.set(inputVect.rotate(-heading).y);
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);

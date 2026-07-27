@@ -5,8 +5,11 @@
 
 namespace devils
 {
-    PIDController liftPID(0.1, 0.0000, 0.0000); // PID controller for the lift system
+    PIDController liftPID(0.5, 0.0000, 0.0000); // PID controller for the lift system
     float targetLiftPosition; // Target position for the lift in inches
+    float error;
+    float currentPosition;
+    float targetInches;
 
     /**
      * Represents the lift system of the robot.
@@ -36,14 +39,17 @@ namespace devils
      */
     void moveToPosition(const float targetPosition)
     {
-        targetLiftPosition = targetPosition; // Store the target position for telemetry
-        
-        const float targetInches = convertToInches(targetPosition);
-        const auto currentPosition = getPosition();
-    
-        std::clamp(currentPosition, 0.0f, maxHeight); // Clamp the current position to the range of the lift
+        targetInches = convertToInches(targetPosition);
+        targetInches = std::clamp(targetInches, 0.0f, maxHeight); // Clamp the current position to the range of the lift
 
-        const float error = targetInches - currentPosition; // Calculate the error
+        targetLiftPosition = targetInches; // Store the target position for telemetry
+
+    }
+
+    void update()
+    {
+        currentPosition = getPosition();
+        error = targetInches - getPosition(); // Calculate the error
         float output = liftPID.update(error); // Calculate the PID output
 
         moveLift(output); // Move the lift based on the PID output
@@ -72,11 +78,20 @@ namespace devils
         return pins * 6.5f;
     }
 
+    float convertToPins(const float inches)
+    {
+        return inches / 6.5f;
+    }
+
     float getPosition()
     {
         float currentPosition = liftMotors.getPosition();
-        float currentPositionInches = (currentPosition * 2 * M_PI / 50) * 0.3f; // Convert to inches
+        float currentPositionInches = ((currentPosition * 2 * M_PI * 0.3f) / (50 * 6.0f)); // Convert to inches
         return currentPositionInches;
+    }
+
+    float getError(){
+        return error;
     }
 
     void calibrateLift()

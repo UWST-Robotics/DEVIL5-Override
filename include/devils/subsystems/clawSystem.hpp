@@ -6,6 +6,7 @@ namespace devils
 {
     class ClawSystem
     {
+    
     public:
         ClawSystem(ADIPneumaticGroup& clawPneumatics)
             :claw(clawPneumatics)
@@ -16,9 +17,13 @@ namespace devils
          * Closes and opens the claw
          * @param extended - True to close the claw, false to open it.
          */
-        void setClawClosed(const bool extended) const
+        void setClawClosed(bool extended)
         {
             claw.setExtended(extended);
+        }
+
+        bool getClawState(){
+            return claw.getExtended();
         }
 
     private:

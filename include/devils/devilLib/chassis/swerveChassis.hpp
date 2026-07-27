@@ -218,11 +218,16 @@ namespace devils
             const float heading)
         {
             // Rotate translation vector by negative heading
-            Vector2 inputVector = Vector2(strafe, forward);
-            Vector2 rotatedVector = inputVector.rotate(-heading);
-            move(rotatedVector.y, turn, rotatedVector.x);
+            globalHeading = heading;
+            Vector2 inputVector = Vector2(-strafe, forward);
+            move(inputVector.rotate(-heading).x, turn, inputVector.rotate(-heading).y);
         }
-        // Rotate all wheels to 45deg (circle configuration) and stop them. This can be used to prevent the drivetrain from being pushed.
+
+        void calibrateFieldCentric(){
+            fieldCentricHeadingOffset = -globalHeading;
+        }
+
+        // Rotate all wheels to 45deg (X configuration) and stop them. This can be used to prevent the drivetrain from being pushed.
         void plant(){
             frontLeft.move(-M_PI/4.0, 0);
             frontRight.move(M_PI/4.0, 0);
@@ -267,5 +272,8 @@ namespace devils
         float length;
         float width;
         float R;
+
+        float fieldCentricHeadingOffset;
+        float globalHeading;
     };
 }
