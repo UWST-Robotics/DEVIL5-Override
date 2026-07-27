@@ -2,14 +2,33 @@
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
- *
+ * 
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
 void initialize()
 {
     Logger::info("==== Initialize ====");
-    robot = std::make_shared<BlazeRobot>(); // <-- Change this to the target robot
+    //robot = std::make_shared<BlazeRobot>(); // <-- Change this to the target robot
+
+    // Makes a new card reader and reads the robot name from the card.
+    // This is used to set the robot name in the generated header file.
+    // Then uses the robot name to upload the correct robot data.
+    devils::SDCardHandler cardHandler;
+    std::string robotName = cardHandler.readFile("robotName.txt"); // IMPORTANT: This file must be on the SD card for the robot to work correctly. It should contain the name of the robot (BLAZE, PJ, ROBIN, etc.)
+    if (robotName == "BLAZE")
+        robot = std::make_shared<BlazeRobot>();
+    else if (robotName == "PJ")
+        robot = std::make_shared<PJRobot>();
+    else if (robotName == "ROBIN")
+        robot = std::make_shared<RobinRobot>();
+    else
+    {
+        Logger::warn("Robot name not found on SD card. Using default name.");
+        robotName = "ROBOT NAME NOT FOUND";
+        robot = std::make_shared<BlazeRobot>(); // Change this to name if robot does not have an SD card. This is a fallback to prevent the robot from crashing.
+    }
+
     Logger::info("Robot created");
 }
 
