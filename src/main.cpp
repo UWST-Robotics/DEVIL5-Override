@@ -26,7 +26,7 @@ void initialize()
     {
         Logger::warn("Robot name not found on SD card. Using default name.");
         robotName = "ROBOT NAME NOT FOUND";
-        robot = std::make_shared<BlazeRobot>();
+        robot = std::make_shared<BlazeRobot>(); // Change this to name if robot does not have an SD card. This is a fallback to prevent the robot from crashing.
     }
 
     Logger::info("Robot created");

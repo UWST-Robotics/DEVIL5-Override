@@ -81,9 +81,9 @@ namespace devils
         }
 
         // Hardware
-        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {18, -17});
+        SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {8, -12});
         SmartMotorGroup leftMotors = SmartMotorGroup("LeftMotors", {-14, 15});
-        SmartMotorGroup intake = SmartMotorGroup("Intake", {-8, -12}); //Main intake first, floating roller second (reversed)
+        SmartMotorGroup intake = SmartMotorGroup("Intake", {18, -17}); //Main intake first, floating roller second (reversed)
         SmartMotorGroup lift = SmartMotorGroup("Lift", {9}); //Main lift control
         SmartMotorGroup chainBar = SmartMotorGroup("ChainBar", {10}); //Chainbar at the end of the lift
         ADIPneumaticGroup clawPneumatics = ADIPneumaticGroup("ClawPneumatics", {'A'}, false);
