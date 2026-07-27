@@ -119,6 +119,11 @@ namespace devils
             return (wheelRotations * 2 * M_PI) * wheelRadius;
         }
 
+        void stop(){
+            motorA.move(0);
+            motorB.move(0);
+        }
+
         private:
             PIDController angleController = PIDController(0.9f, 0.0f, 0.0f); // TODO: Tune these values
     };
@@ -243,7 +248,10 @@ namespace devils
         }
 
         void stop(){
-            plant();
+            frontLeft.stop();
+            frontRight.stop();
+            backLeft.stop();
+            backRight.stop();
         }
 
         // Returns an array containing wheel distances traveled and module angles

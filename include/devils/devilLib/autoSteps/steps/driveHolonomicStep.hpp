@@ -18,13 +18,13 @@ namespace devils
         struct Options
         {
             /// @brief The PID parameters for translation in the X (forward/backward) direction. Uses delta inches as the error.
-            PIDController::Options translationPIDX = {0.1, 0.0, 0.0};
+            PIDController::Options translationPIDX = {0.3, 0.0, 0.0};
 
             /// @brief The PID parameters for translation in the Y (left/right) direction. Uses delta inches as the error.
-            PIDController::Options translationPIDY = {0.1, 0.0, 0.0};
+            PIDController::Options translationPIDY = {0.3, 0.0, 0.0};
 
             /// @brief The PID parameters for rotation. Uses delta radians as the error.
-            PIDController::Options rotationPID = {0.05, 0.0, 0.0};
+            PIDController::Options rotationPID = {1.0, 0.0, 0.0};
 
             /// @brief THe minimum speed in %
             float minSpeed = 0.0;
@@ -100,7 +100,7 @@ namespace devils
             // localError.y is aligned with the side of the robot.
             const auto localError = Pose(
                 error.x * cosf(currentPosition.rotation) + error.y * sinf(currentPosition.rotation),
-                -error.x * sinf(currentPosition.rotation) + error.y * cosf(currentPosition.rotation),
+                -(-error.x * sinf(currentPosition.rotation) + error.y * cosf(currentPosition.rotation)),
                 Units::diffRad(feedbackSetpoint.pose.rotation, currentPosition.rotation));
 
             // Move Chassis using PID controllers with local error as the input

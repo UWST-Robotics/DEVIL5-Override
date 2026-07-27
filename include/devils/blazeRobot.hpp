@@ -3,6 +3,7 @@
 #include "./devilLib/devils.h"
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
+#include "./autonomous/testingAuto.hpp"
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
 
@@ -122,6 +123,7 @@ namespace devils
             imu.waitUntilDoneCalibrated();
             //SkillsAuto::run(swerve, *odometry.get(), stick, intake, tube, wings, false);
             //MatchAuto::run(swerve, *odometry.get(), stick, intake, tube, wings, false);
+            TestingAuto::run(swerve, *odometry.get());
         }
 
         void opcontrol() override

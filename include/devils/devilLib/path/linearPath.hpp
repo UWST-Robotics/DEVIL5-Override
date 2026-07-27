@@ -23,6 +23,25 @@ namespace devils
         {
         }
 
+        /**
+         * Makes a simple 2 point arc path.
+         * @param from The starting pose
+         * @param to The ending pose
+         * @param delta Distance of the entry and exit anchor points in inches
+         * @param isReversed True if the path is reversed
+         * @return The spline path
+         */
+        static LinearPath makeLinearPath(
+            const Pose& from,
+            const Pose& to)
+        {
+            std::vector<Pose> poses;
+            poses.emplace_back(from.x, from.y, from.rotation);
+            poses.emplace_back(to.x, to.y, to.rotation);
+            return {poses};
+        }
+
+
         Pose getPoseAt(const float index) override
         {
             // Check OOB
