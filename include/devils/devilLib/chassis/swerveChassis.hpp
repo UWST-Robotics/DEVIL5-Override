@@ -53,11 +53,14 @@ namespace devils
         {
             // Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
             bool enableRotationOptimization = false;
+            float passedTargetAngle = targetAngle;
             if (enableRotationOptimization){
-                if(abs(getAngleError(getPodAngle(), targetAngle)) > 90){
+                if(abs(getAngleError(getPodAngle(), targetAngle)) > M_PI/2.0f){
                     // TODO - this will not work but it's the general idea
                     targetAngle += M_PI;
-                    drivespeed *= -1;
+                }
+                if(true){
+                     drivespeed *= -1;
                 }
             }
             
@@ -135,6 +138,9 @@ namespace devils
     class SwerveChassis : public ChassisBase
     {
     public:
+        float fieldCentricHeadingOffset;
+        float constantFCHeadingOffset = M_PI/2.0f;
+        float globalHeading;
         /**
          * Creates a new swerve chassis.
          * @param frontLeft The swerve module for the front left wheel.
@@ -225,7 +231,7 @@ namespace devils
             // Rotate translation vector by negative heading
             globalHeading = heading;
             Vector2 inputVector = Vector2(-strafe, forward);
-            move(inputVector.rotate(-heading + fieldCentricHeadingOffset).x, turn, inputVector.rotate(-heading + fieldCentricHeadingOffset).y);
+            move(inputVector.rotate(-(heading + fieldCentricHeadingOffset + constantFCHeadingOffset)).x, turn, inputVector.rotate(-(heading + fieldCentricHeadingOffset + constantFCHeadingOffset)).y);
         }
 
         void calibrateFieldCentric(){
@@ -280,8 +286,5 @@ namespace devils
         float length;
         float width;
         float R;
-
-        float fieldCentricHeadingOffset;
-        float globalHeading;
     };
 }

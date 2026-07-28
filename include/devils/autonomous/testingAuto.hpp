@@ -17,6 +17,9 @@ namespace devils
 
             autoBuilder.jumpTo({0, 0, Units::degToRad(180)});
             autoBuilder.driveTo({-24, 24, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({24, 24, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({24, -24, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({-24, -24, Units::degToRad(0)})->startSync();
             //autoBuilder.rotate(180);
         }
     };

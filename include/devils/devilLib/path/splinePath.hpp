@@ -14,6 +14,9 @@ namespace devils
     class SplinePath : public Path
     {
     public:
+        /// @brief The list of poses to interpolate between
+        std::vector<SplinePose> poses;
+
         /**
          * Creates a new instance of a spline path using a list of SplinePoses.
          * @param poses The list of poses to interpolate between
@@ -121,8 +124,5 @@ namespace devils
 
         /// @brief True if the path is reversed
         bool isReversed = false;
-
-        /// @brief The list of poses to interpolate between
-        std::vector<SplinePose> poses;
     };
 }
