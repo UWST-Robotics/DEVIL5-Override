@@ -14,6 +14,7 @@ namespace devils
     class LinearPath : public Path
     {
     public:
+        std::vector<Pose> poses;
         /**
          * Creates a new instance of a linear path using a list of poses.
          * @param poses The list of poses to interpolate between
@@ -66,6 +67,6 @@ namespace devils
         }
 
     private:
-        std::vector<Pose> poses;
+        //
     };
 }

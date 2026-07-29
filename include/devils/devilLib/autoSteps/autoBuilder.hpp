@@ -164,6 +164,14 @@ namespace devils
                 distance * 0.25f,
                 isReversed);
 
+            std::string filestring = "";
+            for (int i=0; i < path.poses.size(); i++){
+                filestring += path.poses[i].toString();
+                filestring +="\n";
+            }
+            SDCardHandler sdHandler;
+            sdHandler.writeFile("spline.csv", filestring);
+
             // Generate Trajectory
             const auto generator = TrajectoryGenerator({
                 .startingVelocity = startingVelocity,
@@ -190,6 +198,14 @@ namespace devils
             auto path = LinearPath::makeLinearPath(
                 currentPose,
                 targetPose);
+
+            std::string filestring = "";
+            for (int i=0; i < path.poses.size(); i++){
+                filestring += path.poses[i].toString();
+                filestring +="\n";
+            }
+            SDCardHandler sdHandler;
+            sdHandler.writeFile("spline.csv", filestring);
 
             // Generate Trajectory
             const auto generator = TrajectoryGenerator({

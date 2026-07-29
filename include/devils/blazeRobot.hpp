@@ -84,6 +84,9 @@ namespace devils
 
         VBValue<float> fcOutX = VBValue("Out X", 0.0f);
         VBValue<float> fcOutY = VBValue("Out Y", 0.0f);
+
+        VBValue<float> fcHeadingOffset = VBValue("FC Heading offset", 0.0f);
+        VBValue<float> fcRotateAmount = VBValue("FC rotate amount", 0.0f);
         
 
         BlazeRobot()
@@ -199,6 +202,9 @@ namespace devils
 
                 fcOutX.set(inputVect.rotate(-heading).x);
                 fcOutY.set(inputVect.rotate(-heading).y);
+
+                fcHeadingOffset.set(swerve.fieldCentricHeadingOffset);
+                fcRotateAmount.set(-(heading + swerve.fieldCentricHeadingOffset + swerve.constantFCHeadingOffset));
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);

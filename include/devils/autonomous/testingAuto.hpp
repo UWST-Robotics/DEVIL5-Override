@@ -18,19 +18,11 @@ namespace devils
             const auto liftStep = std::make_shared<LiftStep>(lift, 0, 31.0f);
             liftStep->start();
 
-            // auto autoBuilder = AutoBuilder(chassis, odom);
-            // autoBuilder.jumpTo({0, 0, Units::degToRad(180)});
-            // autoBuilder.rotateTo(360)->startSync();
-            // liftStep->setPositionsToMove(3.0f);
-            // autoBuilder.driveTo({-24, 24, Units::degToRad(0)})->startSync();
-            // claw.setClawClosed(true);
-            // pros::delay(500);
-            // liftStep->setPositionsToMove(-3.0f);
-            // autoBuilder.driveTo({-24, -24, Units::degToRad(180)})->startSync();
-
-            // autoBuilder.driveTo({-24, -24, Units::degToRad(0)})->startSync();
-            // autoBuilder.driveTo({24, -24, Units::degToRad(0)})->startSync();
-            // autoBuilder.driveTo({24, 24, Units::degToRad(0)})->startSync();
+            autoBuilder.jumpTo({0, 0, Units::degToRad(180)});
+            autoBuilder.driveTo({-24, 24, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({24, 24, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({24, -24, Units::degToRad(0)})->startSync();
+            autoBuilder.driveTo({-24, -24, Units::degToRad(0)})->startSync();
             //autoBuilder.rotate(180);
 
 
