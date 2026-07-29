@@ -18,7 +18,7 @@ namespace devils
         struct Options
         {
             /// @brief The PID parameters to snap to an angle. Used to correct drift from the motion profile.
-            PIDController::Options pidParams = {0.8, 0.0, 0.0};
+            PIDController::Options pidParams = {3, 0.0, 0.0};
             
             /// @brief The constraints for the motion profile.
             TrapezoidMotionProfile::Constraints motionProfileConstraints = {16.0f, 8.0f, 16.0f};

@@ -99,6 +99,11 @@ namespace devils
         liftMotors.setPosition(0);
     }
 
+    void setMaxHeight(float height)
+    {
+        maxHeight = height;
+    }
+
     private:
         SmartMotorGroup& liftMotors;
         float maxHeight;

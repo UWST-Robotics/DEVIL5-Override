@@ -7,6 +7,7 @@
 #include "../path/splinePath.hpp"
 #include "../path/linearPath.hpp"
 #include "./steps/rotateMotionProfileStep.hpp"
+#include "./steps/rotateStep.hpp"
 #include "./steps/driveRAMSETEStep.hpp"
 #include "./steps/driveHolonomicStep.hpp"
 #include "./transformer/poseTransformer.hpp"
@@ -101,6 +102,7 @@ namespace devils
             const float heading,
             RotateMotionProfileStep::Options options = RotateMotionProfileStep::Options::defaultOptions) const
         {
+            Logger::info("I running");
             const auto transformedPose = tryTransformPose(Pose(0, 0, Units::degToRad(heading)));
 
             return std::make_shared<RotateMotionProfileStep>(

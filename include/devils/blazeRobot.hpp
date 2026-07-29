@@ -4,6 +4,7 @@
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
 #include "./autonomous/testingAuto.hpp"
+#include "./autonomous/moaSkillsAuto.hpp"
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
 
@@ -121,9 +122,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            //SkillsAuto::run(swerve, *odometry.get(), stick, intake, tube, wings, false);
-            //MatchAuto::run(swerve, *odometry.get(), stick, intake, tube, wings, false);
-            TestingAuto::run(swerve, *odometry.get());
+            MoaSkillsAuto::run(swerve, *odometry.get(), lift, claw);
         }
 
         void opcontrol() override
@@ -154,14 +153,14 @@ namespace devils
                 // Turn the robot with the right joystick
                 // Drive the robot
                 // Plant if we aren't moving
-                if(leftY == 0 && leftX == 0 && rightX == 0){
-                    swerve.plant();
-                    //swerve.move(0, 0, 0);
-                } else {
-                    //swerve.move(leftY, rightX, leftX);
-                    swerve.moveFieldCentric(leftY, rightX, leftX, heading);
-                }
-                //swerve.home();
+                // if(leftY == 0 && leftX == 0 && rightX == 0){
+                //     swerve.plant();
+                //     //swerve.move(0, 0, 0);
+                // } else {
+                //     //swerve.move(leftY, rightX, leftX);
+                //     swerve.moveFieldCentric(leftY, rightX, leftX, heading);
+                // }
+                swerve.home();
 
                 if(resetFieldCentricButton){
                     swerve.calibrateFieldCentric();
