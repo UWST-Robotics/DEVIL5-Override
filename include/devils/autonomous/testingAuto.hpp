@@ -18,6 +18,7 @@ namespace devils
             const auto liftStep = std::make_shared<LiftStep>(lift, 0, 31.0f);
             liftStep->start();
 
+            AutoBuilder autoBuilder = AutoBuilder(chassis, odom);
             autoBuilder.jumpTo({0, 0, Units::degToRad(180)});
             autoBuilder.driveTo({-24, 24, Units::degToRad(0)})->startSync();
             autoBuilder.driveTo({24, 24, Units::degToRad(0)})->startSync();
@@ -32,7 +33,6 @@ namespace devils
             //     https://auto.devilbots.org/
             // =====================================
 
-            AutoBuilder autoBuilder = AutoBuilder(chassis, odom);
             autoBuilder.jumpTo({0.263, 0.041, Units::degToRad(-90)});
             autoBuilder.driveTo({-24.439, -23.925, Units::degToRad(90)})->startSync();
             autoBuilder.driveTo({23.41, -22.124, Units::degToRad(90)})->startSync();

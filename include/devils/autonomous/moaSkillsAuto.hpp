@@ -13,7 +13,7 @@ namespace devils
         static void run(SwerveChassis& chassis, OdomSource& odometry, LiftSystem& lift, ClawSystem& claw)
         {
             TrajectoryConstraints::defaultConstraints = TrajectoryConstraints{
-                .maxVelocity = 20.0f
+                .maxVelocity = 30.0f
             };
             const auto liftStep = std::make_shared<LiftStep>(lift, 0, 31.0f);
             liftStep->start();
@@ -44,8 +44,8 @@ namespace devils
             liftStep->setPositionsToMove(-1.5);
             pros::delay(1000);
             claw.setClawClosed(true); // open claw
-            autoBuilder.driveTo({-60, 0, Units::degToRad(-30)})->startSync();
-            autoBuilder.rotateTo(-110)->startSync();
+            autoBuilder.driveTo({-60, 3, Units::degToRad(-45)})->startSync();
+            autoBuilder.rotateTo(135)->startSync();
             liftStep->setPositionsToMove(-3); // make sure lift is bottomed out, clamp handles this
 
 
@@ -64,15 +64,17 @@ namespace devils
             // // lift -2 pos
 
             // MATCHLOAD AND SCORE THIRD
-            autoBuilder.driveTo({-54.94, -57.6, Units::degToRad(-110)})->startSync();
-            autoBuilder.rotateTo(-180)->startSync();
-            autoBuilder.driveTo({-63.5, -57.6, Units::degToRad(-180)})->startSync();
+            autoBuilder.driveTo({-24, -24, Units::degToRad(135)})->startSync();
+            autoBuilder.driveTo({-58, -44, Units::degToRad(-180)})->startSync();
+            autoBuilder.driveTo({-50, -55, Units::degToRad(-270)})->startSync();
+            autoBuilder.driveTo({-50, -59, Units::degToRad(-180)})->startSync();
+            autoBuilder.driveTo({-63.5, -59, Units::degToRad(-180)})->startSync();
             claw.setClawClosed(false); // claw close
             pros::delay(300);
             autoBuilder.driveTo({-53.94, -57.6, Units::degToRad(-180)})->startSync();
             
             liftStep->setPositionsToMove(2.5);
-            autoBuilder.driveTo({-46, -30.5, Units::degToRad(90)})->startSync();
+            autoBuilder.driveTo({-48, -29.5, Units::degToRad(90)})->startSync();
             liftStep->setPositionsToMove(-1.4);
             pros::delay(1000);
             claw.setClawClosed(true); // claw open
@@ -86,7 +88,7 @@ namespace devils
             autoBuilder.driveTo({-53.94, -57.6, Units::degToRad(-180)})->startSync();
             
             liftStep->setPositionsToMove(2.5);
-            autoBuilder.driveTo({-47.849, -31.7, Units::degToRad(90)})->startSync();
+            autoBuilder.driveTo({-48, -29, Units::degToRad(90)})->startSync();
             liftStep->setPositionsToMove(-1.4);
             pros::delay(1000);
             claw.setClawClosed(true); // claw open
