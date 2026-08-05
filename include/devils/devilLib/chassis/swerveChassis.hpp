@@ -47,20 +47,22 @@ namespace devils
         /**
         * Moves the swerve module to the specified angle and drivespeed.
         * @param angle The target angle in radians.
-        * @param drivespeed The drivespeed of the movement from -1 to 1.
+        * @param drivespeed The drivespeed of the wheel from -1 to 1.
         */
-        void move(float targetAngle, float drivespeed)
+        void move(float targetAngle, float drivespeed, bool rotationOptimized = true)
         {
             // Reverse the motors instead of rotating the wheels 180 degrees when the angle is greater than 90 degrees to reduce the time it takes to rotate the wheels
-            bool enableRotationOptimization = false;
             float passedTargetAngle = targetAngle;
-            if (enableRotationOptimization){
-                if(abs(getAngleError(getPodAngle(), targetAngle)) > M_PI/2.0f){
-                    // TODO - this will not work but it's the general idea
-                    targetAngle += M_PI;
+            float alternateTargetAngle = passedTargetAngle + M_PI;
+            if (rotationOptimized){
+                // Check if the alternate angle is closer to travel to
+                if (abs(getAngleError(getPodAngle(), passedTargetAngle)) > abs(getAngleError(getPodAngle(), alternateTargetAngle))){
+                    // Set target angle to alternate and reverse drive direction
+                    targetAngle = alternateTargetAngle;
+                    drivespeed *= -1.0;
                 }
-                if(true){
-                     drivespeed *= -1;
+                else {
+                    // No need to change anything, it'll go to the passed angle
                 }
             }
             
@@ -247,13 +249,13 @@ namespace devils
         }
 
         void home(){
-            frontLeft.move(0, 0);
-            frontRight.move(0, 0);
-            backLeft.move(0, 0);
-            backRight.move(0, 0);
+            frontLeft.move(0, 0, false);
+            frontRight.move(0, 0, false);
+            backLeft.move(0, 0, false);
+            backRight.move(0, 0, false);
         }
 
-        void stop(){
+        void stop() override {
             frontLeft.stop();
             frontRight.stop();
             backLeft.stop();
