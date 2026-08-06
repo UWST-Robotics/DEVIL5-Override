@@ -28,8 +28,6 @@ namespace devils
          * Makes a simple 2 point arc path.
          * @param from The starting pose
          * @param to The ending pose
-         * @param delta Distance of the entry and exit anchor points in inches
-         * @param isReversed True if the path is reversed
          * @return The spline path
          */
         static LinearPath makeLinearPath(

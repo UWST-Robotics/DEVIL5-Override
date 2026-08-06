@@ -4,9 +4,6 @@
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
-#include "./subsystems/StickSystem.hpp"
-#include "./subsystems/tubeSystem.hpp"
-#include "./subsystems/wingSystem.hpp"
 #include "./subsystems/swerveDisplay.hpp"
 
 namespace devils

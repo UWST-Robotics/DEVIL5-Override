@@ -5,6 +5,7 @@
 #include "./autonomous/skillsAuto.hpp"
 #include "./autonomous/testingAuto.hpp"
 #include "./autonomous/moaSkillsAuto.hpp"
+#include "./autonomous/moaSkillsAutoNew.hpp"
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
 
@@ -54,7 +55,7 @@ namespace devils
 
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", 11);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
         InertialSensor imu = InertialSensor("IMU", 13);
 
 
@@ -125,7 +126,8 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            MoaSkillsAuto::run(swerve, *odometry.get(), lift, claw);
+            MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw);
+            //TestingAuto::run(swerve, *odometry.get(), lift, claw);
         }
 
         void opcontrol() override
@@ -140,7 +142,7 @@ namespace devils
                 const float leftY = mainController.leftY;
                 const float leftX = mainController.leftX;
                 const float rightY = mainController.rightY;
-                const float rightX = mainController.rightX * 0.5f;
+                const float rightX = mainController.rightX * 0.7f;
                 // Lift inputs
                 bool upOnePinButton = mainController.right;
                 bool downOnePinButton = mainController.down;
@@ -160,8 +162,8 @@ namespace devils
                     swerve.plant();
                     //swerve.move(0, 0, 0);
                 } else {
-                    swerve.move(leftY, rightX, leftX);
-                    // swerve.moveFieldCentric(leftY, rightX, leftX, heading);
+                    //swerve.move(leftY, rightX, leftX);
+                    swerve.moveFieldCentric(leftY, rightX, leftX, heading);
                 }
                 // swerve.home();
 

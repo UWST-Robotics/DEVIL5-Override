@@ -5,6 +5,7 @@
 #include "../chassis/chassisBase.hpp"
 #include "../trajectory/trajectoryGenerator.hpp"
 #include "../path/splinePath.hpp"
+#include "../path/splinePathHolonomic.hpp"
 #include "../path/linearPath.hpp"
 #include "./steps/rotateMotionProfileStep.hpp"
 #include "./steps/rotateStep.hpp"
@@ -56,6 +57,19 @@ namespace devils
             }
         }
 
+         AutoStepPtr driveToHolonomic(
+            const Pose& pose,
+            const float entryPointAngle,
+            const float exitPointAngle,
+            const float endingVelocity = 0.0f) const
+        {
+            const auto transformedPose = tryTransformPose(pose);
+
+            const auto trajectory = generateTrajectoryToPoseHolonomic(transformedPose, exitPointAngle, entryPointAngle, endingVelocity);
+            return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
+            
+        }
+
         AutoStepPtr driveToLinear(
             const Pose& pose,
             const float endingVelocity = 0.0f) const
@@ -63,12 +77,7 @@ namespace devils
             const auto transformedPose = tryTransformPose(pose);
 
             const auto trajectory = generateTrajectoryToPoseLinear(transformedPose, endingVelocity);
-            // Auto switch between `AutoRamseteStep` and `AutoHolonomicDriveStep` depending on the chassis type (holonomic or not).
-            if (chassis.isHolonomic()){
-                return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
-            } else {
-                return std::make_shared<DriveRAMSETEStep>(chassis, odom, trajectory);
-            }
+            return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
         }
 
         /**
@@ -163,6 +172,59 @@ namespace devils
                 targetPose,
                 distance * 0.25f,
                 isReversed);
+
+            std::string filestring = "";
+            for (int i=0; i < path.poses.size(); i++){
+                filestring += path.poses[i].toString();
+                filestring +="\n";
+            }
+            SDCardHandler sdHandler;
+            sdHandler.writeFile("spline.csv", filestring);
+
+            // Generate Trajectory
+            const auto generator = TrajectoryGenerator({
+                .startingVelocity = startingVelocity,
+                .endingVelocity = endingVelocity
+            });
+            const auto trajectory = generator.calc(path);
+            return trajectory;
+        }
+
+        /**
+         * Generates a trajectory to a given pose using the current pose as the starting point.
+         * @param targetPose - The target pose to generate the trajectory to
+         * @param endingVelocity - The desired velocity at the end of the trajectory in inches per second. Defaults to 0 for a full stop.
+         * @return A shared pointer to the generated trajectory
+         */
+        std::shared_ptr<Trajectory> generateTrajectoryToPoseHolonomic(
+            const Pose& targetPose,
+            const float entryPointAngle,
+            const float exitPointAngle,
+            const float endingVelocity = 0.0f) const
+        {
+            // Check if the targetPose is behind the currentPose
+            const auto currentPose = odom.getPose();
+            const auto isReversed = targetPose.isBehind(currentPose);
+
+            // Calculate starting velocity based on current velocity and its direction relative to the target pose
+            //const auto currentVelocity = odom.getVelocity();
+            const auto currentVelocity = Vector2(0,0);
+            const auto deltaPose = targetPose - currentPose;
+            const auto dotProduct = deltaPose.x * currentVelocity.x + deltaPose.y * currentVelocity.y;
+            //const auto velocityDirection = (dotProduct >= 0) ? 1.0f : -1.0f;
+            const auto velocityDirection = 1.0f;
+            auto startingVelocity = velocityDirection * currentVelocity.magnitude();
+            startingVelocity = 0.0;
+            Logger::info("Starting Velocity : " + std::to_string(startingVelocity) + " in/s");
+
+            // Generate Path
+            const auto distance = currentPose.distanceTo(targetPose);
+            auto path = SplinePathHolonomic::makeSpline(
+                currentPose,
+                targetPose,
+                distance * 0.25f,
+                entryPointAngle,
+                exitPointAngle);
 
             std::string filestring = "";
             for (int i=0; i < path.poses.size(); i++){

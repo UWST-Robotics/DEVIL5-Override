@@ -6,6 +6,7 @@
 #include "../../chassis/chassisBase.hpp"
 #include "../../controller/pidController.hpp"
 #include "../../trajectory/trajectory.hpp"
+//#include "../../utils/sdCardHandler.hpp"
 
 namespace devils
 {
@@ -69,6 +70,9 @@ namespace devils
         }
 
     protected:
+
+        //SDCardHandler cardHandler;
+
         void onStart() override
         {
             // Reset PID Controllers
@@ -100,7 +104,7 @@ namespace devils
             // localError.y is aligned with the side of the robot.
             const auto localError = Pose(
                 error.x * cosf(currentPosition.rotation) + error.y * sinf(currentPosition.rotation),
-                -(-error.x * sinf(currentPosition.rotation) + error.y * cosf(currentPosition.rotation)),
+                (-error.x * sinf(currentPosition.rotation) + error.y * cosf(currentPosition.rotation)),
                 Units::diffRad(feedbackSetpoint.pose.rotation, currentPosition.rotation));
 
             // Move Chassis using PID controllers with local error as the input
