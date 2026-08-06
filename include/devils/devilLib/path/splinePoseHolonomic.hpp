@@ -25,9 +25,8 @@ namespace devils
         }
 
         /// @brief Distance of anchor point in inches from the start of the spline
-        float anchorDelta = 0;
-
-        float anchorRotation = 0;
+        float anchorDelta = 6.0;
+        float anchorRotation = 0.0;
 
         /**
          * Gets the pose of the entry anchor point of the spline

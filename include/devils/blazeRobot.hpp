@@ -126,7 +126,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw);
+            MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
             //TestingAuto::run(swerve, *odometry.get(), lift, claw);
         }
 

@@ -12,22 +12,22 @@ namespace devils
         // Swerve Modules
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
         SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
-        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {3});
-        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {4});
-        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {5});
-        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
-        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
-        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {10});
+        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {9});
+        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {11});
+        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {12});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {20});
+        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {19});
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
         
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, 8.1f);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 1.9f);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 4.9f);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 4.7f);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -2.3f);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, -0.6f);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 3.4f);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 2.6f);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
@@ -36,11 +36,11 @@ namespace devils
 
         // Subsystems
         // Lift
-        SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {9, -10});
-        LiftSystem lift = LiftSystem(liftMotors, 31.0f);
+        SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {3, -8});
+        LiftSystem lift = LiftSystem(liftMotors, 21.0f);
 
         // Claw
-        ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'G'}, false);
+        ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'F'}, false);
         ClawSystem claw = ClawSystem(clawPiston);
 
         // Odom
@@ -48,8 +48,8 @@ namespace devils
         Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.0f, 0.0f);
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -4.0f);
 
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -14);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -15);
         InertialSensor imu = InertialSensor("IMU", 13);
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
@@ -102,7 +102,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw);
+            MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, false);
             //TestingAuto::run(swerve, *odometry.get(), lift, claw);
         }
 
@@ -130,11 +130,11 @@ namespace devils
                 // Drive the robot
                 // Plant if we aren't moving
                 if(leftY == 0 && leftX == 0 && rightX == 0){
-                    swerve.plant();
+                    //swerve.plant();
+                    swerve.home();
                 } else {
                     swerve.move(leftY, leftX, rightX);
                 }
-                // swerve.home();
 
                 if (upOnePinButton)
                     lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) + 1); // Move up one pin
