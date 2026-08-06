@@ -1,12 +1,13 @@
 #pragma once
 
 #include "devils/devilLib/devils.h"
+#include "devils/devilLib/hardware/smartMotor.hpp"
 #include <algorithm>
 
 namespace devils
 {
-    PIDController liftPID(0.5, 0.0000, 0.0000); // PID controller for the lift system
-    float targetLiftPosition; // Target position for the lift in inches
+    PIDController liftPIDLeft(0.5, 0.0000, 0.0000); // PID controller for the lift system
+    PIDController liftPIDRight(0.5, 0.0000, 0.0000); // PID controller for the lift system
     float error;
     float currentPosition;
     float targetInches;
@@ -18,46 +19,39 @@ namespace devils
     {
     public:
         LiftSystem(
-            SmartMotorGroup& liftMotors, float maxHeight)
-            : liftMotors(liftMotors), maxHeight(maxHeight)
+            SmartMotor& leftMotor, SmartMotor& rightMotor, float maxHeight)
+            : leftMotor(leftMotor), rightMotor(rightMotor), maxHeight(maxHeight)
         {
-            liftMotors.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+            leftMotor.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+            rightMotor.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
         }
 
     /**
-     * Moves the lift at the specified speed.
-     * @param speed The speed at which to move the lift.
-     */
-    void moveLift(const float speed)
-    {
-        liftMotors.move(speed);
-    }
-
-    /**
      * Moves the lift to a target position using a PID controller.
-     * @param targetPosition The target position for the lift to move to (in pins).
+     * @param targetPosition The target position for the lift to move to (in inches).
      */
     void moveToPosition(const float targetPosition)
     {
-        targetInches = convertToInches(targetPosition);
+        targetInches = targetPosition;
         targetInches = std::clamp(targetInches, 0.0f, maxHeight); // Clamp the current position to the range of the lift
-
-        targetLiftPosition = targetInches; // Store the target position for telemetry
-
     }
 
     void update()
     {
-        currentPosition = getPosition();
-        error = targetInches - getPosition(); // Calculate the error
-        float output = liftPID.update(error); // Calculate the PID output
+        currentPosition = getAveragePosition();
+        float errorLeft = targetInches - getPosition(true); // Calculate the error
+        float errorRight = targetInches - getPosition(false); // Calculate the error
+        error = (errorLeft + errorRight) / 2.0f;
+        float outputLeft = liftPIDLeft.update(errorLeft); // Calculate the PID output
+        float outputRight = liftPIDRight.update(errorRight); // Calculate the PID output
 
-        moveLift(output); // Move the lift based on the PID output
+        leftMotor.move(outputLeft); // Move the lift based on the PID output
+        rightMotor.move(outputRight); // Move the lift based on the PID output
     }
     
     float getTargetPosition() const
     {
-        return targetLiftPosition;
+        return targetInches;
     }
 
     /**
@@ -65,7 +59,8 @@ namespace devils
      */
     void stopLift()
     {
-        liftMotors.stop();
+        leftMotor.stop();
+        rightMotor.stop();
     }
 
     /**
@@ -73,21 +68,37 @@ namespace devils
      * @param pins The position in pins.
      * @return The position in inches.
      */
-    float convertToInches(const float pins)
+    float convertPinsToInches(const float pins)
     {
         return pins * 6.5f;
     }
+
+    float convertHalfPinsToInches(const float pins)
+    {
+        return pins * 3.25f;
+    }
+
 
     float convertToPins(const float inches)
     {
         return inches / 6.5f;
     }
 
-    float getPosition()
+    float convertToHalfPins(const float inches)
     {
-        float currentPosition = liftMotors.getPosition();
-        float currentPositionInches = ((currentPosition * 2 * M_PI * 0.3f) / (50 * 6.0f)); // Convert to inches
+        return inches / 3.25f;
+    }
+
+    float getPosition(bool isLeft)
+    {
+        float currentPosition = isLeft ? leftMotor.getPosition() : rightMotor.getPosition();
+        float currentPositionInches = ((currentPosition * 2.0f * M_PIF * 0.3f) / (50.0f * 6.0f)); // Convert to inches
         return currentPositionInches;
+    }
+
+    float getAveragePosition()
+    {
+        return (getPosition(true) + getPosition(false)) / 2.0f;
     }
 
     float getError(){
@@ -96,7 +107,7 @@ namespace devils
 
     void calibrateLift()
     {
-        liftMotors.setPosition(0);
+        leftMotor.setPosition(0);
     }
 
     void setMaxHeight(float height)
@@ -104,8 +115,14 @@ namespace devils
         maxHeight = height;
     }
 
+    float getMaxHeight()
+    {
+        return maxHeight;
+    }
+
     private:
-        SmartMotorGroup& liftMotors;
+        SmartMotor& leftMotor;
+        SmartMotor& rightMotor;
         float maxHeight;
     };
 }

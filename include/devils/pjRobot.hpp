@@ -36,8 +36,11 @@ namespace devils
 
         // Subsystems
         // Lift
-        SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {3, -8});
-        LiftSystem lift = LiftSystem(liftMotors, 21.0f);
+        SmartMotor liftMotorLeft = SmartMotor("LiftMotorLeft", 3);
+        SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", -8);
+
+        // Subsystems
+        LiftSystem lift = LiftSystem(liftMotorLeft, liftMotorRight, 21.0f);
 
         // Claw
         ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'F'}, false);
@@ -137,11 +140,11 @@ namespace devils
                 }
 
                 if (upOnePinButton)
-                    lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) + 1); // Move up one pin
+                    lift.moveToPosition(lift.convertToHalfPins(lift.getTargetPosition()) + 1); // Move up one pin
                 if (downOnePinButton)
-                    lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) - 1); // Move down one pin
+                    lift.moveToPosition(lift.convertToHalfPins(lift.getTargetPosition()) - 1); // Move down one pin
                 if (maxHeightButton)
-                    lift.moveToPosition(25.0f); // Move to max height (in pins)
+                    lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in pins)
                 if (minHeightButton)
                     lift.moveToPosition(0.0f); // Move to min height (in pins)
 

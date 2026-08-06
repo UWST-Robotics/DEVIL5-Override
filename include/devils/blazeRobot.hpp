@@ -47,10 +47,11 @@ namespace devils
         ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'G'}, false);
 
         // Motors
-        SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {9, -10});
+        SmartMotor liftMotorLeft = SmartMotor("LiftMotorLeft", 9);
+        SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", -10);
 
         // Subsystems
-        LiftSystem lift = LiftSystem(liftMotors, 31.0f);
+        LiftSystem lift = LiftSystem(liftMotorLeft, liftMotorRight, 30.0f);
         ClawSystem claw = ClawSystem(clawPiston);
 
 
@@ -77,18 +78,6 @@ namespace devils
         VBValue<float> currentLiftPosition = VBValue("LiftPosition", 0.0f);
         VBValue<float> targetLiftPosition = VBValue("LiftTarget", 0.0f);
         VBValue<float> liftError = VBValue("Lift Error", 0.0f);
-
-        VBValue<float> fcHeading = VBValue("FC Heading", 0.0f);
-
-        VBValue<float> fcStickInX = VBValue("Stick X", 0.0f);
-        VBValue<float> fcStickInY = VBValue("Stick Y", 0.0f);
-
-        VBValue<float> fcOutX = VBValue("Out X", 0.0f);
-        VBValue<float> fcOutY = VBValue("Out Y", 0.0f);
-
-        VBValue<float> fcHeadingOffset = VBValue("FC Heading offset", 0.0f);
-        VBValue<float> fcRotateAmount = VBValue("FC rotate amount", 0.0f);
-        
 
         BlazeRobot()
         {
@@ -172,13 +161,13 @@ namespace devils
                 }
 
                 if (upOnePinButton)
-                    lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) + 1); // Move up one pin
+                    lift.moveToPosition(lift.getTargetPosition() + lift.convertHalfPinsToInches(1)); // Move up one pin
                 if (downOnePinButton)
-                    lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) - 1); // Move down one pin
+                    lift.moveToPosition(lift.getTargetPosition() - lift.convertHalfPinsToInches(1)); // Move down one pin
                 if (maxHeightButton)
-                    lift.moveToPosition(25.0f); // Move to max height (in pins)
+                    lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in inches)
                 if (minHeightButton)
-                    lift.moveToPosition(0.0f); // Move to min height (in pins)
+                    lift.moveToPosition(0.0f); // Move to min height (in inches)
 
                 if (clawToggleButton) {
                     claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
@@ -191,22 +180,9 @@ namespace devils
                 odoYPos.set(odometry->getPose().y);
                 odoHeading.set(odometry->getPose().rotation);
 
-                currentLiftPosition.set(lift.getPosition());
+                currentLiftPosition.set(lift.getAveragePosition());
                 targetLiftPosition.set(lift.getTargetPosition());
                 liftError.set(lift.getError());
-
-                fcHeading.set(heading);
-
-                fcStickInX.set(leftX);
-                fcStickInY.set(leftY);
-
-                Vector2 inputVect = Vector2(leftX, leftY);
-
-                fcOutX.set(inputVect.rotate(-heading).x);
-                fcOutY.set(inputVect.rotate(-heading).y);
-
-                fcHeadingOffset.set(swerve.fieldCentricHeadingOffset);
-                fcRotateAmount.set(-(heading + swerve.fieldCentricHeadingOffset + swerve.constantFCHeadingOffset));
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
