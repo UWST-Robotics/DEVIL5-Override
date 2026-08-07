@@ -25,7 +25,7 @@ namespace devils
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
         
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -2.3f);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, -0.6f);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, -0.2f);
         SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 3.4f);
         SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 2.6f);
         SwerveChassis swerve = SwerveChassis(
@@ -120,6 +120,7 @@ namespace devils
                 // Take Controller Inputs
                 const float leftY = mainController.leftY;
                 const float leftX = mainController.leftX;
+                const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.7f;
                 // Lift inputs
                 bool upOnePinButton = mainController.right;
@@ -139,14 +140,17 @@ namespace devils
                     swerve.move(leftY, leftX, rightX);
                 }
 
-                if (upOnePinButton)
-                    lift.moveToPosition(lift.convertToHalfPins(lift.getTargetPosition()) + 1); // Move up one pin
+                 if (upOnePinButton)
+                    lift.moveToPosition(lift.getTargetPosition() + lift.convertHalfPinsToInches(1)); // Move up one pin
                 if (downOnePinButton)
-                    lift.moveToPosition(lift.convertToHalfPins(lift.getTargetPosition()) - 1); // Move down one pin
+                    lift.moveToPosition(lift.getTargetPosition() - lift.convertHalfPinsToInches(1)); // Move down one pin
                 if (maxHeightButton)
-                    lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in pins)
+                    lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in inches)
                 if (minHeightButton)
-                    lift.moveToPosition(0.0f); // Move to min height (in pins)
+                    lift.moveToPosition(0.0f); // Move to min height (in inches)
+
+                // Fine tweak the lift position with the right joystick
+                lift.globalLiftOffset += rightY * 0.03;
 
                 if (clawToggleButton) {
                     claw.setClawClosed(!claw.getClawState()); // Toggle the claw state

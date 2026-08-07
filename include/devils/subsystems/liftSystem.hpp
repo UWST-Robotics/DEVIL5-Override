@@ -8,9 +8,6 @@ namespace devils
 {
     PIDController liftPIDLeft(0.5, 0.0000, 0.0000); // PID controller for the lift system
     PIDController liftPIDRight(0.5, 0.0000, 0.0000); // PID controller for the lift system
-    float error;
-    float currentPosition;
-    float targetInches;
 
     /**
      * Represents the lift system of the robot.
@@ -26,6 +23,10 @@ namespace devils
             rightMotor.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
         }
 
+    float error;
+    float currentPosition;
+    float targetInches;
+    float globalLiftOffset = 0.0f;
     /**
      * Moves the lift to a target position using a PID controller.
      * @param targetPosition The target position for the lift to move to (in inches).
@@ -33,14 +34,25 @@ namespace devils
     void moveToPosition(const float targetPosition)
     {
         targetInches = targetPosition;
-        targetInches = std::clamp(targetInches, 0.0f, maxHeight); // Clamp the current position to the range of the lift
     }
 
     void update()
     {
         currentPosition = getAveragePosition();
-        float errorLeft = targetInches - getPosition(true); // Calculate the error
-        float errorRight = targetInches - getPosition(false); // Calculate the error
+        float errorLeft = 0.0f;
+        float errorRight = 0.0f;
+        // Only apply globalOffset in the middle of travel, not at the ends so we don't exceed the limits
+        if (getTargetPosition() + globalLiftOffset <= 0.0f || getTargetPosition() + globalLiftOffset >= maxHeight){
+            errorLeft = getTargetPosition() - getPosition(true); // Calculate the error
+            errorRight = getTargetPosition() - getPosition(false); // Calculate the error
+        } else {
+            errorLeft = (getTargetPosition() + globalLiftOffset) - getPosition(true); // Calculate the error
+            errorRight = (getTargetPosition() + globalLiftOffset) - getPosition(false); // Calculate the error
+        }
+        
+        //errorLeft = (getTargetPosition()) - getPosition(true); // Calculate the error
+        //errorRight = (getTargetPosition()) - getPosition(false); // Calculate the error
+
         error = (errorLeft + errorRight) / 2.0f;
         float outputLeft = liftPIDLeft.update(errorLeft); // Calculate the PID output
         float outputRight = liftPIDRight.update(errorRight); // Calculate the PID output
@@ -49,13 +61,14 @@ namespace devils
         rightMotor.move(outputRight); // Move the lift based on the PID output
     }
     
-    float getTargetPosition() const
+    float getTargetPosition()
     {
+        targetInches = std::clamp(targetInches, 0.0f, maxHeight); // Clamp the current position to the range of the lift
         return targetInches;
     }
 
     /**
-     * Stops the lift and chain bar motors.
+     * Stops the lift motors.
      */
     void stopLift()
     {

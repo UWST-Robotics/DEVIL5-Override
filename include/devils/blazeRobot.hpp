@@ -169,6 +169,9 @@ namespace devils
                 if (minHeightButton)
                     lift.moveToPosition(0.0f); // Move to min height (in inches)
 
+                // Fine tweak the lift position with the right joystick
+                lift.globalLiftOffset += rightY * 0.05;
+                
                 if (clawToggleButton) {
                     claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
                 }
