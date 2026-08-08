@@ -64,8 +64,8 @@ namespace devils
             const float endingVelocity = 0.0f) const
         {
             const auto transformedPose = tryTransformPose(pose);
-
-            const auto trajectory = generateTrajectoryToPoseHolonomic(transformedPose, exitPointAngle, entryPointAngle, endingVelocity);
+            // Maybe flipping entry and exit will fix the auto?
+            const auto trajectory = generateTrajectoryToPoseHolonomic(transformedPose, entryPointAngle, exitPointAngle, endingVelocity);
             return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
             
         }

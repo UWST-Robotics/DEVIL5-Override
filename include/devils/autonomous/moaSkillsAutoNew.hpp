@@ -124,7 +124,7 @@ namespace devils
             }
 
             // MOVE TO MIDDLE
-            autoBuilder.driveToHolonomic({-14, 0, Units::degToRad(0)}, Units::degToRad(-90), Units::degToRad(0))->startSync();
+            autoBuilder.driveToHolonomic({-14, 0, Units::degToRad(0)}, Units::degToRad(90), Units::degToRad(0))->startSync();
 
             // =====================================
             //     End of moaSkillsAuto
