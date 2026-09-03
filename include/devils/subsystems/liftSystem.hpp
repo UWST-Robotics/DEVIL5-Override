@@ -86,17 +86,31 @@ namespace devils
         return pins * 6.5f;
     }
 
+    /**
+     * Converts the position from half-pins to inches.
+     * @param pins The position in half-pins.
+     * @return The position in inches.
+     */
     float convertHalfPinsToInches(const float pins)
     {
         return pins * 3.25f;
     }
 
-
+    /**
+     * Converts the position from inches to pins.
+     * @param inches The position in inches.
+     * @return The position in pins.
+     */
     float convertToPins(const float inches)
     {
         return inches / 6.5f;
     }
 
+    /**
+     * Converts the position from inches to half-pins.
+     * @param inches The position in inches.
+     * @return The position in half-pins.
+     */
     float convertToHalfPins(const float inches)
     {
         return inches / 3.25f;
@@ -123,6 +137,10 @@ namespace devils
         leftMotor.setPosition(0);
     }
 
+    /**
+     * Sets the max height in inches
+     * @param height The max height in inches
+     */
     void setMaxHeight(float height)
     {
         maxHeight = height;

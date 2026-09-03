@@ -27,6 +27,10 @@ namespace devils
             lift.update();
         }
 
+        /**
+         * Sets the number of positions (in pins) to move the lift.
+         * @param positions The number of positions (in pins) to move.
+         */
         void setPositionsToMove(const float positions)
         {
             positionsToMove = positions;
