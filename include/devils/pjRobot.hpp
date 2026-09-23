@@ -4,6 +4,9 @@
 #include "./autonomous/matchAuto.hpp"
 #include "./autonomous/skillsAuto.hpp"
 #include "./autonomous/moaSkillsAutoNew.hpp"
+#include "./subsystems/liftSystem.hpp"
+#include "./subsystems/clawSystem.hpp"
+#include "./subsystems/grabberSystem.hpp"
 
 namespace devils
 {
@@ -39,8 +42,14 @@ namespace devils
         SmartMotor liftMotorLeft = SmartMotor("LiftMotorLeft", 3);
         SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", -8);
 
+        // Grabber
+        SmartMotorGroup rollers = SmartMotorGroup("Rollers", {4, -5});
+
         // Subsystems
         LiftSystem lift = LiftSystem(liftMotorLeft, liftMotorRight, 21.0f);
+
+        // Grabber
+        GrabberSystem grabber = GrabberSystem(rollers);
 
         // Claw
         ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'F'}, false);
@@ -139,6 +148,9 @@ namespace devils
                 } else {
                     swerve.move(leftY, leftX, rightX);
                 }
+
+                // Grabber
+                grabber.runGrabber(rightY);
 
                  if (upOnePinButton)
                     lift.moveToPosition(lift.getTargetPosition() + lift.convertHalfPinsToInches(1)); // Move up one pin
