@@ -8,6 +8,7 @@
 #include "./autonomous/moaSkillsAutoNew.hpp"
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
+#include "./subsystems/wristSystem.hpp"
 
 namespace devils
 {
@@ -27,6 +28,8 @@ namespace devils
         SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
         SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
         SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+        
+        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {13});
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
@@ -50,14 +53,17 @@ namespace devils
         SmartMotor liftMotorLeft = SmartMotor("LiftMotorLeft", 9);
         SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", -10);
 
+        RotationSensor wristSensor = RotationSensor("WristSensor", 14);
+
         // Subsystems
         LiftSystem lift = LiftSystem(liftMotorLeft, liftMotorRight, 30.0f);
         ClawSystem claw = ClawSystem(clawPiston);
+        WristSystem wrist = WristSystem(wristMotorGroup, wristSensor);
 
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
-        InertialSensor imu = InertialSensor("IMU", 13);
+        InertialSensor imu = InertialSensor("IMU", 15);
 
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
@@ -103,11 +109,11 @@ namespace devils
             // Lift controls
             mainController.l1.setMode(ControllerButton::JUST_PRESSED);
             mainController.right.setMode(ControllerButton::JUST_PRESSED);
-            mainController.down.setMode(ControllerButton::JUST_PRESSED);
+            // mainController.down.setMode(ControllerButton::JUST_PRESSED);
             mainController.y.setMode(ControllerButton::JUST_PRESSED);
             mainController.b.setMode(ControllerButton::JUST_PRESSED);
             // Field centric button
-            mainController.left.setMode(ControllerButton::JUST_PRESSED);
+            // mainController.left.setMode(ControllerButton::JUST_PRESSED);
 
             lift.calibrateLift();
         }
@@ -138,6 +144,10 @@ namespace devils
                 bool maxHeightButton = mainController.y;
                 bool minHeightButton = mainController.b;
                 bool clawToggleButton = mainController.l1;
+
+                bool wristUp = mainController.up;
+                bool wristNeutral = mainController.left;
+                bool wristDown = mainController.down;
 
                 bool resetFieldCentricButton = mainController.left;
 
@@ -175,6 +185,28 @@ namespace devils
                 if (clawToggleButton) {
                     claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
                 }
+
+                if(wristUp){
+                    wristMotorGroup.move(.5f);
+                    wrist.moveUp();
+                    printf("fuckkkkkkk");
+                    Logger::info("Wrist up");
+
+                }
+                else{
+                    wristMotorGroup.move(0);
+                }
+                if(wristNeutral){
+                    wrist.moveNeutral();
+                    Logger::info("Wrist neutral");
+
+                }
+                if(wristDown){
+                    wrist.moveDown();
+                    Logger::info("Wrist down");
+                }
+
+                wrist.update();
 
                 lift.update();
 
