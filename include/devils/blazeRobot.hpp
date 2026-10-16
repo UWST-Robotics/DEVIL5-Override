@@ -24,12 +24,17 @@ namespace devils
         SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
         SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
         SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+<<<<<<< Updated upstream
+=======
+
+        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {13});
+>>>>>>> Stashed changes
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
-        
+
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, 8.1f);
         SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 1.9f);
         SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 4.9f);
@@ -37,8 +42,7 @@ namespace devils
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
-            10.5
-        );
+            10.5);
 
         // Pneumatics
         ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'E'}, false);
@@ -47,14 +51,21 @@ namespace devils
         SmartMotorGroup liftMotors = SmartMotorGroup("LiftMotors", {9, -10});
 
         // Subsystems
+<<<<<<< Updated upstream
         LiftSystem lift = LiftSystem(liftMotors, 15.0f);
+=======
+        LiftSystem lift = LiftSystem(liftMotorLeft, liftMotorRight, 30.0f, 0.3f);
+>>>>>>> Stashed changes
         ClawSystem claw = ClawSystem(clawPiston);
 
+<<<<<<< Updated upstream
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", 12);
+=======
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
+>>>>>>> Stashed changes
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
         InertialSensor imu = InertialSensor("IMU", 13);
-
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
             verticalSensor,
@@ -62,7 +73,11 @@ namespace devils
             DEAD_WHEEL_RADIUS);
 
         // Displays
+<<<<<<< Updated upstream
         std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+=======
+        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+>>>>>>> Stashed changes
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
         // Vexbridge (yikes)
@@ -82,6 +97,7 @@ namespace devils
             odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
 
+<<<<<<< Updated upstream
             devilBotsDisplay->start();
             toastDisplay->start();
 
@@ -89,6 +105,15 @@ namespace devils
                 .deadzone = 0.1f, // <-- Minimum input to register
                 .startingValue = 0.15f, // <-- Jumps to 15% to overcome motor friction
                 .exponent = 3.0f // <-- Cubes the input for finer control at low speeds
+=======
+            // devilBotsDisplay->start();
+            toastDisplay->start();
+
+            constexpr auto joystickOptions = ControllerAxis::Options{
+                .deadzone = 0.05f,      // <-- Minimum input to register
+                .startingValue = 0.05f, // <-- Jumps to 15% to overcome motor friction
+                .exponent = 3.0f        // <-- Cubes the input for finer control at low speeds
+>>>>>>> Stashed changes
             };
 
             mainController.leftX.setOptions(joystickOptions);
@@ -104,8 +129,13 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
+<<<<<<< Updated upstream
             //SkillsAuto::run(swerve, *odometry.get(), stick, intake, tube, wings, false);
             //MatchAuto::run(swerve, *odometry.get(), stick, intake, tube, wings, false);
+=======
+            MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
+            // TestingAuto::run(swerve, *odometry.get(), lift, claw);
+>>>>>>> Stashed changes
         }
 
         void opcontrol() override
@@ -134,13 +164,17 @@ namespace devils
                 // Turn the robot with the right joystick
                 // Drive the robot
                 // Plant if we aren't moving
-                if(leftY == 0 && leftX == 0 && rightX == 0){
+                if (leftY == 0 && leftX == 0 && rightX == 0)
+                {
                     swerve.plant();
-                    //swerve.move(0, 0, 0);
-                } else {
-                    //swerve.move(leftY, rightX, leftX);
+                    // swerve.move(0, 0, 0);
+                }
+                else
+                {
+                    // swerve.move(leftY, rightX, leftX);
                     swerve.moveFieldCentric(leftY, rightX, leftX, heading);
                 }
+<<<<<<< Updated upstream
                 //swerve.home();
 
                 if (upOnePinButton)
@@ -156,6 +190,58 @@ namespace devils
                     claw.setClawClosed(clawToggleButton); // Toggle the claw state
                 }
 
+=======
+                // swerve.home();
+
+                if (resetFieldCentricButton)
+                {
+                    swerve.calibrateFieldCentric();
+                }
+
+                if (upOnePinButton)
+                    lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(0.5)); // Move up one pin
+                if (downOnePinButton)
+                    lift.moveToPosition(lift.getTargetPosition() - lift.pinsToInches(0.5)); // Move down one pin
+                if (maxHeightButton)
+                    lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in inches)
+                if (minHeightButton)
+                    lift.moveToPosition(0.0f); // Move to min height (in inches)
+
+                // Fine tweak the lift position with the right joystick
+                // lift.globalLiftOffset += rightY * 0.05;
+
+                if (clawToggleButton)
+                {
+                    claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
+                }
+
+                if (wristUp)
+                {
+                    wristMotorGroup.move(.5f);
+                    wrist.moveUp();
+                    printf("fuckkkkkkk");
+                    Logger::info("Wrist up");
+                }
+                else
+                {
+                    wristMotorGroup.move(0);
+                }
+                if (wristNeutral)
+                {
+                    wrist.moveNeutral();
+                    Logger::info("Wrist neutral");
+                }
+                if (wristDown)
+                {
+                    wrist.moveDown();
+                    Logger::info("Wrist down");
+                }
+
+                wrist.update();
+
+                lift.update();
+
+>>>>>>> Stashed changes
                 // Odo telemetry for tuning (vbOdom is curretly broken)
                 odoXPos.set(odometry->getPose().x);
                 odoYPos.set(odometry->getPose().y);
