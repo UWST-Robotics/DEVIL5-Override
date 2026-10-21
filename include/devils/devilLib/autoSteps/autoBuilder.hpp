@@ -57,7 +57,7 @@ namespace devils
             }
         }
 
-         AutoStepPtr driveToHolonomic(
+        AutoStepPtr driveToHolonomic(
             const Pose& pose,
             const float entryPointAngle,
             const float exitPointAngle,
@@ -68,6 +68,29 @@ namespace devils
             const auto trajectory = generateTrajectoryToPoseHolonomic(transformedPose, entryPointAngle, exitPointAngle, endingVelocity);
             return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
             
+        }
+
+        // Overloads for making straight lines and such easier
+        // Straight line, same as .driveToLinear (which doesn't work for some reason and that's why it's not here)
+        AutoStepPtr driveToHolonomic(
+            const Pose pose)
+        {
+            auto deltaPose = odom.getPose() - pose; // This line and the line in the next overload came from SplineSheet and was modified to use odom
+            float entryPointAngle = deltaPose.angleToX() + M_PIF;
+            float exitPointAngle = deltaPose.angleToX() + M_PIF;
+
+            driveToHolonomic(pose, entryPointAngle, exitPointAngle);
+        }
+
+        // If you only pass one angle, we assume it's the ending one
+        AutoStepPtr driveToHolonomic(
+            const Pose pose,
+            const float exitPointAngle)
+        {
+            auto deltaPose = odom.getPose() - pose;
+            float entryPointAngle = deltaPose.angleToX() + M_PIF;
+
+            driveToHolonomic(pose, entryPointAngle, exitPointAngle);
         }
 
         AutoStepPtr driveToLinear(
