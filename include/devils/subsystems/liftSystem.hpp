@@ -119,7 +119,7 @@ namespace devils
     float getPosition(bool isLeft)
     {
         float currentPosition = isLeft ? leftMotor.getPosition() : rightMotor.getPosition();
-        float currentPositionInches = ((currentPosition * 2.0f * M_PIF * 0.3f) / (50.0f * 6.0f)); // Convert to inches
+        float currentPositionInches = ((currentPosition * 2.0f * M_PIF * 0.7874f) / (50.0f * 6.0f)); // Convert to inches
         return currentPositionInches;
     }
 

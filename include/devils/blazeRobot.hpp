@@ -51,7 +51,7 @@ namespace devils
 
         // Motors
         SmartMotor liftMotorLeft = SmartMotor("LiftMotorLeft", 9);
-        SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", -10);
+        SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", 10);
 
         RotationSensor wristSensor = RotationSensor("WristSensor", 14);
 
@@ -171,9 +171,9 @@ namespace devils
                 }
 
                 if (upOnePinButton)
-                    lift.moveToPosition(lift.getTargetPosition() + lift.convertHalfPinsToInches(1)); // Move up one pin
+                    lift.moveToPosition(lift.getTargetPosition() + lift.convertPinsToInches(1)); // Move up one pin
                 if (downOnePinButton)
-                    lift.moveToPosition(lift.getTargetPosition() - lift.convertHalfPinsToInches(1)); // Move down one pin
+                    lift.moveToPosition(lift.getTargetPosition() - lift.convertPinsToInches(1)); // Move down one pin
                 if (maxHeightButton)
                     lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in inches)
                 if (minHeightButton)
