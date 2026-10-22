@@ -39,14 +39,14 @@ namespace devils
 
         // Subsystems
         // Lift
-        SmartMotor liftMotorLeft = SmartMotor("LiftMotorLeft", 3);
-        SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", -8);
+        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
+        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsLeft", {13, 14});
 
         // Grabber
         SmartMotorGroup rollers = SmartMotorGroup("Rollers", {4, -5});
 
         // Subsystems
-        LiftSystem lift = LiftSystem(liftMotorLeft, liftMotorRight, 21.0f);
+        LiftSystem lift = LiftSystem(liftMotorsLeft, liftMotorsRight, 21.0f, 0.7874f);
 
         // Grabber
         GrabberSystem grabber = GrabberSystem(rollers);
@@ -153,16 +153,16 @@ namespace devils
                 grabber.runGrabber(rightY);
 
                  if (upOnePinButton)
-                    lift.moveToPosition(lift.getTargetPosition() + lift.convertHalfPinsToInches(1)); // Move up one pin
+                    lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // Move up one pin
                 if (downOnePinButton)
-                    lift.moveToPosition(lift.getTargetPosition() - lift.convertHalfPinsToInches(1)); // Move down one pin
+                    lift.moveToPosition(lift.getTargetPosition() - lift.pinsToInches(1)); // Move down one pin
                 if (maxHeightButton)
                     lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in inches)
                 if (minHeightButton)
                     lift.moveToPosition(0.0f); // Move to min height (in inches)
 
                 // Fine tweak the lift position with the right joystick
-                lift.globalLiftOffset += rightY * 0.03;
+                // lift.globalLiftOffset += rightY * 0.03;
 
                 if (clawToggleButton) {
                     claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
