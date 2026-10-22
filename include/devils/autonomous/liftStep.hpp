@@ -7,17 +7,17 @@ namespace devils
     class LiftStep : public AutoStep
     {
     public:
-        LiftSystem& lift;
+        LiftSystem &lift;
         float positionsToMove;
         float maxHeight;
-        
+
         LiftStep(
-            LiftSystem& lift,
+            LiftSystem &lift,
             const float positionsToMove,
             const float maxHeight)
             : lift(lift),
-            positionsToMove(positionsToMove),
-            maxHeight(maxHeight)
+              positionsToMove(positionsToMove),
+              maxHeight(maxHeight)
         {
             lift.setMaxHeight(maxHeight);
         }
@@ -34,7 +34,7 @@ namespace devils
         void setPositionsToMove(const float positions)
         {
             positionsToMove = positions;
-            lift.moveToPosition(lift.convertToPins(lift.getTargetPosition()) + positionsToMove);
+            lift.moveToPosition(lift.inchesToPins(lift.getTargetPosition()) + positionsToMove);
         }
     };
 }

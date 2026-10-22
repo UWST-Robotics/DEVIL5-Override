@@ -35,7 +35,7 @@ namespace devils
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
-        
+
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, 8.1f);
         SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 1.9f);
         SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 4.9f);
@@ -43,28 +43,24 @@ namespace devils
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
-            10.5
-        );
+            10.5);
 
         // Pneumatics
         ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'G'}, false);
 
         // Motors
-        SmartMotor liftMotorLeft = SmartMotor("LiftMotorLeft", 9);
-        SmartMotor liftMotorRight = SmartMotor("LiftMotorLeft", 10);
-
-        RotationSensor wristSensor = RotationSensor("WristSensor", 14);
+        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
+        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {14, 15});
 
         // Subsystems
-        LiftSystem lift = LiftSystem(liftMotorLeft, liftMotorRight, 30.0f);
+        LiftSystem lift = LiftSystem(liftMotorsLeft, liftMotorsRight, 18.0f, 0.7874f);
         ClawSystem claw = ClawSystem(clawPiston);
+        RotationSensor wristSensor = RotationSensor("WristSensor", 14);
         WristSystem wrist = WristSystem(wristMotorGroup, wristSensor);
-
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
         InertialSensor imu = InertialSensor("IMU", 15);
-
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
             verticalSensor,
@@ -157,11 +153,14 @@ namespace devils
                 // Turn the robot with the right joystick
                 // Drive the robot
                 // Plant if we aren't moving
-                if(leftY == 0 && leftX == 0 && rightX == 0){
+                if (leftY == 0 && leftX == 0 && rightX == 0)
+                {
                     swerve.plant();
-                    //swerve.move(0, 0, 0);
-                } else {
-                    //swerve.move(leftY, rightX, leftX);
+                    // swerve.move(0, 0, 0);
+                }
+                else
+                {
+                    // swerve.move(leftY, rightX, leftX);
                     swerve.moveFieldCentric(leftY, rightX, leftX, heading);
                 }
                 // swerve.home();
@@ -171,16 +170,16 @@ namespace devils
                 }
 
                 if (upOnePinButton)
-                    lift.moveToPosition(lift.getTargetPosition() + lift.convertPinsToInches(1)); // Move up one pin
-                if (downOnePinButton)
-                    lift.moveToPosition(lift.getTargetPosition() - lift.convertPinsToInches(1)); // Move down one pin
-                if (maxHeightButton)
-                    lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in inches)
-                if (minHeightButton)
-                    lift.moveToPosition(0.0f); // Move to min height (in inches)
+                    lift.moveToPosition(lift.getPosition(true) + lift.pinsToInches(1)); // Move up one inch
+                else if (downOnePinButton)
+                    lift.moveToPosition(lift.getPosition(true) - lift.pinsToInches(1)); // Move down one inch
+                else if (maxHeightButton)
+                    lift.moveToPosition(25.0f); // Move to max height (in pins)
+                else if (minHeightButton)
+                    lift.moveToPosition(0.0f); // Move to min height (in pins)
 
                 // Fine tweak the lift position with the right joystick
-                lift.globalLiftOffset += rightY * 0.05;
+                // lift.globalLiftOffset += rightY * 0.05;
                 
                 if (clawToggleButton) {
                     claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
@@ -215,9 +214,11 @@ namespace devils
                 odoYPos.set(odometry->getPose().y);
                 odoHeading.set(odometry->getPose().rotation);
 
-                currentLiftPosition.set(lift.getAveragePosition());
+                currentLiftPosition.set(lift.getPosition(true));
                 targetLiftPosition.set(lift.getTargetPosition());
                 liftError.set(lift.getError());
+
+                lift.update();
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
