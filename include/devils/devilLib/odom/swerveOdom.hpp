@@ -1,5 +1,6 @@
 #pragma once
 #include "../geometry/pose.hpp"
+#include "devils/devilLib/geometry/vector2.hpp"
 #include "odomSource.hpp"
 #include "poseVelocityCalculator.hpp"
 #include "pros/rtos.hpp"
@@ -51,21 +52,17 @@ namespace devils
             lastUpdateTimestamp = pros::millis();
 
             // TODO: write all of this
-            chassis.getWheelPositionInfo();
+            // Code base on https://kauffman.tools/robotics/engineering/math/2025/09/16/swervedrive-forwards-kinematics.html
 
-            // Get Distance
-            const float left = leftRotations * 2 * M_PIF * wheelRadius;
-            const float right = rightRotations * 2 * M_PIF * wheelRadius;
+            FLdelta = chassis.getWheelPositionInfo(0)[1] - lastFLDist;
+            FLVect = Vector2(FLDelta * Math.cos(chassis.getWheelPositionInfo(0)[0]), FLDelta * Math.cos(chassis.getWheelPositionInfo(0)[0]))
 
-            // Get Delta Distance
-            const float deltaLeft = left - lastLeft;
-            const float deltaRight = right - lastRight;
-            lastLeft = left;
-            lastRight = right;
+            FLrot = FLVect
+
 
             // Calculate Delta Distance
-            const float deltaDistance = (deltaLeft + deltaRight) / 2;
-            const float deltaRotation = (deltaLeft - deltaRight) / wheelBase;
+            const float deltaDistance = 
+            const float deltaRotation = 
 
             // Calculate Delta X and Y
             const float deltaX = deltaDistance * std::cos(currentPose.rotation + deltaRotation / 2);
@@ -91,7 +88,9 @@ namespace devils
         Pose currentPose = Pose();
         uint32_t lastUpdateTimestamp = 0;
 
-        float lastLeft = 0;
-        float lastRight = 0;
+        float lastFLDist = 0;
+        float lastFRDist = 0;
+        float lastBLDist = 0;
+        float lastBRist = 0;
     };
 }

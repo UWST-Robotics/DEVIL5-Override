@@ -5,6 +5,7 @@
 #include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/swerveDisplay.hpp"
+#include "devilLib/chassis/swerveConstants.hpp"
 
 namespace devils
 {
@@ -19,7 +20,8 @@ namespace devils
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'H', false);
 
         // Drivetrain
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, M_PI);
+        SwerveConstants swerveConstants = SwerveConstants(3,10,10);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0);
 
         // Display (don't know how to use this Austin)
         //std::shared_ptr<SwerveDisplay> swerveDisplay = std::make_shared<SwerveDisplay>();

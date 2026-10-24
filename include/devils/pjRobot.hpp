@@ -7,6 +7,7 @@
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/grabberSystem.hpp"
+#include "devilLib/chassis/swerveConstants.hpp"
 
 namespace devils
 {
@@ -27,14 +28,13 @@ namespace devils
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
         
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -2.3f);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, -0.3f);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 3.4f);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 2.6f);
+        SwerveConstants swerveConstants = SwerveConstants(1, 9.0, 10.5);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3);
         SwerveChassis swerve = SwerveChassis(
-            frontLeftModule, frontRightModule, backLeftModule, backRightModule,
-            9.0,
-            10.5
+            frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants
         );
 
         // Subsystems
