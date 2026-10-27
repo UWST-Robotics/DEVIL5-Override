@@ -5,7 +5,7 @@
 namespace devils
 {
     /**
-     * Represents the intake arm and claw system of the robot.
+     * Represents the claw system of the robot.
      */
     class GrabberSystem
     {
@@ -16,7 +16,10 @@ namespace devils
         {
         }
 
-        void runGrabber(float speed) {
+        /**
+         * Moves the grabber at a target speed
+         */
+        void moveGrabber(float speed) {
             rollers.move(speed);
         }
 

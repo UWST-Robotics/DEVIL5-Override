@@ -9,6 +9,7 @@
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/wristSystem.hpp"
+#include "./subsystems/grabberSystem.hpp"
 
 namespace devils
 {
@@ -28,8 +29,6 @@ namespace devils
         SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
         SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
         SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
-        
-        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {13});
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
@@ -46,17 +45,21 @@ namespace devils
             10.5);
 
         // Pneumatics
-        ADIPneumaticGroup clawPiston = ADIPneumaticGroup("ClawPiston", {'G'}, false);
 
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
         SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {14, 15});
+        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {11, 12, -13});
+        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
+        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
+
+        // Sensors
+        RotationSensor wristSensor = RotationSensor("WristSensor", 14);
 
         // Subsystems
         LiftSystem lift = LiftSystem(liftMotorsLeft, liftMotorsRight, 18.0f, 0.7874f);
-        ClawSystem claw = ClawSystem(clawPiston);
-        RotationSensor wristSensor = RotationSensor("WristSensor", 14);
         WristSystem wrist = WristSystem(wristMotorGroup, wristSensor);
+        GrabberSystem grabber = GrabberSystem(grabberMotors);
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
@@ -108,8 +111,11 @@ namespace devils
             // mainController.down.setMode(ControllerButton::JUST_PRESSED);
             mainController.y.setMode(ControllerButton::JUST_PRESSED);
             mainController.b.setMode(ControllerButton::JUST_PRESSED);
+            mainController.a.setMode(ControllerButton::JUST_PRESSED);
             // Field centric button
             // mainController.left.setMode(ControllerButton::JUST_PRESSED);
+
+            wristMotorGroup.setBrakeMode(MOTOR_BRAKE_HOLD);
 
             lift.calibrateLift();
         }
@@ -117,7 +123,7 @@ namespace devils
         void autonomous() override
         {
             imu.waitUntilDoneCalibrated();
-            MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
+            // MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
             //TestingAuto::run(swerve, *odometry.get(), lift, claw);
         }
 
@@ -134,18 +140,24 @@ namespace devils
                 const float leftX = mainController.leftX;
                 const float rightY = mainController.rightY;
                 const float rightX = mainController.rightX * 0.7f;
+
                 // Lift inputs
                 bool upOnePinButton = mainController.right;
                 bool downOnePinButton = mainController.down;
                 bool maxHeightButton = mainController.y;
                 bool minHeightButton = mainController.b;
-                bool clawToggleButton = mainController.l1;
 
+                // Wrist inputs
                 bool wristUp = mainController.up;
-                bool wristNeutral = mainController.left;
+                // bool wristNeutral = mainController.left;
                 bool wristDown = mainController.down;
 
+                // Grabber inputs
+                bool grabberIn = mainController.r1;
+                bool grabberOut = mainController.r2;
+
                 bool resetFieldCentricButton = mainController.left;
+                bool scoreButton = mainController.a;
 
                 float heading = odometry->getPose().rotation;
 
@@ -157,6 +169,7 @@ namespace devils
                 {
                     swerve.plant();
                     // swerve.move(0, 0, 0);
+                    // swerve.home();
                 }
                 else
                 {
@@ -180,30 +193,38 @@ namespace devils
 
                 // Fine tweak the lift position with the right joystick
                 // lift.globalLiftOffset += rightY * 0.05;
-                
-                if (clawToggleButton) {
-                    claw.setClawClosed(!claw.getClawState()); // Toggle the claw state
-                }
 
-                if(wristUp){
-                    wristMotorGroup.move(.5f);
-                    wrist.moveUp();
-                    printf("fuckkkkkkk");
-                    Logger::info("Wrist up");
+                if (grabberIn)
+                    grabber.moveGrabber(100);
+                else if (grabberOut)
+                    grabber.moveGrabber(-100);
+                else
+                    grabber.moveGrabber(35);
 
-                }
-                else{
-                    wristMotorGroup.move(0);
-                }
-                if(wristNeutral){
-                    wrist.moveNeutral();
-                    Logger::info("Wrist neutral");
+                // Should more efficiently move the wrist
+                if (wristUp)
+                    wrist.setTarget(wrist.target++);
+                else if (wristDown)
+                    wrist.setTarget(wrist.target--);
 
-                }
-                if(wristDown){
-                    wrist.moveDown();
-                    Logger::info("Wrist down");
-                }
+                intakeMotors.move(rightY);
+
+                // if(wristUp){
+                //     wrist.moveUp();
+                // }
+                // if(wristNeutral){
+                //     wrist.moveNeutral();
+                // }
+                // if(wristDown){
+                //     wrist.moveDown();
+                // }
+
+                if (scoreButton)
+                    score();
+
+                // Moves the wrist to the up position whenever the lift is going up
+                if (lift.getTargetPosition() > lift.getAveragePosition())
+                    wrist.moveUp();                
 
                 wrist.update();
 
@@ -218,11 +239,26 @@ namespace devils
                 targetLiftPosition.set(lift.getTargetPosition());
                 liftError.set(lift.getError());
 
-                lift.update();
-
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
             }
+        }
+
+        /**
+         * Automated scoring routine
+         * Moves wrist to neutral
+         * Outtakes pin from grabber
+         * Moves wrist up
+         * Lowers lift
+         */
+        void score()
+        {
+            wrist.moveNeutral();
+            grabberMotors.move(-100);
+            pros::delay(100);
+            wrist.moveUp();
+            pros::delay(100);
+            lift.moveToPosition(0.0f);
         }
 
         void disabled() override

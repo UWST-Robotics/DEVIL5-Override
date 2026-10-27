@@ -19,6 +19,8 @@ namespace devils{
         }
 
         float target = DOWN;
+        int targetState = -1;
+
 
         float getPosition(){
             return wristSensor.getAngle();
@@ -39,6 +41,7 @@ namespace devils{
          */
         void moveDown(){
             target = DOWN;
+            targetState = -1;
             printf("%0.2f", getPosition());
             printf("%0.2f", wristMotors.getPosition());
         }
@@ -48,6 +51,7 @@ namespace devils{
          */
         void moveNeutral(){
             target = NEUTRAL;
+            targetState = 0;
             printf("%0.2f", getPosition());
             printf("%0.2f", wristMotors.getPosition());
         }
@@ -57,8 +61,28 @@ namespace devils{
          */
         void moveUp(){
             target = UP;
+            targetState = 1;
             printf("%0.2f", getPosition());
             printf("%0.2f", wristMotors.getPosition());
+        }
+
+        /**
+         * Moves wrist to a set target
+         * Allows for easier driver control of the wrist
+         */
+        void setTarget(int target)
+        {
+            if (targetState > 1)
+                targetState == 1;
+            else if (targetState < -1)
+                targetState == -1;
+
+            if (targetState == -1)
+                moveDown();
+            else if (targetState == 0)
+                moveNeutral();
+            else if (targetState == 1)
+                moveUp();
         }
 
     private:

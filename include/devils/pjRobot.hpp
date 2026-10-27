@@ -13,24 +13,24 @@ namespace devils
     struct PJRobot : Robot
     {
         // Swerve Modules
-        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
-        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
-        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {10});
-        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {9});
-        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {11});
-        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {12});
-        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {20});
-        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {19});
+        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {20});
+        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {19});
+        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {11});
+        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {12});
+        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {10});
+        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {9});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {1});
+        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {2});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'D', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
-        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
+        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'A', true);
         
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -2.3f);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, -0.3f);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 3.4f);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, 2.6f);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, -1.6f);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, 1.5f);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, 0.6f);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, -0.3f);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule,
             9.0,
@@ -39,8 +39,8 @@ namespace devils
 
         // Subsystems
         // Lift
-        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
-        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsLeft", {13, 14});
+        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {8, 7});
+        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsLeft", {12, 14});
 
         // Grabber
         SmartMotorGroup rollers = SmartMotorGroup("Rollers", {4, -5});
@@ -60,8 +60,8 @@ namespace devils
         Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.0f, 0.0f);
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -4.0f);
 
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -14);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -15);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -17);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -16);
         InertialSensor imu = InertialSensor("IMU", 13);
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
@@ -150,7 +150,7 @@ namespace devils
                 }
 
                 // Grabber
-                grabber.runGrabber(rightY);
+                grabber.moveGrabber(rightY);
 
                  if (upOnePinButton)
                     lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // Move up one pin
