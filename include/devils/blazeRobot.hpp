@@ -10,6 +10,7 @@
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/wristSystem.hpp"
 #include "./subsystems/grabberSystem.hpp"
+#include "./subsystems/scoreTask.hpp"
 #include "devilLib/chassis/swerveConstants.hpp"
 
 namespace devils
@@ -18,6 +19,7 @@ namespace devils
     {
         // Constants
         static constexpr float DEAD_WHEEL_RADIUS = 1;
+
         Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.0f, 0.0f);
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -4.0f);
 
@@ -49,18 +51,18 @@ namespace devils
 
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
-        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {14, 15});
+        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-14, -15});
         SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {11, 12, -13});
         SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
         SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
 
         // Sensors
-        RotationSensor wristSensor = RotationSensor("WristSensor", 14);
 
         // Subsystems
-        LiftSystem lift = LiftSystem(liftMotorsLeft, liftMotorsRight, 18.0f, 0.7874f);
-        WristSystem wrist = WristSystem(wristMotorGroup, wristSensor);
+        LiftSystem lift = LiftSystem(liftMotorsLeft, liftMotorsRight, 27.0f, 0.7874f);
+        WristSystem wrist = WristSystem(wristMotorGroup);
         GrabberSystem grabber = GrabberSystem(grabberMotors);
+        std::shared_ptr<ScoreTask> scorer = std::make_shared<ScoreTask>(wrist, lift, grabber);
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
@@ -109,16 +111,24 @@ namespace devils
             // Lift controls
             mainController.l1.setMode(ControllerButton::JUST_PRESSED);
             mainController.right.setMode(ControllerButton::JUST_PRESSED);
+
+            mainController.left.setMode(ControllerButton::JUST_PRESSED);
+            mainController.down.setMode(ControllerButton::JUST_PRESSED);
+            mainController.up.setMode(ControllerButton::JUST_PRESSED);
+
             // mainController.down.setMode(ControllerButton::JUST_PRESSED);
             mainController.y.setMode(ControllerButton::JUST_PRESSED);
             mainController.b.setMode(ControllerButton::JUST_PRESSED);
             mainController.a.setMode(ControllerButton::JUST_PRESSED);
+            mainController.x.setMode(ControllerButton::JUST_PRESSED);
+
             // Field centric button
             // mainController.left.setMode(ControllerButton::JUST_PRESSED);
 
-            wristMotorGroup.setBrakeMode(MOTOR_BRAKE_HOLD);
+            // wristMotorGroup.setBrakeMode(MOTOR_BRAKE_HOLD);
 
             lift.calibrateLift();
+            scorer->start();
         }
 
         void autonomous() override
@@ -143,14 +153,14 @@ namespace devils
                 const float rightX = mainController.rightX * 0.7f;
 
                 // Lift inputs
-                bool upOnePinButton = mainController.right;
-                bool downOnePinButton = mainController.down;
+                bool upOnePinButton = mainController.x;
+                bool downOnePinButton = mainController.a;
                 bool maxHeightButton = mainController.y;
                 bool minHeightButton = mainController.b;
 
                 // Wrist inputs
                 bool wristUp = mainController.up;
-                // bool wristNeutral = mainController.left;
+                bool wristNeutral = mainController.left;
                 bool wristDown = mainController.down;
 
                 // Grabber inputs
@@ -158,7 +168,7 @@ namespace devils
                 bool grabberOut = mainController.r2;
 
                 bool resetFieldCentricButton = mainController.left;
-                bool scoreButton = mainController.a;
+                bool scoreButton = mainController.l1;
 
                 float heading = odometry->getPose().rotation;
 
@@ -183,32 +193,39 @@ namespace devils
                     swerve.calibrateFieldCentric();
                 }
 
-                if (upOnePinButton)
-                    lift.moveToPosition(lift.getPosition(true) + lift.pinsToInches(1)); // Move up one inch
-                else if (downOnePinButton)
-                    lift.moveToPosition(lift.getPosition(true) - lift.pinsToInches(1)); // Move down one inch
-                else if (maxHeightButton)
-                    lift.moveToPosition(25.0f); // Move to max height (in pins)
-                else if (minHeightButton)
-                    lift.moveToPosition(0.0f); // Move to min height (in pins)
+                if (scorer->getIsScore() == false)
+                {
+                    if (upOnePinButton)
+                        lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // Move up one pin
+                    else if (downOnePinButton)
+                        lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(-1)); // Move down one pin
+                    else if (maxHeightButton)
+                        lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in pins)
+                    else if (minHeightButton)
+                        lift.moveToPosition(0.0f); // Move to min height (in pins)
 
-                // Fine tweak the lift position with the right joystick
-                // lift.globalLiftOffset += rightY * 0.05;
+                    // Fine tweak the lift position with the right joystick
+                    // lift.globalLiftOffset += rightY * 0.05;
 
-                if (grabberIn)
-                    grabber.moveGrabber(100);
-                else if (grabberOut)
-                    grabber.moveGrabber(-100);
-                else
-                    grabber.moveGrabber(35);
+                    if (grabberIn)
+                        grabber.moveGrabber(1);
+                    else if (grabberOut)
+                        grabber.moveGrabber(-1);
+                    else
+                        grabber.moveGrabber(0.5f);
 
-                // Should more efficiently move the wrist
-                if (wristUp)
-                    wrist.setTarget(wrist.target++);
-                else if (wristDown)
-                    wrist.setTarget(wrist.target--);
+                    // Should more efficiently move the wrist
+                    if (wristUp)
+                        wrist.setTarget(wrist.targetState+1);
+                    else if (wristDown)
+                        wrist.setTarget(wrist.targetState-1);
 
-                intakeMotors.move(rightY);
+                    intakeMotors.move(rightY);
+
+                    // Moves the wrist to the up position whenever the lift is going up
+                    // if (lift.getTargetPosition() > lift.getAveragePosition())
+                    //     wrist.moveUp(); 
+                }
 
                 // if(wristUp){
                 //     wrist.moveUp();
@@ -221,13 +238,13 @@ namespace devils
                 // }
 
                 if (scoreButton)
-                    score();
-
-                // Moves the wrist to the up position whenever the lift is going up
-                if (lift.getTargetPosition() > lift.getAveragePosition())
-                    wrist.moveUp();                
+                {
+                    // scorer.setState(ScoreSystem::State::SCORING);
+                    scorer->setIsScore(!scorer->getIsScore());
+                }                
 
                 wrist.update();
+                // printf("Wrist target position: %f\n", wrist.getTargetPosition());
 
                 lift.update();
 
@@ -236,30 +253,13 @@ namespace devils
                 odoYPos.set(odometry->getPose().y);
                 odoHeading.set(odometry->getPose().rotation);
 
-                currentLiftPosition.set(lift.getPosition(true));
+                currentLiftPosition.set(lift.getAveragePosition());
                 targetLiftPosition.set(lift.getTargetPosition());
                 liftError.set(lift.getError());
 
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
             }
-        }
-
-        /**
-         * Automated scoring routine
-         * Moves wrist to neutral
-         * Outtakes pin from grabber
-         * Moves wrist up
-         * Lowers lift
-         */
-        void score()
-        {
-            wrist.moveNeutral();
-            grabberMotors.move(-100);
-            pros::delay(100);
-            wrist.moveUp();
-            pros::delay(100);
-            lift.moveToPosition(0.0f);
         }
 
         void disabled() override

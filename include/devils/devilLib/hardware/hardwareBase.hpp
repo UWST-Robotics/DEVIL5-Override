@@ -99,6 +99,7 @@ namespace devils
         /**
          * Reports an error based on a hardware status code.
          * @param status The hardware status code to report an error for.
+         * TODO add boolean to diable hardware logging
          */
         void reportErrorFromStatus(const HWStatus status) const
         {

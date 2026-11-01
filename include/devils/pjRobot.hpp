@@ -40,7 +40,7 @@ namespace devils
         // Subsystems
         // Lift
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {8, 7});
-        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsLeft", {12, 14});
+        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsLeft", {13, 14});
 
         // Grabber
         SmartMotorGroup rollers = SmartMotorGroup("Rollers", {4, -5});

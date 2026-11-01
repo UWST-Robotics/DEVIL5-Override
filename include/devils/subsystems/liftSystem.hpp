@@ -7,8 +7,8 @@
 
 namespace devils
 {
-    PIDController PIDLeft(0.55, 0.0000, 0.001);  // PID controller for the lift system
-    PIDController PIDRight(0.55, 0.0000, 0.001); // PID controller for the lift system
+    PIDController PIDLeft(1.25, 0.000, 10);  // PID controller for the lift system
+    PIDController PIDRight(1.25, 0.000, 10); // PID controller for the lift system
     class LiftSystem
     {
         // Member Variables
@@ -80,8 +80,23 @@ namespace devils
             float outputLeft = PIDLeft.update(errorLeft);    // Calculate the PID output
             float outputRight = PIDRight.update(errorRight); // Calculate the PID output
 
-            leftMotors.move(outputLeft);   // Move the lift based on the PID output
-            rightMotors.move(outputRight); // Move the lift based on the PID output
+            if (outputLeft < 0 && outputRight < 0)
+            {
+                float clampedOutputLeft = std::clamp(outputLeft, -1.0f, 1.0f);
+                float clampedOutputRight = std::clamp(outputRight, -1.0f, 1.0f);
+
+                clampedOutputLeft /= 2;
+                clampedOutputRight /= 2;
+
+                leftMotors.move(clampedOutputLeft);   // Move the lift based on the PID output
+                rightMotors.move(clampedOutputRight); // Move the lift based on the PID output
+            }
+            else
+            {
+                leftMotors.move(outputLeft);   // Move the lift based on the PID output
+                rightMotors.move(outputRight); // Move the lift based on the PID output
+            }
+
         }
 
         float getTargetPosition()
@@ -121,14 +136,14 @@ namespace devils
          *@param pins: pass in 0.5 for half pin
          *@return The position in pins.
          */
-        double pinsToInches(const float pins)
+        float pinsToInches(const float pins)
         {
-            return pins * 6.5f;
+            return pins * 6.75f;
         }
 
-        double inchesToPins(const float inches)
+        float inchesToPins(const float inches)
         {
-            return inches / 6.5f;
+            return inches / 6.75f;
         }
     };
 }

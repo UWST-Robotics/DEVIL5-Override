@@ -6,15 +6,13 @@
 
 namespace devils{
     //PID controller for the wrist motors
-    PIDController wristPid = PIDController(0.01, 0.0000, 0.0000);
+    PIDController wristPid = PIDController(0.0025, 0.0000, 0.0000);
 
     class WristSystem{
         public:
             WristSystem(
-                SmartMotorGroup& wristMotors,
-                RotationSensor& wristSensor)
-                :wristMotors(wristMotors),
-                wristSensor(wristSensor)
+                SmartMotorGroup& wristMotors)
+                :wristMotors(wristMotors)
         {
         }
 
@@ -23,7 +21,12 @@ namespace devils{
 
 
         float getPosition(){
-            return wristSensor.getAngle();
+            return wristMotors.getPosition();
+        }
+
+        float getTargetPosition()
+        {
+            return target;
         }
 
         float getError(){
@@ -40,6 +43,7 @@ namespace devils{
          * Moves the wrist all the way down
          */
         void moveDown(){
+            printf("i got called, boooooooooo 1");
             target = DOWN;
             targetState = -1;
             printf("%0.2f", getPosition());
@@ -50,6 +54,7 @@ namespace devils{
          * Moves the wrist to the middle/neutral position
          */
         void moveNeutral(){
+            printf("i got called, yayyyyyyyyyy");
             target = NEUTRAL;
             targetState = 0;
             printf("%0.2f", getPosition());
@@ -60,6 +65,7 @@ namespace devils{
          * Moves the wrist all the way up
          */
         void moveUp(){
+            printf("i got called, boooooooooo 2");
             target = UP;
             targetState = 1;
             printf("%0.2f", getPosition());
@@ -72,26 +78,25 @@ namespace devils{
          */
         void setTarget(int target)
         {
-            if (targetState > 1)
-                targetState == 1;
-            else if (targetState < -1)
-                targetState == -1;
+            if (target > 1)
+                target = 1;
+            else if (target < -1)
+                target = -1;
 
-            if (targetState == -1)
+            if (target == -1)
                 moveDown();
-            else if (targetState == 0)
+            else if (target == 0)
                 moveNeutral();
-            else if (targetState == 1)
+            else if (target == 1)
                 moveUp();
         }
 
     private:
         static constexpr float DOWN = 0;
-        static constexpr float NEUTRAL = -(45);
-        static constexpr float UP = -90;
+        static constexpr float NEUTRAL = 750;
+        static constexpr float UP = 1200;
 
         SmartMotorGroup& wristMotors;
-        RotationSensor& wristSensor;
     
     };
 }

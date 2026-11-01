@@ -13,7 +13,7 @@ namespace devils
         struct Options
         {
             /// @brief Amount of gravitational force applied to the elevator.
-            float gravity = 0.0;
+            float gravity = 9.8f;
 
             /// @brief Amount of force required to overcome static friction.
             float staticFriction = 0.0;
