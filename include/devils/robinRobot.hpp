@@ -3,6 +3,7 @@
 #include "./devilLib/devils.h"
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/armSystem.hpp"
+#include "./subsystems/grabberSystem.hpp"
 
 namespace devils
 {
@@ -13,8 +14,8 @@ namespace devils
     {
         Ports ports = Ports(Ports::Robot::ROBIN);
 
-        SmartMotorGroup grabberMotors = SmartMotorGroup("Grabber", {ports.getPorts(grabber)});
-        // SmartMotor wristMotor = SmartMotor("Wrist", ports.getPorts(wrist));
+        SmartMotorGroup grabberMotors = SmartMotorGroup("Grabber", ports.getPorts(Ports::Name::grabber));
+        // SmartMotor wristMotor = SmartMotor("Wrist", ports.getPorts(ports.Name::wrist));
 
         // Hardware
         SmartMotorGroup rightMotors = SmartMotorGroup("RightMotors", {8, -12});

@@ -27,7 +27,7 @@ namespace devils
             ROBIN
         };
 
-        Ports(const Robot robot)
+        Ports(Robot robot)
         {
             currentRobot = robot;
         }
@@ -38,14 +38,14 @@ namespace devils
          * @param name The name of the motor.
          * @return The port number for the specified motor name.
          */
-        std::initializer_list<int8_t> getPorts(const Name name)
+        std::initializer_list<int8_t> getPorts(Name name)
         {
-            std::vector<int> portNumbers;
             std::initializer_list<int8_t> ports;
+            currentName = name;
             switch (currentRobot)
             {
                 case Robot::BLAZE:
-                    switch (name)
+                    switch (currentName)
                     {
                         case Name::grabber:
                             ports = {1, 2, 3, 4, 5};
@@ -69,7 +69,7 @@ namespace devils
                             break;
                     }
                 case Robot::PJ:
-                    switch (name)
+                    switch (currentName)
                     {
                         case Name::grabber:
                             ports = {1};
@@ -93,7 +93,7 @@ namespace devils
                             break;
                     }
                 case Robot::ROBIN:
-                    switch (name)
+                    switch (currentName)
                     {
                         case Name::grabber:
                             ports = {1};
@@ -121,5 +121,6 @@ namespace devils
 
         private:
         Robot currentRobot{BLAZE};
+        Name currentName{grabber};
     };
 }
