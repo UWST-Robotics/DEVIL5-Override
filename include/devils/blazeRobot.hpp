@@ -53,7 +53,8 @@ namespace devils
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
         SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-14, -15});
-        SmartMotorGroup mainIntakeMotors = SmartMotorGroup("MainIntakeMotors", {11, -13});
+        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {11});
+        SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-13});
         SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {12});
         SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
         SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
@@ -64,7 +65,7 @@ namespace devils
         LiftSystem lift = LiftSystem(liftMotorsLeft, liftMotorsRight, 27.0f, 0.7874f);
         WristSystem wrist = WristSystem(wristMotorGroup);
         GrabberSystem grabber = GrabberSystem(grabberMotors);
-        IntakeSystem intake = IntakeSystem(mainIntakeMotors, throughtakeIntakeMotors);
+        IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, throughtakeIntakeMotors);
         std::shared_ptr<ScoreTask> scorer = std::make_shared<ScoreTask>(wrist, lift, grabber);
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", -18);
@@ -113,16 +114,15 @@ namespace devils
             mainController.rightY.setOptions(joystickOptions);
             // Lift controls
             mainController.l1.setMode(ControllerButton::JUST_PRESSED);
-            mainController.right.setMode(ControllerButton::JUST_PRESSED);
+            mainController.l2.setMode(ControllerButton::JUST_PRESSED);
 
             mainController.left.setMode(ControllerButton::JUST_PRESSED);
             mainController.down.setMode(ControllerButton::JUST_PRESSED);
-            mainController.up.setMode(ControllerButton::JUST_PRESSED);
+            // mainController.up.setMode(ControllerButton::JUST_PRESSED);
 
-            // mainController.down.setMode(ControllerButton::JUST_PRESSED);
-            mainController.y.setMode(ControllerButton::JUST_PRESSED);
+            mainController.r1.setMode(ControllerButton::JUST_PRESSED);
+            mainController.r2.setMode(ControllerButton::JUST_PRESSED);
             mainController.b.setMode(ControllerButton::JUST_PRESSED);
-            mainController.a.setMode(ControllerButton::JUST_PRESSED);
             mainController.x.setMode(ControllerButton::JUST_PRESSED);
 
             // Field centric button
@@ -156,25 +156,23 @@ namespace devils
                 const float rightX = mainController.rightX * 0.7f;
 
                 // Lift inputs
-                bool upOnePinButton = mainController.x;
-                bool downOnePinButton = mainController.a;
-                bool maxHeightButton = mainController.y;
+                bool upOnePinButton = mainController.r1;
+                bool downOnePinButton = mainController.r2;
+                bool maxHeightButton = mainController.x;
                 bool minHeightButton = mainController.b;
 
-                // Wrist inputs
-                bool wristUp = mainController.up;
-                bool wristNeutral = mainController.left;
-                bool wristDown = mainController.down;
+                // grabber inputs
+                bool grabberOutButton = mainController.up;
 
-                // Grabber inputs
-                bool grabberOut = mainController.r1;
+                // Wrist inputs
+                bool wristUp = mainController.l1;
+                bool wristDown = mainController.l2;
 
                 bool resetFieldCentricButton = mainController.left;
-                bool scoreButton = mainController.l1;
+                bool scoreButton = mainController.a;
 
-                bool intakeInButton = mainController.l2;
-                bool intakeOutButton = mainController.r2;
-                bool matchloadButton = mainController.right;
+                bool intakeInButton = mainController.y;
+                bool intakeOutButton = mainController.right;
 
                 float heading = odometry->getPose().rotation;
 
@@ -213,21 +211,37 @@ namespace devils
                     // Fine tweak the lift position with the right joystick
                     // lift.globalLiftOffset += rightY * 0.05;
 
-                    if (grabberOut)
+                    // run grabber
+                    if (grabberOutButton)
                         grabber.moveGrabber(-1);
                     else
                         grabber.moveGrabber(0.75f);
 
                     // Should more efficiently move the wrist
                     if (wristUp)
-                        wrist.setTarget(wrist.targetState+1);
+                    {
+                        wrist.setTarget(wrist.targetState + 1); 
+                        // prevent objects from clipping when placed in grabber by intake
+                        if (lift.getTargetPosition() <= 1.0f)
+                        {
+                            if (wrist.getTargetState() > -1)
+                            {
+                                printf("wrist position: %f\n", wrist.getTargetState());
+                                wrist.setTarget(0);
+                                lift.moveToPosition(lift.pinsToInches(1));
+                            }
+                        }
+                    }
                     else if (wristDown)
-                        wrist.setTarget(wrist.targetState-1);
+                        wrist.setTarget(wrist.targetState - 1);
+
 
                     // Moves the wrist to the up position whenever the lift is going up
                     // if (lift.getTargetPosition() > lift.getAveragePosition())
                     //     wrist.moveUp();
                 }
+
+                intake.matchLoad(abs(rightY));
 
                 if (intakeInButton)
                 {
@@ -237,17 +251,11 @@ namespace devils
                 {
                     intake.runIntake(-1.0f);
                 }
-                else if (matchloadButton)
-                {
-                    
-                }
                 else
                 {
                     intake.runIntake(0.0f);
-                    throughtakeIntakeMotors.move(1.0f);
+                    throughtakeIntakeMotors.move(0.5f);
                 }
-
-
 
                 // if(wristUp){
                 //     wrist.moveUp();

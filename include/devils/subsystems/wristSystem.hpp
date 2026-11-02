@@ -29,6 +29,11 @@ namespace devils{
             return target;
         }
 
+        float getTargetState()
+        {
+            return targetState;
+        }
+
         float getError(){
             float error;
             error = target-getPosition();
@@ -94,7 +99,7 @@ namespace devils{
     private:
         static constexpr float DOWN = 0;
         static constexpr float NEUTRAL = 750;
-        static constexpr float UP = 1200;
+        static constexpr float UP = 1300;
 
         SmartMotorGroup& wristMotors;
     

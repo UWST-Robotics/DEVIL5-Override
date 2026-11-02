@@ -77,6 +77,9 @@
 #include "display/autoPickerDisplay.hpp"
 // #include "display/eyesRenderer.hpp"
 
+// Ports
+#include "devils/ports.hpp"
+
 // VEXBridge
 // TODO: VEXBridge is currently broken
 #include "vexbridge/vexbridge.h"

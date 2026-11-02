@@ -12,9 +12,9 @@ namespace devils
     {
     public:
         IntakeSystem(
-            SmartMotorGroup& mainRollers,
-            SmartMotorGroup& throughtakeRollers)
-            : mainRollers(mainRollers),
+            SmartMotorGroup& topRollers, SmartMotorGroup& bottomRollers, SmartMotorGroup& throughtakeRollers)
+            : topRollers(topRollers),
+              bottomRollers(bottomRollers),
               throughtakeRollers(throughtakeRollers)
         {
         }
@@ -27,13 +27,23 @@ namespace devils
          */
         void runIntake(float speed)
         {
-            mainRollers.move(speed);
+            topRollers.move(speed);
+            bottomRollers.move(speed);
             if (speed < 0)
-                throughtakeRollers.move(speed);
+                throughtakeRollers.move(speed / 2);
+        }
+
+        void matchLoad(float speed)
+        {
+            topRollers.move(-speed);
+            bottomRollers.move(speed);
+            if (speed < 0)
+                throughtakeRollers.move(speed / 2);
         }
 
         private:
-        SmartMotorGroup& mainRollers;
+        SmartMotorGroup& topRollers;
+        SmartMotorGroup& bottomRollers;
         SmartMotorGroup& throughtakeRollers;
     };
 }

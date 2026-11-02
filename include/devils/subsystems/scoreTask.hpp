@@ -46,7 +46,7 @@ namespace devils{
 
         void onUpdate() override
         {
-            printf("ScoreTask updating: %s\n", std::to_string(step).c_str());
+            // printf("ScoreTask updating: %s\n", std::to_string(step).c_str());
             score();
         }
 
