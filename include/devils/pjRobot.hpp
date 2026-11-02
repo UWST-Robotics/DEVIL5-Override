@@ -29,10 +29,10 @@ namespace devils
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'A', true);
         
         SwerveConstants swerveConstants = SwerveConstants(1, 9.0, 10.5);
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, -1.6f);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1.5f);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 0.6f);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, -0.3f);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants
         );
@@ -143,7 +143,11 @@ namespace devils
                 // Drive the robot
                 // Plant if we aren't moving
                 if(leftY == 0 && leftX == 0 && rightX == 0){
-                    //swerve.plant();
+                    // swerve.plant();
+                    printf("FL Calibration Offset Angle: %f\n", swerveConstants.flCalibrationOffsetAngle);
+                    printf("FR Calibration Offset Angle: %f\n", swerveConstants.frCalibrationOffsetAngle);
+                    printf("BL Calibration Offset Angle: %f\n", swerveConstants.blCalibrationOffsetAngle);
+                    printf("BR Calibration Offset Angle: %f\n", swerveConstants.brCalibrationOffsetAngle);
                     swerve.home();
                 } else {
                     swerve.move(leftY, leftX, rightX);

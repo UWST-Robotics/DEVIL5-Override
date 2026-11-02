@@ -74,22 +74,22 @@ namespace devils
             // Bot ID is 0 for Blaze, 1 for PJ, 2 for Robin, etc.
             switch (botID) {
                 case 0:{
-                    flCalibrationOffsetAngle = 8.1f;
-                    frCalibrationOffsetAngle = 1.9;
-                    blCalibrationOffsetAngle = 4.9f;
-                    brCalibrationOffsetAngle = 4.7f;
+                    flCalibrationOffsetAngle = 0.0f;
+                    frCalibrationOffsetAngle = 0.0f;
+                    blCalibrationOffsetAngle = 0.0f;
+                    brCalibrationOffsetAngle = 0.0f;
                 }
                 case 1:{
-                    flCalibrationOffsetAngle = -2.3f;
-                    frCalibrationOffsetAngle = -0.3f;
-                    blCalibrationOffsetAngle = 3.4f;
-                    brCalibrationOffsetAngle = 2.6f;
+                    flCalibrationOffsetAngle = -1.0f;
+                    frCalibrationOffsetAngle = -3.0f;
+                    blCalibrationOffsetAngle = 7.0f;
+                    brCalibrationOffsetAngle = 5.0f;
                 }
                 default:{
-                    flCalibrationOffsetAngle = 0.0;
-                    frCalibrationOffsetAngle = 0.0;
-                    blCalibrationOffsetAngle = 0.0;
-                    brCalibrationOffsetAngle = 0.0;
+                    flCalibrationOffsetAngle = 0.0f;
+                    frCalibrationOffsetAngle = 0.0f;
+                    blCalibrationOffsetAngle = 0.0f;
+                    brCalibrationOffsetAngle = 0.0f;
                 }
            }
         }

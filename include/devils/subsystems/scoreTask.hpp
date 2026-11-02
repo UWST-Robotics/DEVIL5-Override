@@ -14,8 +14,9 @@ namespace devils{
             LiftSystem& lift;
             GrabberSystem& grabber;
 
-            float neutralDelay = 0.5f;
-            float upDelay = 0.75f;
+            float neutralDelay = 0.25f;
+            float upDelay = 0.35f;
+            float lowerLiftDelay = 0.25f;
             Timer timer = Timer(0);
             bool isScore = false;
             int step = 0;
@@ -88,9 +89,18 @@ namespace devils{
             if (step == 4)
             {
                 wrist.setTarget(1);
-                lift.moveToPosition(0.0f);
-                isScore = false;
-                step = 0;
+                timer.setDuration(lowerLiftDelay);
+                timer.start();
+                step = 5;
+            }
+            if (step == 5)
+            {
+                if (timer.getIsFinished())
+                {
+                    lift.moveToPosition(0.0f);
+                    isScore = false;
+                    step = 0;
+                }
             }
         }
 

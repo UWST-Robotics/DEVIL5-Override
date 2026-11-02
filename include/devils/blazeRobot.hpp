@@ -10,6 +10,7 @@
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/wristSystem.hpp"
 #include "./subsystems/grabberSystem.hpp"
+#include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/scoreTask.hpp"
 #include "devilLib/chassis/swerveConstants.hpp"
 
@@ -52,7 +53,8 @@ namespace devils
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
         SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-14, -15});
-        SmartMotorGroup intakeMotors = SmartMotorGroup("IntakeMotors", {11, 12, -13});
+        SmartMotorGroup mainIntakeMotors = SmartMotorGroup("MainIntakeMotors", {11, -13});
+        SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {12});
         SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
         SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
 
@@ -62,10 +64,11 @@ namespace devils
         LiftSystem lift = LiftSystem(liftMotorsLeft, liftMotorsRight, 27.0f, 0.7874f);
         WristSystem wrist = WristSystem(wristMotorGroup);
         GrabberSystem grabber = GrabberSystem(grabberMotors);
+        IntakeSystem intake = IntakeSystem(mainIntakeMotors, throughtakeIntakeMotors);
         std::shared_ptr<ScoreTask> scorer = std::make_shared<ScoreTask>(wrist, lift, grabber);
 
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -12);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -11);
+        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -18);
+        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -19);
         InertialSensor imu = InertialSensor("IMU", 15);
 
         std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
@@ -164,11 +167,14 @@ namespace devils
                 bool wristDown = mainController.down;
 
                 // Grabber inputs
-                bool grabberIn = mainController.r1;
-                bool grabberOut = mainController.r2;
+                bool grabberOut = mainController.r1;
 
                 bool resetFieldCentricButton = mainController.left;
                 bool scoreButton = mainController.l1;
+
+                bool intakeInButton = mainController.l2;
+                bool intakeOutButton = mainController.r2;
+                bool matchloadButton = mainController.right;
 
                 float heading = odometry->getPose().rotation;
 
@@ -207,12 +213,10 @@ namespace devils
                     // Fine tweak the lift position with the right joystick
                     // lift.globalLiftOffset += rightY * 0.05;
 
-                    if (grabberIn)
-                        grabber.moveGrabber(1);
-                    else if (grabberOut)
+                    if (grabberOut)
                         grabber.moveGrabber(-1);
                     else
-                        grabber.moveGrabber(0.5f);
+                        grabber.moveGrabber(0.75f);
 
                     // Should more efficiently move the wrist
                     if (wristUp)
@@ -220,12 +224,30 @@ namespace devils
                     else if (wristDown)
                         wrist.setTarget(wrist.targetState-1);
 
-                    intakeMotors.move(rightY);
-
                     // Moves the wrist to the up position whenever the lift is going up
                     // if (lift.getTargetPosition() > lift.getAveragePosition())
-                    //     wrist.moveUp(); 
+                    //     wrist.moveUp();
                 }
+
+                if (intakeInButton)
+                {
+                    intake.runIntake(1.0f);
+                }
+                else if (intakeOutButton)
+                {
+                    intake.runIntake(-1.0f);
+                }
+                else if (matchloadButton)
+                {
+                    
+                }
+                else
+                {
+                    intake.runIntake(0.0f);
+                    throughtakeIntakeMotors.move(1.0f);
+                }
+
+
 
                 // if(wristUp){
                 //     wrist.moveUp();
@@ -241,7 +263,7 @@ namespace devils
                 {
                     // scorer.setState(ScoreSystem::State::SCORING);
                     scorer->setIsScore(!scorer->getIsScore());
-                }                
+                }
 
                 wrist.update();
                 // printf("Wrist target position: %f\n", wrist.getTargetPosition());
