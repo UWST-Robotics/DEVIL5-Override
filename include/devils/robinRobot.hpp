@@ -14,7 +14,7 @@ namespace devils
     {
         Ports ports = Ports(Ports::Robot::ROBIN);
 
-        SmartMotorGroup grabberMotors = SmartMotorGroup("Grabber", ports.getPorts(Ports::Name::grabber));
+        SmartMotorGroup grabberMotors = SmartMotorGroup("Grabber", ports.getPortGroup(Ports::Name::grabber));
         // SmartMotor wristMotor = SmartMotor("Wrist", ports.getPorts(ports.Name::wrist));
 
         // Hardware

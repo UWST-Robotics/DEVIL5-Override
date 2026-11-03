@@ -24,6 +24,8 @@ namespace devils
         Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.0f, 0.0f);
         Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -4.0f);
 
+        Ports ports = Ports(Ports::Robot::BLAZE);
+
         // Swerve Modules
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
         SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
@@ -56,7 +58,7 @@ namespace devils
         SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {11});
         SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-13});
         SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {12});
-        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
+        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {ports.getPort(Ports::Name::grabber)});
         SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
 
         // Sensors
@@ -124,6 +126,8 @@ namespace devils
             mainController.r2.setMode(ControllerButton::JUST_PRESSED);
             mainController.b.setMode(ControllerButton::JUST_PRESSED);
             mainController.x.setMode(ControllerButton::JUST_PRESSED);
+
+            mainController.a.setMode(ControllerButton::JUST_PRESSED);
 
             // Field centric button
             // mainController.left.setMode(ControllerButton::JUST_PRESSED);
@@ -241,8 +245,6 @@ namespace devils
                     //     wrist.moveUp();
                 }
 
-                intake.matchLoad(abs(rightY));
-
                 if (intakeInButton)
                 {
                     intake.runIntake(1.0f);
@@ -253,9 +255,11 @@ namespace devils
                 }
                 else
                 {
-                    intake.runIntake(0.0f);
+                    intake.matchLoad(abs(rightY));                   
                     throughtakeIntakeMotors.move(0.5f);
                 }
+
+                
 
                 // if(wristUp){
                 //     wrist.moveUp();
