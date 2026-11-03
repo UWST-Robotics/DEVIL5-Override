@@ -134,8 +134,22 @@ namespace devils
 
         // TODO:
         // Returns an array containing wheel distances traveled and module angles
-        void getWheelPositionInfo(){
-            
+        float getWheelAngleInfo(int moduleIndex){
+            switch (moduleIndex) {
+                case 0: return frontLeft.getPodAngle();
+                case 1: return frontRight.getPodAngle();
+                case 2: return backLeft.getPodAngle();
+                default: return backRight.getPodAngle();
+            }
+        }
+
+        float getWheelDistanceInfo(int moduleIndex){
+            switch (moduleIndex) {
+                case 0: return frontLeft.getDistanceDriven();
+                case 1: return frontRight.getDistanceDriven();
+                case 2: return backLeft.getDistanceDriven();
+                default: return backRight.getDistanceDriven();
+            }
         }
 
         /**

@@ -25,13 +25,14 @@ namespace devils
 
         SwerveConstants swerveConstants;
         int moduleIndex;
+        const float caliAngle;
 
         float storedTargetAngle;
         float storedError;
 
     public:
-        SwerveModule(SmartMotorGroup& motorA, SmartMotorGroup& motorB, ADIAnalogInput& encoder, SwerveConstants swerveConstants, int moduleIndex)
-            : motorA(motorA), motorB(motorB), encoder(encoder), swerveConstants(swerveConstants), moduleIndex(moduleIndex)
+        SwerveModule(SmartMotorGroup& motorA, SmartMotorGroup& motorB, ADIAnalogInput& encoder, SwerveConstants swerveConstants, int moduleIndex, float caliAngle)
+            : motorA(motorA), motorB(motorB), encoder(encoder), swerveConstants(swerveConstants), moduleIndex(moduleIndex), caliAngle(caliAngle)
         {
             // Disable brake mode by default to prevent overheating
             motorA.setBrakeMode(false);
@@ -80,7 +81,7 @@ namespace devils
         float analogToAngle(float input){
             // remap input to 0-2PI, 0 points to the front of the module, clockwise is positive
             // Add calibration offset and make sure the result is less than 2PI
-            return fmod(((input * 2*M_PI) - swerveConstants.getCalibrationOffsetAngleByIndex(moduleIndex)), 2*M_PI);
+            return fmod(((input * 2.0 * M_PI) - caliAngle), 2*M_PI);
         }
 
         float getAngleError(float currentAngle, float targetAngle){
@@ -101,6 +102,10 @@ namespace devils
         
         float getPodAngle(){
             return analogToAngle(encoder.getValue());
+        }
+
+        float getDistanceDriven(){
+            return (motorA.getPosition() - motorB.getPosition()) * swerveConstants.linearInchesPerTickDelta;
         }
 
         float getTargetAngle(){

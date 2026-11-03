@@ -21,7 +21,7 @@ namespace devils
 
         // Drivetrain
         SwerveConstants swerveConstants = SwerveConstants(3,10,10);
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 0.0);
 
         // Display (don't know how to use this Austin)
         //std::shared_ptr<SwerveDisplay> swerveDisplay = std::make_shared<SwerveDisplay>();

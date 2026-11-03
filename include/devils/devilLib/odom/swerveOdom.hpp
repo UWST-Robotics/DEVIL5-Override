@@ -1,5 +1,6 @@
 #pragma once
 #include "../geometry/pose.hpp"
+#include "devils/devilLib/chassis/swerveChassis.hpp"
 #include "devils/devilLib/geometry/vector2.hpp"
 #include "odomSource.hpp"
 #include "poseVelocityCalculator.hpp"
@@ -21,7 +22,7 @@ namespace devils
          * Position is calculated using the velocities of all four modules over time.
          * @param chassis The swerve chassis to extract wheel information from
          */
-        SwerveOdomOdom(SwerveChassis chassis) : chassis(chassis)
+        SwerveOdom(SwerveChassis chassis, SwerveConstants swerveConstants) : chassis(chassis), swerveConstants(swerveConstants)
         {
             lastUpdateTimestamp = pros::millis();
         }
@@ -54,19 +55,32 @@ namespace devils
             // TODO: write all of this
             // Code base on https://kauffman.tools/robotics/engineering/math/2025/09/16/swervedrive-forwards-kinematics.html
 
-            FLdelta = chassis.getWheelPositionInfo(0)[1] - lastFLDist;
-            FLVect = Vector2(FLDelta * Math.cos(chassis.getWheelPositionInfo(0)[0]), FLDelta * Math.cos(chassis.getWheelPositionInfo(0)[0]))
+            float FLDelta = chassis.getWheelAngleInfo(0) - lastFLDist;
+            Vector2 FLVect = Vector2(FLDelta * Math.cos(chassis.getWheelAngleInfo(0)), FLDelta * Math.sin(chassis.getWheelAngleInfo(0)));
 
-            FLrot = FLVect
+            float FRDelta = chassis.getWheelAngleInfo(1) - lastFRDist;
+            Vector2 FRVect = Vector2(FRDelta * Math.cos(chassis.getWheelAngleInfo(1)), FRDelta * Math.sin(chassis.getWheelAngleInfo(1)));
+
+            float BLDelta = chassis.getWheelAngleInfo(2) - lastBLDist;
+            Vector2 BLVect = Vector2(BLDelta * Math.cos(chassis.getWheelAngleInfo(2)), BLDelta * Math.sin(chassis.getWheelAngleInfo(2)));
+
+            float BRDelta = chassis.getWheelAngleInfo(3) - lastBRDist;
+            Vector2 BRVect = Vector2(BRDelta * Math.cos(chassis.getWheelAngleInfo(3)), BRDelta * Math.sin(chassis.getWheelAngleInfo(3)));
 
 
             // Calculate Delta Distance
-            const float deltaDistance = 
-            const float deltaRotation = 
+            const Vector2 deltaDistance = (FLVect + FRVect + BLVect + BRVect) * 0.25;
+            const float deltaRotation = (
+                (FLVect.dot(swerveConstants.flTurnVect) / FLVect.magnitude() +
+                FRVect.dot(swerveConstants.frTurnVect) / FRVect.magnitude() +
+                BLVect.dot(swerveConstants.blTurnVect) / BLVect.magnitude() +
+                BRVect.dot(swerveConstants.brTurnVect) / BRVect.magnitude())
+                / 4.0f
+            );
 
             // Calculate Delta X and Y
-            const float deltaX = deltaDistance * std::cos(currentPose.rotation + deltaRotation / 2);
-            const float deltaY = deltaDistance * std::sin(currentPose.rotation + deltaRotation / 2);
+            const float deltaX = deltaDistance.x * std::cos(currentPose.rotation);
+            const float deltaY = deltaDistance.y * std::sin(currentPose.rotation);
 
             // Update X, Y, and Rotation
             currentPose.x += deltaX;
@@ -84,6 +98,7 @@ namespace devils
 
     private:
         SwerveChassis chassis;
+        SwerveConstants swerveConstants;
 
         Pose currentPose = Pose();
         uint32_t lastUpdateTimestamp = 0;
@@ -91,6 +106,6 @@ namespace devils
         float lastFLDist = 0;
         float lastFRDist = 0;
         float lastBLDist = 0;
-        float lastBRist = 0;
+        float lastBRDist = 0;
     };
 }
