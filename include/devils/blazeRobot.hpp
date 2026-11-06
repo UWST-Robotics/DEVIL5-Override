@@ -27,39 +27,38 @@ namespace devils
         Ports ports = Ports(Ports::Robot::BLAZE);
 
         // Swerve Modules
-        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
-        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
-        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {3});
-        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {4});
-        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {5});
-        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
-        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
-        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {4});
+        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {3});
+        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {16});
+        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {17});
+        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {2});
+        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {1});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {18});
+        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {19});
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
-        
+
         SwerveConstants swerveConstants = SwerveConstants(0, 9.0, 10.5);
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 0.0);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1, 0.0);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2, 0.0);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3, 0.0);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 1.7);     // good
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1, 1.4); // good
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2, -0.5);        // good
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3, -1.95);   // good
         SwerveChassis swerve = SwerveChassis(
-            frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants
-        );
+            frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants);
 
         // Pneumatics
-
+        ADIPneumatic togglesPnematics = ADIPneumatic("TogglePneumatics", 'E', false);
         // Motors
-        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
-        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-14, -15});
-        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {11});
+        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {6, 8});
+        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-7, -12});
+        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {20});
         SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-13});
-        SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {12});
-        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
-        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
+        SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {11});
+        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {10});
+        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {9}); // what is 20
 
         // Sensors
 
@@ -70,17 +69,18 @@ namespace devils
         IntakeSystem intake = IntakeSystem(topIntakeMotors, bottomIntakeMotors, throughtakeIntakeMotors);
         std::shared_ptr<ScoreTask> scorer = std::make_shared<ScoreTask>(wrist, lift, grabber);
 
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -18);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -19);
+        // RotationSensor verticalSensor = RotationSensor("VerticalOdom", -18);
+        // RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -19);
         InertialSensor imu = InertialSensor("IMU", 15);
+        std::shared_ptr<SwerveOdometry2> odometry = std::make_shared<SwerveOdometry2>(swerve, swerveConstants);
 
-        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
-            verticalSensor,
-            horizontalSensor,
-            DEAD_WHEEL_RADIUS);
+        // std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
+        //     verticalSensor,
+        //     horizontalSensor,
+        //     DEAD_WHEEL_RADIUS);
 
         // Displays
-        //std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
+        // std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
         std::shared_ptr<ToastDisplay> toastDisplay = std::make_shared<ToastDisplay>();
 
         // Vexbridge (yikes)
@@ -98,16 +98,16 @@ namespace devils
             imu.calibrate();
 
             odometry->useIMU(&imu);
-            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
+            // odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
 
-            //devilBotsDisplay->start();
+            // devilBotsDisplay->start();
             toastDisplay->start();
 
             constexpr auto joystickOptions = ControllerAxis::Options{
-                .deadzone = 0.05f, // <-- Minimum input to register
+                .deadzone = 0.05f,      // <-- Minimum input to register
                 .startingValue = 0.05f, // <-- Jumps to 15% to overcome motor friction
-                .exponent = 3.0f // <-- Cubes the input for finer control at low speeds
+                .exponent = 3.0f        // <-- Cubes the input for finer control at low speeds
             };
             // Drive controls
             mainController.leftX.setOptions(joystickOptions);
@@ -142,7 +142,8 @@ namespace devils
         {
             imu.waitUntilDoneCalibrated();
             // MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
-            //TestingAuto::run(swerve, *odometry.get(), lift, claw);
+            // TestingAuto::run(swerve, *odometry.get(), lift, claw);
+            SkillsAuto::run(swerve, lift, wrist, grabber, intake, togglesPnematics, *scorer.get(), *odometry.get());
         }
 
         void opcontrol() override
@@ -186,9 +187,9 @@ namespace devils
                 // Plant if we aren't moving
                 if (leftY == 0 && leftX == 0 && rightX == 0)
                 {
-                    swerve.plant();
+                    // swerve.plant();
                     // swerve.move(0, 0, 0);
-                    // swerve.home();
+                    swerve.home();
                 }
                 else
                 {
@@ -197,7 +198,8 @@ namespace devils
                 }
                 // swerve.home();
 
-                if(resetFieldCentricButton){
+                if (resetFieldCentricButton)
+                {
                     swerve.calibrateFieldCentric();
                 }
 
@@ -224,7 +226,7 @@ namespace devils
                     // Should more efficiently move the wrist
                     if (wristUp)
                     {
-                        wrist.setTarget(wrist.targetState + 1); 
+                        wrist.setTarget(wrist.targetState + 1);
                         // prevent objects from clipping when placed in grabber by intake
                         if (lift.getTargetPosition() <= 1.0f)
                         {
@@ -238,7 +240,6 @@ namespace devils
                     }
                     else if (wristDown)
                         wrist.setTarget(wrist.targetState - 1);
-
 
                     // Moves the wrist to the up position whenever the lift is going up
                     // if (lift.getTargetPosition() > lift.getAveragePosition())
@@ -255,11 +256,9 @@ namespace devils
                 }
                 else
                 {
-                    intake.matchLoad(abs(rightY));                   
+                    intake.matchLoad(abs(rightY));
                     throughtakeIntakeMotors.move(0.5f);
                 }
-
-                
 
                 // if(wristUp){
                 //     wrist.moveUp();
