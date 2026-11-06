@@ -58,7 +58,7 @@ namespace devils
         SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {11});
         SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-13});
         SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {12});
-        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {ports.getPort(Ports::Name::grabber)});
+        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
         SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
 
         // Sensors
