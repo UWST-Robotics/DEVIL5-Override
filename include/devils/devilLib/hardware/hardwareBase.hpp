@@ -103,8 +103,8 @@ namespace devils
          */
         void reportErrorFromStatus(const HWStatus status) const
         {
-            return;
-            
+            // return;
+
             switch (status)
             {
             case ERROR_INCORRECT_TYPE:

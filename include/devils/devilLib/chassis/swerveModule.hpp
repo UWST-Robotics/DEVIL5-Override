@@ -21,7 +21,7 @@ namespace devils
         SmartMotorGroup& motorB;
         ADIAnalogInput& encoder;
 
-        PIDController angleController = PIDController(0.9f, 0.0f, 0.0f); // TODO: Tune these values
+        PIDController angleController = PIDController(1.0f, 0.0f, 0.0f); // TODO: Tune these values
 
         SwerveConstants swerveConstants;
         int moduleIndex;
