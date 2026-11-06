@@ -18,20 +18,20 @@ namespace devils
         int drivenPulleyTeeth = 91;
         int sandwichBevelTeeth = 57;
         int wheelBevelTeeth = 25;
-        float wheelRadius = (70.0/25.4)/2.0; // 70mm wheel convert to inches
-    
+        float wheelRadius = (70.0 / 25.4) / 2.0; // 70mm wheel convert to inches
+
     public:
         // Used for odom, how far does the bot drive when the top and bottom bevels are moved in opposite directions
         // by one encoder tick total (bottom pos - top pos = 1 tick)
-        float linearInchesPerTickDelta = 0.0;
+        float linearInchesPerTickDelta = (1.0f / 50.0f) * (33.0f / 91.0f) * (57.0f / 25.0f) * (2.7559f * M_PI);
 
         // Uses the motor encoders and geartrain geometry to calculate the total distance a wheel has traveled in inches. Useful for odometry.
         // Vex motors have 50 ticks per rev at the plastic cartridge input gear
-        //float topBevelRotations = ((motorA.getPosition()/50.0f) / cartRatio) * (drivePulleyTeeth / drivenPulleyTeeth);
-        //float bottomBevelRotations = -((motorB.getPosition()/50.0f) / cartRatio) * (drivePulleyTeeth / drivenPulleyTeeth);
+        // float topBevelRotations = ((motorA.getPosition()/50.0f) / cartRatio) * (drivePulleyTeeth / drivenPulleyTeeth);
+        // float bottomBevelRotations = -((motorB.getPosition()/50.0f) / cartRatio) * (drivePulleyTeeth / drivenPulleyTeeth);
         // TODO: Not sure if this next line is correct
-        //float wheelRotations = (sandwichBevelTeeth / wheelBevelTeeth) * (0.5f*(topBevelRotations - bottomBevelRotations));
-        //return (wheelRotations * 2 * M_PI) * wheelRadius;
+        // float wheelRotations = (sandwichBevelTeeth / wheelBevelTeeth) * (0.5f*(topBevelRotations - bottomBevelRotations));
+        // return (wheelRotations * 2 * M_PI) * wheelRadius;
 
         // Drivetrain geometry parameters, same for all of our swerves (for now)
         float length;
@@ -39,10 +39,10 @@ namespace devils
         float R = std::sqrt((length * length) + (width * width));
 
         // Each wheel has a different vector that is applied when turning happens
-        Vector2 flTurnVect = Vector2(-width/2.0f, length/2.0f).rotate(-M_PI/2.0).normalize();
-        Vector2 frTurnVect = Vector2(width/2.0f, length/2.0f).rotate(-M_PI/2.0).normalize();
-        Vector2 blTurnVect = Vector2(-width/2.0f, -length/2.0f).rotate(-M_PI/2.0).normalize();
-        Vector2 brTurnVect = Vector2(width/2.0f, -length/2.0f).rotate(-M_PI/2.0).normalize();
+        Vector2 flTurnVect = Vector2(-width / 2.0f, length / 2.0f).rotate(-M_PI / 2.0).normalize();
+        Vector2 frTurnVect = Vector2(width / 2.0f, length / 2.0f).rotate(-M_PI / 2.0).normalize();
+        Vector2 blTurnVect = Vector2(-width / 2.0f, -length / 2.0f).rotate(-M_PI / 2.0).normalize();
+        Vector2 brTurnVect = Vector2(width / 2.0f, -length / 2.0f).rotate(-M_PI / 2.0).normalize();
 
         // Calibration data, different for every swerve and every module, changes mildly frequently
         float flCalibrationOffsetAngle;
@@ -58,12 +58,18 @@ namespace devils
               ---right--->
         2   3
         */
-        float getCalibrationOffsetAngleByIndex(int index){
-            switch (index) {
-                case 0: return flCalibrationOffsetAngle;
-                case 1: return frCalibrationOffsetAngle;
-                case 2: return blCalibrationOffsetAngle;
-                default: return brCalibrationOffsetAngle;
+        float getCalibrationOffsetAngleByIndex(int index)
+        {
+            switch (index)
+            {
+            case 0:
+                return flCalibrationOffsetAngle;
+            case 1:
+                return frCalibrationOffsetAngle;
+            case 2:
+                return blCalibrationOffsetAngle;
+            default:
+                return brCalibrationOffsetAngle;
             }
         }
 
@@ -72,27 +78,30 @@ namespace devils
             : length(length), width(width)
         {
             // Bot ID is 0 for Blaze, 1 for PJ, 2 for Robin, etc.
-            switch (botID) {
-                case 0:{
-                    flCalibrationOffsetAngle = 0.0f;
-                    frCalibrationOffsetAngle = 0.0f;
-                    blCalibrationOffsetAngle = 0.0f;
-                    brCalibrationOffsetAngle = 0.0f;
-                }
-                case 1:{
-                    flCalibrationOffsetAngle = -1.0f;
-                    frCalibrationOffsetAngle = -3.0f;
-                    blCalibrationOffsetAngle = 7.0f;
-                    brCalibrationOffsetAngle = 5.0f;
-                }
-                default:{
-                    flCalibrationOffsetAngle = 0.0f;
-                    frCalibrationOffsetAngle = 0.0f;
-                    blCalibrationOffsetAngle = 0.0f;
-                    brCalibrationOffsetAngle = 0.0f;
-                }
-           }
+            switch (botID)
+            {
+            case 0:
+            {
+                flCalibrationOffsetAngle = 0.0f;
+                frCalibrationOffsetAngle = 0.0f;
+                blCalibrationOffsetAngle = 0.0f;
+                brCalibrationOffsetAngle = 0.0f;
+            }
+            case 1:
+            {
+                flCalibrationOffsetAngle = -1.0f;
+                frCalibrationOffsetAngle = -3.0f;
+                blCalibrationOffsetAngle = 7.0f;
+                brCalibrationOffsetAngle = 5.0f;
+            }
+            default:
+            {
+                flCalibrationOffsetAngle = 0.0f;
+                frCalibrationOffsetAngle = 0.0f;
+                blCalibrationOffsetAngle = 0.0f;
+                brCalibrationOffsetAngle = 0.0f;
+            }
+            }
         }
-
     };
 }
