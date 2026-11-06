@@ -32,6 +32,7 @@
 #include "odom/perpendicularSensorOdom.hpp"
 #include "odom/parallelSensorOdom.hpp"
 #include "odom/delayedOdom.hpp"
+#include "odom/swerveOdom2.hpp"
 
 // Utils
 #include "utils/robot.hpp"

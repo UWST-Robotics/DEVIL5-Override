@@ -2,8 +2,11 @@
 #include "../geometry/pose.hpp"
 #include "devils/devilLib/chassis/swerveChassis.hpp"
 #include "devils/devilLib/geometry/vector2.hpp"
+#include "devils/devilLib/hardware/inertialSensor.hpp"
+#include "devils/devilLib/utils/asyncTask.hpp"
 #include "odomSource.hpp"
 #include "poseVelocityCalculator.hpp"
+#include "pros/imu.hpp"
 #include "pros/rtos.hpp"
 #include <cmath>
 
@@ -14,7 +17,7 @@ namespace devils
     /**
      * Represents an odometry system using a set of swerve modules
      */
-    class SwerveOdom : public OdomSource, public PoseVelocityCalculator
+    class SwerveOdom : public OdomSource, public PoseVelocityCalculator, AsyncTask
     {
     public:
         /**
@@ -22,7 +25,7 @@ namespace devils
          * Position is calculated using the velocities of all four modules over time.
          * @param chassis The swerve chassis to extract wheel information from
          */
-        SwerveOdom(SwerveChassis chassis, SwerveConstants swerveConstants) : chassis(chassis), swerveConstants(swerveConstants)
+        SwerveOdom(SwerveChassis chassis, SwerveConstants swerveConstants, InertialSensor imu) : chassis(chassis), swerveConstants(swerveConstants), imu(imu)
         {
             lastUpdateTimestamp = pros::millis();
         }
@@ -44,10 +47,16 @@ namespace devils
             currentPose = pose;
         }
 
+        PoseVelocity getVelocity() override
+        {
+            return PoseVelocityCalculator::getVelocity();
+        }
+
+    protected:
         /**
          * Updates the odometry from the four swerve pods
          */
-        void update()
+        void onUpdate() override
         {
             // Get Delta Time
             lastUpdateTimestamp = pros::millis();
@@ -70,6 +79,19 @@ namespace devils
 
             // Calculate Delta Distance
             const Vector2 deltaDistance = (FLVect + FRVect + BLVect + BRVect) * 0.25;
+
+            // Update IMU
+            // Also calculate the change in rotation
+            float deltaRotation = 0;
+            const auto headingResult = imu.getHeading();
+            if (headingResult.isSuccess())
+            {
+                deltaRotation = headingResult.value - lastRotation;
+                lastRotation = headingResult.value;
+                currentPose.rotation = lastRotation;
+            }
+            /*
+            // Rotation using swerve
             const float deltaRotation = (
                 (FLVect.dot(swerveConstants.flTurnVect) / FLVect.magnitude() +
                 FRVect.dot(swerveConstants.frTurnVect) / FRVect.magnitude() +
@@ -77,7 +99,7 @@ namespace devils
                 BRVect.dot(swerveConstants.brTurnVect) / BRVect.magnitude())
                 / 4.0f
             );
-
+            */
             // Calculate Delta X and Y
             const float deltaX = deltaDistance.x * std::cos(currentPose.rotation);
             const float deltaY = deltaDistance.y * std::sin(currentPose.rotation);
@@ -91,14 +113,10 @@ namespace devils
             updateVelocity(currentPose);
         }
 
-        PoseVelocity getVelocity() override
-        {
-            return PoseVelocityCalculator::getVelocity();
-        }
-
     private:
         SwerveChassis chassis;
         SwerveConstants swerveConstants;
+        InertialSensor imu;
 
         Pose currentPose = Pose();
         uint32_t lastUpdateTimestamp = 0;
@@ -107,5 +125,7 @@ namespace devils
         float lastFRDist = 0;
         float lastBLDist = 0;
         float lastBRDist = 0;
+
+        float lastRotation = 0;
     };
 }

@@ -8,6 +8,8 @@
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/grabberSystem.hpp"
 #include "devilLib/chassis/swerveConstants.hpp"
+#include "devilLib/hardware/inertialSensor.hpp"
+#include "devils/devilLib/chassis/swerveChassis.hpp"
 
 namespace devils
 {
@@ -57,18 +59,10 @@ namespace devils
         ClawSystem claw = ClawSystem(clawPiston);
 
         // Odom
-        static constexpr float DEAD_WHEEL_RADIUS = 1;
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.0f, 0.0f);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -4.0f);
-
-        RotationSensor verticalSensor = RotationSensor("VerticalOdom", -17);
-        RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -16);
-        InertialSensor imu = InertialSensor("IMU", 13);
-
-        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
-            verticalSensor,
-            horizontalSensor,
-            DEAD_WHEEL_RADIUS);
+        InertialSensor imu = InertialSensor("IMU", 15);
+        std::shared_ptr<SwerveOdometry2> odometry = std::make_shared<SwerveOdometry2>(
+            swerve,
+            swerveConstants);
 
         // Displays
         //std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
@@ -86,7 +80,6 @@ namespace devils
             imu.calibrate();
 
             odometry->useIMU(&imu);
-            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
 
             //devilBotsDisplay->start();
