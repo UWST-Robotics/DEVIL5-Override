@@ -8,22 +8,20 @@
 
 namespace devils
 {
-    class SwerveOdometry2 :
-        public OdomSource,
-        public AsyncTask,
-        public PoseVelocityCalculator
+    class SwerveOdometry2 : public OdomSource,
+                            public AsyncTask,
+                            public PoseVelocityCalculator
     {
     public:
         /**
          * Creates an odometry system using a swerve chassis.
          */
         SwerveOdometry2(
-            SwerveChassis& chassis,
-            SwerveConstants& swerveConstants)
+            SwerveChassis &chassis,
+            SwerveConstants &swerveConstants)
             : chassis(chassis),
               swerveConstants(swerveConstants)
         {
-    
         }
 
         /**
@@ -51,7 +49,7 @@ namespace devils
          * Sets the IMU to use for odometry.
          * @param newIMU The new IMU to use for odometry.
          */
-        void useIMU(IGyro* newIMU)
+        void useIMU(IGyro *newIMU)
         {
             this->imu = newIMU;
         }
@@ -68,16 +66,17 @@ namespace devils
         void onUpdate() override
         {
             // Code base on https://kauffman.tools/robotics/engineering/math/2025/09/16/swervedrive-forwards-kinematics.html
-            float FLDelta = chassis.getWheelAngleInfo(0) - lastFLDist;
+            // Changed the function call getWheelAngleInfo to getWheelDistanceInfo
+            float FLDelta = chassis.getWheelDistanceInfo(0) - lastFLDist;
             Vector2 FLVect = Vector2(FLDelta * std::cos(chassis.getWheelAngleInfo(0)), FLDelta * std::sin(chassis.getWheelAngleInfo(0)));
 
-            float FRDelta = chassis.getWheelAngleInfo(1) - lastFRDist;
+            float FRDelta = chassis.getWheelDistanceInfo(1) - lastFRDist;
             Vector2 FRVect = Vector2(FRDelta * std::cos(chassis.getWheelAngleInfo(1)), FRDelta * std::sin(chassis.getWheelAngleInfo(1)));
 
-            float BLDelta = chassis.getWheelAngleInfo(2) - lastBLDist;
+            float BLDelta = chassis.getWheelDistanceInfo(2) - lastBLDist;
             Vector2 BLVect = Vector2(BLDelta * std::cos(chassis.getWheelAngleInfo(2)), BLDelta * std::sin(chassis.getWheelAngleInfo(2)));
 
-            float BRDelta = chassis.getWheelAngleInfo(3) - lastBRDist;
+            float BRDelta = chassis.getWheelDistanceInfo(3) - lastBRDist;
             Vector2 BRVect = Vector2(BRDelta * std::cos(chassis.getWheelAngleInfo(3)), BRDelta * std::sin(chassis.getWheelAngleInfo(3)));
 
             // Calculate Delta Distance
@@ -117,7 +116,7 @@ namespace devils
         SwerveChassis chassis;
         SwerveConstants swerveConstants;
 
-        IGyro* imu = nullptr;
+        IGyro *imu = nullptr;
 
         Pose currentPose = Pose();
 
