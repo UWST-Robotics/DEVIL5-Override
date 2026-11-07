@@ -71,7 +71,7 @@ namespace devils
 
         // RotationSensor verticalSensor = RotationSensor("VerticalOdom", -18);
         // RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -19);
-        InertialSensor imu = InertialSensor("IMU", 15);
+        InertialSensor imu = InertialSensor("IMU", 14);
         std::shared_ptr<SwerveOdometry2> odometry = std::make_shared<SwerveOdometry2>(swerve, swerveConstants);
 
         // std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(

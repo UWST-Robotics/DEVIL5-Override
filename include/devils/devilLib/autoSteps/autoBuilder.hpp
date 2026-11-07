@@ -28,8 +28,8 @@ namespace devils
          * @param odom The odometry source to use
          */
         AutoBuilder(
-            ChassisBase& chassis,
-            OdomSource& odom)
+            ChassisBase &chassis,
+            OdomSource &odom)
             : chassis(chassis),
               odom(odom)
         {
@@ -43,22 +43,25 @@ namespace devils
          * @returns A pointer to the created step
          */
         AutoStepPtr driveTo(
-            const Pose& pose,
+            const Pose &pose,
             const float endingVelocity = 0.0f) const
         {
             const auto transformedPose = tryTransformPose(pose);
 
             const auto trajectory = generateTrajectoryToPose(transformedPose, endingVelocity);
             // Auto switch between `AutoRamseteStep` and `AutoHolonomicDriveStep` depending on the chassis type (holonomic or not).
-            if (chassis.isHolonomic()){
+            if (chassis.isHolonomic())
+            {
                 return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
-            } else {
+            }
+            else
+            {
                 return std::make_shared<DriveRAMSETEStep>(chassis, odom, trajectory);
             }
         }
 
         AutoStepPtr driveToHolonomic(
-            const Pose& pose,
+            const Pose &pose,
             const float entryPointAngle,
             const float exitPointAngle,
             const float endingVelocity = 0.0f) const
@@ -67,7 +70,6 @@ namespace devils
             // Maybe flipping entry and exit will fix the auto?
             const auto trajectory = generateTrajectoryToPoseHolonomic(transformedPose, entryPointAngle, exitPointAngle, endingVelocity);
             return std::make_shared<DriveHolonomicStep>(chassis, odom, trajectory);
-            
         }
 
         // Overloads for making straight lines and such easier
@@ -78,8 +80,7 @@ namespace devils
             auto deltaPose = odom.getPose() - pose; // This line and the line in the next overload came from SplineSheet and was modified to use odom
             float entryPointAngle = deltaPose.angleToX() + M_PIF;
             float exitPointAngle = deltaPose.angleToX() + M_PIF;
-
-            driveToHolonomic(pose, entryPointAngle, exitPointAngle);
+            return driveToHolonomic(pose, entryPointAngle, exitPointAngle);
         }
 
         // If you only pass one angle, we assume it's the ending one
@@ -94,7 +95,7 @@ namespace devils
         }
 
         AutoStepPtr driveToLinear(
-            const Pose& pose,
+            const Pose &pose,
             const float endingVelocity = 0.0f) const
         {
             const auto transformedPose = tryTransformPose(pose);
@@ -111,7 +112,7 @@ namespace devils
          */
         AutoStepPtr rotate(
             const float distance,
-            const RotateMotionProfileStep::Options& options = RotateMotionProfileStep::Options::defaultOptions) const
+            const RotateMotionProfileStep::Options &options = RotateMotionProfileStep::Options::defaultOptions) const
         {
             const auto currentRotation = odom.getPose().rotation;
             const auto targetRotation = currentRotation + Units::degToRad(distance);
@@ -148,7 +149,7 @@ namespace devils
          * Sets the robot's current pose to a given pose. Useful for resetting odometry or "teleporting" the robot during autonomous.
          * @param pose - The pose to set the robot to
          */
-        void jumpTo(const Pose& pose) const
+        void jumpTo(const Pose &pose) const
         {
             const auto transformedPose = tryTransformPose(pose);
             odom.setPose(transformedPose);
@@ -171,7 +172,7 @@ namespace devils
          * @return A shared pointer to the generated trajectory
          */
         std::shared_ptr<Trajectory> generateTrajectoryToPose(
-            const Pose& targetPose,
+            const Pose &targetPose,
             const float endingVelocity = 0.0f) const
         {
             // Check if the targetPose is behind the currentPose
@@ -179,11 +180,11 @@ namespace devils
             const auto isReversed = targetPose.isBehind(currentPose);
 
             // Calculate starting velocity based on current velocity and its direction relative to the target pose
-            //const auto currentVelocity = odom.getVelocity();
-            const auto currentVelocity = Vector2(0,0);
+            // const auto currentVelocity = odom.getVelocity();
+            const auto currentVelocity = Vector2(0, 0);
             const auto deltaPose = targetPose - currentPose;
             const auto dotProduct = deltaPose.x * currentVelocity.x + deltaPose.y * currentVelocity.y;
-            //const auto velocityDirection = (dotProduct >= 0) ? 1.0f : -1.0f;
+            // const auto velocityDirection = (dotProduct >= 0) ? 1.0f : -1.0f;
             const auto velocityDirection = 1.0f;
             const auto startingVelocity = velocityDirection * currentVelocity.magnitude();
             Logger::info("Starting Velocity : " + std::to_string(startingVelocity) + " in/s");
@@ -197,18 +198,17 @@ namespace devils
                 isReversed);
 
             std::string filestring = "";
-            for (int i=0; i < path.poses.size(); i++){
+            for (int i = 0; i < path.poses.size(); i++)
+            {
                 filestring += path.poses[i].toString();
-                filestring +="\n";
+                filestring += "\n";
             }
             SDCardHandler sdHandler;
             sdHandler.writeFile("spline.csv", filestring);
 
             // Generate Trajectory
-            const auto generator = TrajectoryGenerator({
-                .startingVelocity = startingVelocity,
-                .endingVelocity = endingVelocity
-            });
+            const auto generator = TrajectoryGenerator({.startingVelocity = startingVelocity,
+                                                        .endingVelocity = endingVelocity});
             const auto trajectory = generator.calc(path);
             return trajectory;
         }
@@ -220,7 +220,7 @@ namespace devils
          * @return A shared pointer to the generated trajectory
          */
         std::shared_ptr<Trajectory> generateTrajectoryToPoseHolonomic(
-            const Pose& targetPose,
+            const Pose &targetPose,
             const float entryPointAngle,
             const float exitPointAngle,
             const float endingVelocity = 0.0f) const
@@ -230,11 +230,11 @@ namespace devils
             const auto isReversed = targetPose.isBehind(currentPose);
 
             // Calculate starting velocity based on current velocity and its direction relative to the target pose
-            //const auto currentVelocity = odom.getVelocity();
-            const auto currentVelocity = Vector2(0,0);
+            // const auto currentVelocity = odom.getVelocity();
+            const auto currentVelocity = Vector2(0, 0);
             const auto deltaPose = targetPose - currentPose;
             const auto dotProduct = deltaPose.x * currentVelocity.x + deltaPose.y * currentVelocity.y;
-            //const auto velocityDirection = (dotProduct >= 0) ? 1.0f : -1.0f;
+            // const auto velocityDirection = (dotProduct >= 0) ? 1.0f : -1.0f;
             const auto velocityDirection = 1.0f;
             auto startingVelocity = velocityDirection * currentVelocity.magnitude();
             startingVelocity = 0.0;
@@ -250,24 +250,23 @@ namespace devils
                 exitPointAngle);
 
             std::string filestring = "";
-            for (int i=0; i < path.poses.size(); i++){
+            for (int i = 0; i < path.poses.size(); i++)
+            {
                 filestring += path.poses[i].toString();
-                filestring +="\n";
+                filestring += "\n";
             }
             SDCardHandler sdHandler;
             sdHandler.writeFile("spline.csv", filestring);
 
             // Generate Trajectory
-            const auto generator = TrajectoryGenerator({
-                .startingVelocity = startingVelocity,
-                .endingVelocity = endingVelocity
-            });
+            const auto generator = TrajectoryGenerator({.startingVelocity = startingVelocity,
+                                                        .endingVelocity = endingVelocity});
             const auto trajectory = generator.calc(path);
             return trajectory;
         }
 
         std::shared_ptr<Trajectory> generateTrajectoryToPoseLinear(
-            const Pose& targetPose,
+            const Pose &targetPose,
             const float endingVelocity = 0.0f) const
         {
             // Check if the targetPose is behind the currentPose
@@ -285,18 +284,17 @@ namespace devils
                 targetPose);
 
             std::string filestring = "";
-            for (int i=0; i < path.poses.size(); i++){
+            for (int i = 0; i < path.poses.size(); i++)
+            {
                 filestring += path.poses[i].toString();
-                filestring +="\n";
+                filestring += "\n";
             }
             SDCardHandler sdHandler;
             sdHandler.writeFile("spline.csv", filestring);
 
             // Generate Trajectory
-            const auto generator = TrajectoryGenerator({
-                .startingVelocity = startingVelocity,
-                .endingVelocity = endingVelocity
-            });
+            const auto generator = TrajectoryGenerator({.startingVelocity = startingVelocity,
+                                                        .endingVelocity = endingVelocity});
             const auto trajectory = generator.calc(path);
             return trajectory;
         }
@@ -319,7 +317,7 @@ namespace devils
         /// @brief The active transformer used to transform poses
         std::unique_ptr<PoseTransformer> transformer = nullptr;
 
-        ChassisBase& chassis;
-        OdomSource& odom;
+        ChassisBase &chassis;
+        OdomSource &odom;
     };
 }
