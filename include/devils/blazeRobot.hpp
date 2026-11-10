@@ -6,6 +6,7 @@
 #include "./autonomous/testingAuto.hpp"
 #include "./autonomous/moaSkillsAuto.hpp"
 #include "./autonomous/moaSkillsAutoNew.hpp"
+#include "./autonomous/scuffedRiceLakeAuto.hpp"
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
 #include "./subsystems/wristSystem.hpp"
@@ -51,7 +52,11 @@ namespace devils
         );
 
         // Pneumatics
+<<<<<<< Updated upstream
 
+=======
+        ADIPneumatic togglesPnematics = ADIPneumatic("TogglePneumatics", 'H', false);
+>>>>>>> Stashed changes
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
         SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-14, -15});
@@ -142,7 +147,12 @@ namespace devils
         {
             imu.waitUntilDoneCalibrated();
             // MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
+<<<<<<< Updated upstream
             //TestingAuto::run(swerve, *odometry.get(), lift, claw);
+=======
+            // TestingAuto::run(swerve, *odometry.get(), lift, claw);
+            ScuffedRiceLakeAuto::run(frontLeftMotorA, frontLeftMotorB, frontRightMotorA, frontRightMotorB, backLeftMotorA, backLeftMotorB, backRightMotorA, backRightMotorB);
+>>>>>>> Stashed changes
         }
 
         void opcontrol() override
@@ -154,16 +164,18 @@ namespace devils
             while (true)
             {
                 // Take Controller Inputs
-                const float leftY = mainController.leftY;
+                const float leftY = -mainController.leftY;
                 const float leftX = mainController.leftX;
                 const float rightY = mainController.rightY;
-                const float rightX = mainController.rightX * 0.7f;
+                const float rightX = -mainController.rightX;
 
                 // Lift inputs
                 bool upOnePinButton = mainController.r1;
                 bool downOnePinButton = mainController.r2;
-                bool maxHeightButton = mainController.x;
+                // bool maxHeightButton = mainController.x;
                 bool minHeightButton = mainController.b;
+
+                bool toggleButton = mainController.x;
 
                 // grabber inputs
                 bool grabberOutButton = mainController.up;
@@ -192,8 +204,8 @@ namespace devils
                 }
                 else
                 {
-                    // swerve.move(leftY, rightX, leftX);
-                    swerve.moveFieldCentric(leftY, rightX, leftX, heading);
+                    swerve.move(leftY, leftX, rightX);
+                    // swerve.moveFieldCentric(leftY, rightX, leftX, heading);
                 }
                 // swerve.home();
 
@@ -204,11 +216,13 @@ namespace devils
                 if (scorer->getIsScore() == false)
                 {
                     if (upOnePinButton)
+                    {
                         lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // Move up one pin
+                    }
                     else if (downOnePinButton)
                         lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(-1)); // Move down one pin
-                    else if (maxHeightButton)
-                        lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in pins)
+                    // else if (maxHeightButton)
+                    //     lift.moveToPosition(lift.getMaxHeight()); // Move to max height (in pins)
                     else if (minHeightButton)
                         lift.moveToPosition(0.0f); // Move to min height (in pins)
 
@@ -220,6 +234,11 @@ namespace devils
                         grabber.moveGrabber(-1);
                     else
                         grabber.moveGrabber(0.75f);
+
+                    if (toggleButton)
+                    {
+                        togglesPnematics.setExtended(!togglesPnematics.getExtended());
+                    }
 
                     // Should more efficiently move the wrist
                     if (wristUp)
