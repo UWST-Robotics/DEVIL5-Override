@@ -2,7 +2,7 @@
 
 #include "./devilLib/devils.h"
 #include "./autonomous/matchAuto.hpp"
-#include "./autonomous/skillsAuto.hpp"
+//#include "./autonomous/skillsAuto.hpp"
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/swerveDisplay.hpp"
 #include "devilLib/chassis/swerveConstants.hpp"

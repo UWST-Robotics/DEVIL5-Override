@@ -2,7 +2,7 @@
 
 #include "./devilLib/devils.h"
 #include "./autonomous/matchAuto.hpp"
-#include "./autonomous/skillsAuto.hpp"
+//#include "./autonomous/skillsAuto.hpp"
 #include "./autonomous/moaSkillsAutoNew.hpp"
 #include "./autonomous/scuffedRiceLakeAuto.hpp"
 #include "./subsystems/liftSystem.hpp"
@@ -78,7 +78,6 @@ namespace devils
 
         PJRobot()
         {
-<<<<<<< Updated upstream
             imu.calibrate();
 
             odometry->useIMU(&imu);
@@ -112,29 +111,10 @@ namespace devils
             imu.waitUntilDoneCalibrated();
             MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, false);
             //TestingAuto::run(swerve, *odometry.get(), lift, claw);
-=======
-
-        }
-        
-        void autonomous() override
-        {
-            imu.waitUntilDoneCalibrated();
-            // MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
-            // TestingAuto::run(swerve, *odometry.get(), lift, claw);
-            ScuffedRiceLakeAuto::run(frontLeftMotorA, frontLeftMotorB, frontRightMotorA, frontRightMotorB, backLeftMotorA, backLeftMotorB, backRightMotorA, backRightMotorB);
->>>>>>> Stashed changes
         }
 
         void opcontrol() override
         {
-<<<<<<< Updated upstream
-=======
-
-            imu.waitUntilDoneCalibrated();
-    
-            ScuffedRiceLakeAuto::run(frontLeftMotorA, frontLeftMotorB, frontRightMotorA, frontRightMotorB, backLeftMotorA, backLeftMotorB, backRightMotorA, backRightMotorB);
-            /*
->>>>>>> Stashed changes
             // Stop autonomous
             AutoStep::stopAll();
 
@@ -199,7 +179,7 @@ namespace devils
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
             }
-                */
+        
         }
 
         void disabled() override

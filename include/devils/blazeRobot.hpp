@@ -2,7 +2,7 @@
 
 #include "./devilLib/devils.h"
 #include "./autonomous/matchAuto.hpp"
-#include "./autonomous/skillsAuto.hpp"
+//#include "./autonomous/skillsAuto.hpp"
 #include "./autonomous/testingAuto.hpp"
 #include "./autonomous/moaSkillsAuto.hpp"
 #include "./autonomous/moaSkillsAutoNew.hpp"
@@ -28,14 +28,14 @@ namespace devils
         Ports ports = Ports(Ports::Robot::BLAZE);
 
         // Swerve Modules
-        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
-        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
-        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {3});
-        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {4});
-        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {5});
-        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {6});
-        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {7});
-        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {8});
+        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {4});
+        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {3});
+        SmartMotorGroup frontRightMotorA = SmartMotorGroup("FrontRightMotorA", {16});
+        SmartMotorGroup frontRightMotorB = SmartMotorGroup("FrontRightMotorB", {17});
+        SmartMotorGroup backLeftMotorA = SmartMotorGroup("BackLeftMotorA", {2});
+        SmartMotorGroup backLeftMotorB = SmartMotorGroup("BackLeftMotorB", {1});
+        SmartMotorGroup backRightMotorA = SmartMotorGroup("BackRightMotorA", {18});
+        SmartMotorGroup backRightMotorB = SmartMotorGroup("BackRightMotorB", {19});
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
@@ -52,11 +52,7 @@ namespace devils
         );
 
         // Pneumatics
-<<<<<<< Updated upstream
-
-=======
         ADIPneumatic togglesPnematics = ADIPneumatic("TogglePneumatics", 'H', false);
->>>>>>> Stashed changes
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
         SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-14, -15});
@@ -147,12 +143,7 @@ namespace devils
         {
             imu.waitUntilDoneCalibrated();
             // MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
-<<<<<<< Updated upstream
             //TestingAuto::run(swerve, *odometry.get(), lift, claw);
-=======
-            // TestingAuto::run(swerve, *odometry.get(), lift, claw);
-            ScuffedRiceLakeAuto::run(frontLeftMotorA, frontLeftMotorB, frontRightMotorA, frontRightMotorB, backLeftMotorA, backLeftMotorB, backRightMotorA, backRightMotorB);
->>>>>>> Stashed changes
         }
 
         void opcontrol() override
