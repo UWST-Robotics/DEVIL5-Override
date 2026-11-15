@@ -14,10 +14,10 @@ namespace devils
         // Constants
         
         // Hardware
-        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {1});
-        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {2});
+        SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {16});
+        SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {17});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'H', false);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'B', false);
 
         // Drivetrain
         SwerveConstants swerveConstants = SwerveConstants(3,10,10);

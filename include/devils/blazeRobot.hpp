@@ -43,10 +43,10 @@ namespace devils
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
         
         SwerveConstants swerveConstants = SwerveConstants(0, 9.0, 10.5);
-        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 0.0);
-        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1, 0.0);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2, 0.0);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3, 0.0);
+        SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 1.7);
+        SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1, 1.4);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2, -0.5);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3, -1.95);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants
         );
@@ -54,13 +54,13 @@ namespace devils
         // Pneumatics
         ADIPneumatic togglesPnematics = ADIPneumatic("TogglePneumatics", 'H', false);
         // Motors
-        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {9, 10});
-        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-14, -15});
-        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {11});
+        SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {6, 8});
+        SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-7, -12});
+        SmartMotorGroup topIntakeMotors = SmartMotorGroup("TopIntakeMotors", {20});
         SmartMotorGroup bottomIntakeMotors = SmartMotorGroup("BottomIntakeMotors", {-13});
-        SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {12});
-        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {16});
-        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {19});
+        SmartMotorGroup throughtakeIntakeMotors = SmartMotorGroup("ThroughtakeIntakeMotors", {11});
+        SmartMotorGroup grabberMotors = SmartMotorGroup("GrabberMotors", {10});
+        SmartMotorGroup wristMotorGroup = SmartMotorGroup("WristMotorGroup", {9});
 
         // Sensors
 
