@@ -1,11 +1,8 @@
 #pragma once
 
 #include "./devilLib/devils.h"
-#include "./autonomous/matchAuto.hpp"
-//#include "./autonomous/skillsAuto.hpp"
-#include "./subsystems/intakeSystem.hpp"
-#include "./subsystems/swerveDisplay.hpp"
 #include "devilLib/chassis/swerveConstants.hpp"
+#include "devilLib/vexbridge/vbValue.hpp"
 
 namespace devils
 {
@@ -17,7 +14,7 @@ namespace devils
         SmartMotorGroup frontLeftMotorA = SmartMotorGroup("FrontLeftMotorA", {16});
         SmartMotorGroup frontLeftMotorB = SmartMotorGroup("FrontLeftMotorB", {17});
 
-        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'B', false);
+        ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'B', true);
 
         // Drivetrain
         SwerveConstants swerveConstants = SwerveConstants(3,10,10);
@@ -35,6 +32,8 @@ namespace devils
         VBValue<float> testval = VBValue("test", 12.0f);
         VBValue<float> vbAngle = VBValue("angle", pointingAngle);
         float pointingAngle = 0.0;
+
+        VBValue<float> vbDistance = VBValue("inchesDriven", 0.0f);
 
         // Ok acutal code now
         SwerveTestRobot()
@@ -85,6 +84,7 @@ namespace devils
                 //std:cout << "\n";
 
                 vbAngle.set(pointingAngle);
+                vbDistance.set(frontLeftModule.getDistanceDriven());
                 // Delay to prevent the CPU from being overloaded
                 pros::delay(10);
             }

@@ -5,6 +5,7 @@
 #include "../hardware/gyroBase.h"
 #include "devils/devilLib/chassis/swerveChassis.hpp"
 #include "poseVelocityCalculator.hpp"
+#include <string>
 
 namespace devils
 {
@@ -67,33 +68,35 @@ namespace devils
          */
         void onUpdate() override
         {
-            // Code base on https://kauffman.tools/robotics/engineering/math/2025/09/16/swervedrive-forwards-kinematics.html
-            float FLDelta = chassis.getWheelAngleInfo(0) - lastFLDist;
+            // Code based on https://kauffman.tools/robotics/engineering/math/2025/09/16/swervedrive-forwards-kinematics.html
+            float FLDelta = chassis.getWheelDistanceInfo(0) - lastFLDist;
+            lastFLDist = chassis.getWheelDistanceInfo(0);
             Vector2 FLVect = Vector2(FLDelta * std::cos(chassis.getWheelAngleInfo(0)), FLDelta * std::sin(chassis.getWheelAngleInfo(0)));
-
-            float FRDelta = chassis.getWheelAngleInfo(1) - lastFRDist;
+            
+            float FRDelta = chassis.getWheelDistanceInfo(1) - lastFRDist;
+            lastFRDist = chassis.getWheelDistanceInfo(1);
             Vector2 FRVect = Vector2(FRDelta * std::cos(chassis.getWheelAngleInfo(1)), FRDelta * std::sin(chassis.getWheelAngleInfo(1)));
 
-            float BLDelta = chassis.getWheelAngleInfo(2) - lastBLDist;
+            float BLDelta = chassis.getWheelDistanceInfo(2) - lastBLDist;
+            lastBLDist = chassis.getWheelDistanceInfo(2);
             Vector2 BLVect = Vector2(BLDelta * std::cos(chassis.getWheelAngleInfo(2)), BLDelta * std::sin(chassis.getWheelAngleInfo(2)));
 
-            float BRDelta = chassis.getWheelAngleInfo(3) - lastBRDist;
+            float BRDelta = chassis.getWheelDistanceInfo(3) - lastBRDist;
+            lastBRDist = chassis.getWheelDistanceInfo(3);
             Vector2 BRVect = Vector2(BRDelta * std::cos(chassis.getWheelAngleInfo(3)), BRDelta * std::sin(chassis.getWheelAngleInfo(3)));
 
             // Calculate Delta Distance
             const Vector2 deltaDistance = (FLVect + FRVect + BLVect + BRVect) * 0.25;
 
             // Update IMU
-            // Also calculate the change in rotation
-            float deltaRotation = 0;
             if (imu != nullptr && imu->getIsReady())
             {
                 const auto headingResult = imu->getHeading();
                 if (headingResult.isSuccess())
                 {
-                    deltaRotation = headingResult.value - lastRotation;
                     lastRotation = headingResult.value;
                     currentPose.rotation = lastRotation;
+                    Logger::info("got a heading" + std::to_string(currentPose.rotation));
                 }
             }
 

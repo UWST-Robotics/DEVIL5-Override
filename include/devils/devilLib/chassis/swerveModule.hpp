@@ -3,9 +3,11 @@
 #include "../hardware/smartMotorGroup.hpp"
 #include "../hardware/adiAnalogInput.hpp"
 #include "../controller/pidController.hpp"
+#include "devils/devilLib/utils/logger.hpp"
 #include "swerveConstants.hpp"
 
 #include <math.h>
+#include <string>
 
 namespace devils
 {
@@ -105,7 +107,8 @@ namespace devils
         }
 
         float getDistanceDriven(){
-            return (motorA.getPosition() - motorB.getPosition()) * swerveConstants.linearInchesPerTickDelta;
+            Logger::info("Constant" + std::to_string(swerveConstants.linearInchesPerTickDelta));
+            return (motorA.getPosition() - (-motorB.getPosition())) * swerveConstants.linearInchesPerTickDelta;
         }
 
         float getTargetAngle(){

@@ -1,8 +1,10 @@
 #pragma once
 
 #include "../geometry/vector2.hpp"
+#include "devils/devilLib/geometry/math.hpp"
 
 #include <math.h>
+#include <numbers>
 
 namespace devils
 {
@@ -13,17 +15,18 @@ namespace devils
     {
     private:
         // Geartrain parameters, same for all of our swerves
+        float bareTicksPerRev = 50.0f;
         float cartRatio = 6.0;
-        int drivePulleyTeeth = 33;
-        int drivenPulleyTeeth = 91;
-        int sandwichBevelTeeth = 57;
-        int wheelBevelTeeth = 25;
-        float wheelRadius = (70.0/25.4)/2.0; // 70mm wheel convert to inches
+        int drivePulleyTeeth = 33.0f;
+        int drivenPulleyTeeth = 91.0f;
+        int sandwichBevelTeeth = 57.0f;
+        int wheelBevelTeeth = 25.0f;
+        float wheelDia = 70.0f / 25.4f; // 70mm wheel convert to inches
     
     public:
         // Used for odom, how far does the bot drive when the top and bottom bevels are moved in opposite directions
         // by one encoder tick total (bottom pos - top pos = 1 tick)
-        float linearInchesPerTickDelta = 0.0;
+        float linearInchesPerTickDelta = ((drivePulleyTeeth * sandwichBevelTeeth * wheelDia * M_PIF) / (bareTicksPerRev * cartRatio * drivenPulleyTeeth * wheelBevelTeeth)) / 2.0f;
 
         // Uses the motor encoders and geartrain geometry to calculate the total distance a wheel has traveled in inches. Useful for odometry.
         // Vex motors have 50 ticks per rev at the plastic cartridge input gear

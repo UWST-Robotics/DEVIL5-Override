@@ -14,17 +14,12 @@
 #include "./subsystems/intakeSystem.hpp"
 #include "./subsystems/scoreTask.hpp"
 #include "devilLib/chassis/swerveConstants.hpp"
+#include "devilLib/odom/swerveOdom2.hpp"
 
 namespace devils
 {
     struct BlazeRobot : Robot
     {
-        // Constants
-        static constexpr float DEAD_WHEEL_RADIUS = 1;
-
-        Vector2 VERTICAL_SENSOR_OFFSET = Vector2(0.0f, 0.0f);
-        Vector2 HORIZONTAL_SENSOR_OFFSET = Vector2(0.0f, -4.0f);
-
         Ports ports = Ports(Ports::Robot::BLAZE);
 
         // Swerve Modules
@@ -73,12 +68,11 @@ namespace devils
 
         RotationSensor verticalSensor = RotationSensor("VerticalOdom", -18);
         RotationSensor horizontalSensor = RotationSensor("HorizontalOdom", -19);
-        InertialSensor imu = InertialSensor("IMU", 15);
+        InertialSensor imu = InertialSensor("IMU", 14);
 
-        std::shared_ptr<PerpendicularSensorOdometry> odometry = std::make_shared<PerpendicularSensorOdometry>(
-            verticalSensor,
-            horizontalSensor,
-            DEAD_WHEEL_RADIUS);
+        std::shared_ptr<SwerveOdometry2> odometry = std::make_shared<SwerveOdometry2>(
+            swerve,
+            swerveConstants);
 
         // Displays
         //std::shared_ptr<DevilBotsDisplay> devilBotsDisplay = std::make_shared<DevilBotsDisplay>();
@@ -99,7 +93,6 @@ namespace devils
             imu.calibrate();
 
             odometry->useIMU(&imu);
-            odometry->setSensorOffsets(VERTICAL_SENSOR_OFFSET, HORIZONTAL_SENSOR_OFFSET);
             odometry->start();
 
             //devilBotsDisplay->start();
@@ -150,6 +143,8 @@ namespace devils
         {
             // Stop autonomous
             AutoStep::stopAll();
+            // True to not run the outtake or intake
+            bool testQuietly = true;
 
             // Loop
             while (true)
@@ -180,8 +175,6 @@ namespace devils
 
                 bool intakeInButton = mainController.y;
                 bool intakeOutButton = mainController.right;
-
-                float heading = odometry->getPose().rotation;
 
                 // Drive the robot with the left joystick
                 // Turn the robot with the right joystick
@@ -220,11 +213,15 @@ namespace devils
                     // Fine tweak the lift position with the right joystick
                     // lift.globalLiftOffset += rightY * 0.05;
 
-                    // run grabber
-                    if (grabberOutButton)
-                        grabber.moveGrabber(-1);
-                    else
-                        grabber.moveGrabber(0.75f);
+                    
+                    // Testing flag to not run motors all the time
+                    if (!testQuietly){
+                        // run grabber
+                        if (grabberOutButton)
+                            grabber.moveGrabber(-1);
+                        else
+                            grabber.moveGrabber(0.75f);
+                    }
 
                     if (toggleButton)
                     {
@@ -255,7 +252,9 @@ namespace devils
                     //     wrist.moveUp();
                 }
 
-                if (intakeInButton)
+                // Testing flag to make things nicer while working on other things
+                if (!testQuietly) {
+                    if (intakeInButton)
                 {
                     intake.runIntake(1.0f);
                 }
@@ -267,6 +266,7 @@ namespace devils
                 {
                     intake.matchLoad(abs(rightY));                   
                     throughtakeIntakeMotors.move(0.5f);
+                }
                 }
 
                 
