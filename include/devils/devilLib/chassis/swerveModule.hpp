@@ -107,7 +107,6 @@ namespace devils
         }
 
         float getDistanceDriven(){
-            Logger::info("Constant" + std::to_string(swerveConstants.linearInchesPerTickDelta));
             return (motorA.getPosition() - (-motorB.getPosition())) * swerveConstants.linearInchesPerTickDelta;
         }
 

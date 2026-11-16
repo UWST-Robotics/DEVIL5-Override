@@ -15,6 +15,7 @@
 #include "./subsystems/scoreTask.hpp"
 #include "devilLib/chassis/swerveConstants.hpp"
 #include "devilLib/odom/swerveOdom2.hpp"
+#include "devilLib/vexbridge/VBOdom.hpp"
 
 namespace devils
 {
@@ -88,6 +89,8 @@ namespace devils
         VBValue<float> targetLiftPosition = VBValue("LiftTarget", 0.0f);
         VBValue<float> liftError = VBValue("Lift Error", 0.0f);
 
+        //VBOdom odom = VBOdom("swodo", odometry);
+
         BlazeRobot()
         {
             imu.calibrate();
@@ -136,7 +139,7 @@ namespace devils
         {
             imu.waitUntilDoneCalibrated();
             // MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
-            //TestingAuto::run(swerve, *odometry.get(), lift, claw);
+            TestingAuto::run(swerve, *odometry.get());
         }
 
         void opcontrol() override

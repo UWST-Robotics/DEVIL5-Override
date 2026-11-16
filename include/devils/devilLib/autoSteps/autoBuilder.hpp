@@ -71,7 +71,8 @@ namespace devils
         }
 
         // Overloads for making straight lines and such easier
-        // Straight line, same as .driveToLinear (which doesn't work for some reason and that's why it's not here)
+        // Straight line, same as .driveToLinear (which doesn't work for some reason and that's why it's not here)¯
+        // TODO: exit angles on overloads are wrong
         AutoStepPtr driveToHolonomic(
             const Pose pose)
         {
@@ -79,7 +80,7 @@ namespace devils
             float entryPointAngle = deltaPose.angleToX() + M_PIF;
             float exitPointAngle = deltaPose.angleToX() + M_PIF;
 
-            driveToHolonomic(pose, entryPointAngle, exitPointAngle);
+            return driveToHolonomic(pose, entryPointAngle, exitPointAngle);
         }
 
         // If you only pass one angle, we assume it's the ending one
@@ -90,7 +91,7 @@ namespace devils
             auto deltaPose = odom.getPose() - pose;
             float entryPointAngle = deltaPose.angleToX() + M_PIF;
 
-            driveToHolonomic(pose, entryPointAngle, exitPointAngle);
+            return driveToHolonomic(pose, entryPointAngle, exitPointAngle);
         }
 
         AutoStepPtr driveToLinear(

@@ -149,10 +149,18 @@ namespace devils
          * Rotates the vector, positive is counterclockwise
          * @return The rotated vector
          */
+        // https://en.wikipedia.org/wiki/Rotation_matrix
         Vector2 rotate(const float& angle) const
         {
             return {x*cos(angle) - y*sin(angle),
                     x*sin(angle) + y*cos(angle)};
+        }
+
+        // Positive is clockwise in this one
+        Vector2 rotateInAustinCoords(const float& angle) const
+        {
+            return {x*cos(angle) + y*sin(angle),
+                    -x*sin(angle) + y*cos(angle)};
         }
 
         /**

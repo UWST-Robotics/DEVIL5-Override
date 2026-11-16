@@ -2,6 +2,7 @@
 #include "../odom/odomSource.hpp"
 #include "../geometry/units.hpp"
 #include "./vexbridge.h"
+#include "devils/devilLib/utils/asyncTask.hpp"
 
 namespace devils
 {

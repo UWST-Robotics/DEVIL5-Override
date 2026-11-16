@@ -60,11 +60,11 @@ namespace devils
             const Options& options = Options::defaultOptions)
             : chassis(chassis),
               odomSource(odomSource),
-              trajectory(trajectory),
-              internalTimer(trajectory->duration()),
               rotationPID(options.rotationPID),
+              internalTimer(trajectory->duration()),
               translationPIDX(options.translationPIDX),
               translationPIDY(options.translationPIDY),
+              trajectory(trajectory),
               options(options)
         {
         }
@@ -101,11 +101,14 @@ namespace devils
             // Calculate local error
             // This is the error relative to the robot's current rotation
             // such that localError.x is aligned with the front of the robot and
-            // localError.y is aligned with the side of the robot.
+            // localError.y is aligned with the left side of the robot.
             const auto localError = Pose(
-                error.x * cosf(currentPosition.rotation) + error.y * sinf(currentPosition.rotation),
-                (-error.x * sinf(currentPosition.rotation) + error.y * cosf(currentPosition.rotation)),
+                error.rotateInAustinCoords(-currentPosition.rotation).x,
+                // TODO: find out why the hell the y error has to be negative
+                -error.rotateInAustinCoords(-currentPosition.rotation).y,
                 Units::diffRad(feedbackSetpoint.pose.rotation, currentPosition.rotation));
+            
+            Logger::info("Local error:" + localError.toString());
 
             // Move Chassis using PID controllers with local error as the input
             chassis.move(translationPIDX.update(localError.x), rotationPID.update(localError.rotation), translationPIDY.update(localError.y));

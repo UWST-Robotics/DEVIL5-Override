@@ -87,10 +87,11 @@ namespace devils
             backRightSpeed /= maxSpeed;
 
             // Move each wheel to the calculated angle and drivespeed
-            frontLeft.move(frontLeftAngle, frontLeftSpeed);
-            frontRight.move(frontRightAngle, frontRightSpeed);
-            backLeft.move(backLeftAngle, backLeftSpeed);
-            backRight.move(backRightAngle, backRightSpeed);
+            // TODO: enable rotation optimization again once odom is working
+            frontLeft.move(frontLeftAngle, frontLeftSpeed, false);
+            frontRight.move(frontRightAngle, frontRightSpeed, false);
+            backLeft.move(backLeftAngle, backLeftSpeed, false);
+            backRight.move(backRightAngle, backRightSpeed, false);
         }
 
         // Field-oriented control using the IMU to adjust the angles based on the robot's heading
@@ -102,6 +103,7 @@ namespace devils
         {
             // Rotate translation vector by negative heading
             globalHeading = heading;
+            // TODO: fix this ugly mess, use why is it strafe then forward and why is strafe negative?
             Vector2 inputVector = Vector2(-strafe, forward);
             move(inputVector.rotate(-(heading + fieldCentricHeadingOffset + constantFCHeadingOffset)).x, turn, inputVector.rotate(-(heading + fieldCentricHeadingOffset + constantFCHeadingOffset)).y);
         }
