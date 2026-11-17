@@ -88,10 +88,10 @@ namespace devils
 
             // Move each wheel to the calculated angle and drivespeed
             // TODO: enable rotation optimization again once odom is working
-            frontLeft.move(frontLeftAngle, frontLeftSpeed, false);
-            frontRight.move(frontRightAngle, frontRightSpeed, false);
-            backLeft.move(backLeftAngle, backLeftSpeed, false);
-            backRight.move(backRightAngle, backRightSpeed, false);
+            frontLeft.move(frontLeftAngle, frontLeftSpeed, true);
+            frontRight.move(frontRightAngle, frontRightSpeed, true);
+            backLeft.move(backLeftAngle, backLeftSpeed, true);
+            backRight.move(backRightAngle, backRightSpeed, true);
         }
 
         // Field-oriented control using the IMU to adjust the angles based on the robot's heading

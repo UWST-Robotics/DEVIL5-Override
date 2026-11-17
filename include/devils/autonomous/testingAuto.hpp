@@ -10,18 +10,18 @@ namespace devils
         static void run(SwerveChassis& chassis, OdomSource& odom)
         {
             TrajectoryConstraints::defaultConstraints = TrajectoryConstraints{
-                .maxVelocity = 10.0f
+                .maxVelocity = 25.0f
             };
 
             AutoBuilder autoBuilder = AutoBuilder(chassis, odom);
             autoBuilder.jumpTo({0, 0, Units::degToRad(0)});
-            autoBuilder.driveToHolonomic({48,0, Units::degToRad(0)})->startSync();
-            autoBuilder.driveToLinear({24,24,Units::degToRad(180)})->startSync();
-            autoBuilder.driveTo({-24, 24, Units::degToRad(90)})->startSync();
-            autoBuilder.driveTo({24, 24, Units::degToRad(-90)})->startSync();
-            autoBuilder.driveTo({24, -24, Units::degToRad(0)})->startSync();
-            autoBuilder.driveTo({-24, -24, Units::degToRad(90)})->startSync();
-            autoBuilder.driveTo({-0, 0, Units::degToRad(0)})->startSync();
+            autoBuilder.driveToHolonomic({24,0,Units::degToRad(0)})->startSync();
+            autoBuilder.driveToHolonomic({-24, 0, Units::degToRad(25)})->startSync();
+            autoBuilder.driveToHolonomic({24,0,Units::degToRad(0)})->startSync();
+            autoBuilder.driveToHolonomic({-24, 0, Units::degToRad(25)})->startSync();
+            autoBuilder.driveToHolonomic({24,0,Units::degToRad(0)})->startSync();
+            autoBuilder.driveToHolonomic({-24, 0, Units::degToRad(25)})->startSync();
+            autoBuilder.driveToHolonomic({0, 0, Units::degToRad(0)})->startSync();
             //autoBuilder.rotate(180)->startSync();
         }
     };

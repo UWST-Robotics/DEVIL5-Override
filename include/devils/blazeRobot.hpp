@@ -6,6 +6,7 @@
 #include "./autonomous/testingAuto.hpp"
 #include "./autonomous/moaSkillsAuto.hpp"
 #include "./autonomous/moaSkillsAutoNew.hpp"
+#include "./autonomous/matchAuto.hpp"
 #include "./autonomous/scuffedRiceLakeAuto.hpp"
 #include "./subsystems/liftSystem.hpp"
 #include "./subsystems/clawSystem.hpp"
@@ -48,7 +49,7 @@ namespace devils
         );
 
         // Pneumatics
-        ADIPneumatic togglesPnematics = ADIPneumatic("TogglePneumatics", 'H', false);
+        ADIPneumaticGroup togglesPnematics = ADIPneumaticGroup("TogglePneumatics", {'H'}, false);
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {6, 8});
         SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-7, -12});
@@ -139,7 +140,8 @@ namespace devils
         {
             imu.waitUntilDoneCalibrated();
             // MoaSkillsAutoNew::run(swerve, *odometry.get(), lift, claw, true);
-            TestingAuto::run(swerve, *odometry.get());
+            MatchAuto::run(swerve, lift, wrist, grabber, intake, togglesPnematics, *odometry.get());
+            // TestingAuto::run(swerve, *odometry.get());
         }
 
         void opcontrol() override
@@ -147,7 +149,7 @@ namespace devils
             // Stop autonomous
             AutoStep::stopAll();
             // True to not run the outtake or intake
-            bool testQuietly = true;
+            bool testQuietly = false;
 
             // Loop
             while (true)
