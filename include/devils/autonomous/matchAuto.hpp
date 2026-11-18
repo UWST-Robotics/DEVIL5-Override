@@ -46,7 +46,7 @@ namespace devils
             autoBuilder.driveToHolonomic({0, -64.238, Units::degToRad(0)})->startSync();
             // lift +1
             lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // lift +1
-            autoBuilder.driveToHolonomic({-15.135, -52.446, Units::degToRad(22.5)})->startSync();
+            autoBuilder.driveToHolonomic({-15.135, -51.446, Units::degToRad(22.5)})->startSync();
             // score preload
             // scorer->setIsScore(!scorer->getIsScore());
             pros::delay(1000);

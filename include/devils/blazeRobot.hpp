@@ -37,7 +37,7 @@ namespace devils
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
         ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
-        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', true);
+        ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', false);
         
         SwerveConstants swerveConstants = SwerveConstants(0, 9.0, 10.5);
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 1.7);
