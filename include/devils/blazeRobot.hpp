@@ -43,7 +43,7 @@ namespace devils
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 1.7);
         SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1, 1.4);
         SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2, -0.5);
-        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3, -1.95);
+        SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3, -1.10);
         SwerveChassis swerve = SwerveChassis(
             frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants
         );
@@ -187,9 +187,9 @@ namespace devils
                 // Plant if we aren't moving
                 if (leftY == 0 && leftX == 0 && rightX == 0)
                 {
-                    swerve.plant();
+                    // swerve.plant();
                     // swerve.move(0, 0, 0);
-                    // swerve.home();
+                    swerve.home();
                 }
                 else
                 {
