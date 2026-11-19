@@ -36,16 +36,16 @@ namespace devils
 
         ADIAnalogInput frontLeftEncoder = ADIAnalogInput("FrontLeftEncoder", 'A', true);
         ADIAnalogInput frontRightEncoder = ADIAnalogInput("FrontRightEncoder", 'B', true);
-        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', true);
+        ADIAnalogInput backLeftEncoder = ADIAnalogInput("BackLeftEncoder", 'C', false);
         ADIAnalogInput backRightEncoder = ADIAnalogInput("BackRightEncoder", 'D', false);
         
         SwerveConstants swerveConstants = SwerveConstants(0, 9.0, 10.5);
         SwerveModule frontLeftModule = SwerveModule(frontLeftMotorA, frontLeftMotorB, frontLeftEncoder, swerveConstants, 0, 1.7);
         SwerveModule frontRightModule = SwerveModule(frontRightMotorA, frontRightMotorB, frontRightEncoder, swerveConstants, 1, 1.4);
-        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2, -0.5);
+        SwerveModule backLeftModule = SwerveModule(backLeftMotorA, backLeftMotorB, backLeftEncoder, swerveConstants, 2, 0.35);
         SwerveModule backRightModule = SwerveModule(backRightMotorA, backRightMotorB, backRightEncoder, swerveConstants, 3, -1.10);
         SwerveChassis swerve = SwerveChassis(
-            frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants
+            frontLeftModule, frontRightModule, backLeftModule, backRightModule, swerveConstants, false
         );
 
         // Pneumatics

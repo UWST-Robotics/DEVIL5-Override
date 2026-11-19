@@ -33,12 +33,14 @@ namespace devils
             SwerveModule& frontRight,
             SwerveModule& backLeft,
             SwerveModule& backRight,
-            SwerveConstants swerveConstants)
+            SwerveConstants swerveConstants,
+            bool isTwoPod = false)
             : frontLeft(frontLeft),
               frontRight(frontRight),
               backLeft(backLeft),
               backRight(backRight),
-              swerveConstants(swerveConstants)
+              swerveConstants(swerveConstants),
+              isTwoPod(isTwoPod)
         {
 
         }
@@ -59,10 +61,23 @@ namespace devils
             // See https://strykeforce.github.io/classroom/swerve/#/wheel-position-and-speed
             Vector2 translateVect = Vector2(strafe, forward);
 
-            Vector2 flVect = translateVect + swerveConstants.flTurnVect * turn;
-            Vector2 frVect = translateVect + swerveConstants.frTurnVect * turn;;
-            Vector2 blVect = translateVect + swerveConstants.blTurnVect * turn;;
-            Vector2 brVect = translateVect + swerveConstants.brTurnVect * turn;;
+            Vector2 flVect;
+            Vector2 frVect;
+            Vector2 blVect;
+            Vector2 brVect;
+
+            if (!isTwoPod){
+                // If the swerve has two pods, we need to adjust the vectors for the back wheels to be the same as the front wheels
+                flVect = translateVect + swerveConstants.flTurnVect * turn;
+                frVect = translateVect + swerveConstants.frTurnVect * turn;
+                blVect = translateVect + swerveConstants.blTurnVect * turn;
+                brVect = translateVect + swerveConstants.brTurnVect * turn;
+            }
+            else {
+                flVect = translateVect + swerveConstants.flTurnVect2Pod * turn;
+                frVect = translateVect + swerveConstants.frTurnVect2Pod * turn;
+            }
+
             // Calculate the drivespeed and angle for each wheel using the variables calulated above
             float frontLeftSpeed = flVect.magnitude();
             float frontRightSpeed = frVect.magnitude();
@@ -174,5 +189,7 @@ namespace devils
         SwerveModule& backRight;
 
         SwerveConstants swerveConstants;
+
+        bool isTwoPod = false; // True if the swerve has two pods, false if it has four pods
     };
 }

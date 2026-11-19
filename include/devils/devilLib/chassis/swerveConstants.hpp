@@ -47,6 +47,9 @@ namespace devils
         Vector2 blTurnVect = Vector2(-width/2.0f, -length/2.0f).rotate(-M_PI/2.0).normalize();
         Vector2 brTurnVect = Vector2(width/2.0f, -length/2.0f).rotate(-M_PI/2.0).normalize();
 
+        Vector2 flTurnVect2Pod = Vector2(-width/2.0f, 0.0f).normalize();
+        Vector2 frTurnVect2Pod = Vector2(width/2.0f, 0.0f).normalize();
+
         // Calibration data, different for every swerve and every module, changes mildly frequently
         float flCalibrationOffsetAngle;
         float frCalibrationOffsetAngle;
