@@ -36,9 +36,9 @@ namespace devils
          * Toggles the match loading state of the intake.
          * @return The new match loading state.
          */
-        bool setMatchloading()
+        bool setMatchloading(bool isMatchloading)
         {
-            matchloading = !matchloading;
+            matchloading = isMatchloading;
             return matchloading;
         }
 

@@ -50,49 +50,95 @@ namespace devils
             autoBuilder.jumpTo({0, -64.062, Units::degToRad(-90)});
             autoBuilder.driveToHolonomic({0, -56, Units::degToRad(-90)})->startSync();
             autoBuilder.rotateTo(0)->startSync();
+            // toggle
             autoBuilder.driveToHolonomic({0, -58.782, Units::degToRad(0)})->startSync();
             autoBuilder.driveToHolonomic({0, -64.414, Units::degToRad(0)})->startSync();
             autoBuilder.driveToHolonomic({0, -59.134, Units::degToRad(0)})->startSync();
             autoBuilder.driveToHolonomic({0, -64.238, Units::degToRad(0)})->startSync();
+
             // lift +1
             lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // lift +1
             autoBuilder.driveToHolonomic({-17.135, -53.446, Units::degToRad(22.5)})->startSync();
             // score preload
-            // scorer->setIsScore(!scorer->getIsScore());
-            pros::delay(1000);
+            scorer->setIsScore(!scorer->getIsScore());
+            pros::delay(750);
             autoBuilder.driveToHolonomic({-10.903, -63.19, Units::degToRad(0)})->startSync();
             // lift -1
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(-1)); // lift -1
+            // wrist reset
+            wristStep->setPositionsToMove(-1);
+            
+            // FIRST MATCHLOAD
             autoBuilder.driveToHolonomic({-62, -63.5, Units::degToRad(-180)})->startSync();
             // matchload 1
+            intakeStep->setMatchloading(true);
+            pros::delay(2000);
             // lift +2
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(2)); // lift +2
             autoBuilder.driveToHolonomic({-29.5, -53.91, Units::degToRad(135)})->startSync();
             // score
+            scorer->setIsScore(!scorer->getIsScore());
+            pros::delay(750);
+            
+            // SECOND MATCHLOAD
             autoBuilder.driveToHolonomic({-62, -63.126, Units::degToRad(180)})->startSync();
             // wrist reset + matchload 2
+            wristStep->setPositionsToMove(-1);
+            intakeStep->setMatchloading(true);
+            pros::delay(2000);
             // lift +3
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(3)); // lift +3
             autoBuilder.driveToHolonomic({-29.5, -54.91, Units::degToRad(135)})->startSync();
             // score
+            scorer->setIsScore(!scorer->getIsScore());
+            pros::delay(750);
+            
+            // THIRD MATCHLOAD
             autoBuilder.driveToHolonomic({-62.302, -61.95, Units::degToRad(180)})->startSync();
             // wrist reset + matchload 3
+            wristStep->setPositionsToMove(-1);
+            intakeStep->setMatchloading(true);
+            pros::delay(2000);
             // lift +4
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(4)); // lift +4
             autoBuilder.driveToHolonomic({-31.679, -54.734, Units::degToRad(135)})->startSync();
             // score
+            scorer->setIsScore(!scorer->getIsScore());
+            pros::delay(750);
+            
+            // FOURTH MATCHLOAD
             autoBuilder.driveToHolonomic({-62.302, -61.95, Units::degToRad(-180)})->startSync();
             // wrist reset + matchload 4
+            wristStep->setPositionsToMove(-1);
+            intakeStep->setMatchloading(true);
+            pros::delay(2000);
             // lift +1
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // lift +1
             autoBuilder.driveToHolonomic({-54.734, -31.503, Units::degToRad(135)})->startSync();
             // score
+            scorer->setIsScore(!scorer->getIsScore());
+            pros::delay(750);
+            
+            // FIFTH MATCHLOAD
             autoBuilder.driveToHolonomic({-62.302, -61.95, Units::degToRad(180)})->startSync();
             // wrist reset + matchload 5
+            wristStep->setPositionsToMove(-1);
+            intakeStep->setMatchloading(true);
             // lift +2
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(2)); // lift +2
             autoBuilder.driveToHolonomic({-54.734, -31.679, Units::degToRad(135)})->startSync();
             // score
+            scorer->setIsScore(!scorer->getIsScore());
+            pros::delay(750);
             autoBuilder.driveToHolonomic({-55.438, -45.23, Units::degToRad(157.5)})->startSync();
             // wrist reset
+            wristStep->setPositionsToMove(-1);
+
+            // MOVE TO MIDDLE
             autoBuilder.driveToHolonomic({-11.616, -10.912, Units::degToRad(135)})->startSync();
 
             // =====================================
-            //     End of New Autonomous
+            //     End ofmatch auto
             // =====================================
     
     
