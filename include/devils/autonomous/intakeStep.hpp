@@ -17,7 +17,10 @@ namespace devils
 
         void onUpdate() override
         {
-            intake.runIntake(targetSpeed);
+            if (matchloading)
+                intake.matchLoad(targetSpeed);
+            else
+                intake.runIntake(targetSpeed);
         }
 
         /**
@@ -29,13 +32,19 @@ namespace devils
             targetSpeed = speed;
         }
 
+        /**
+         * Toggles the match loading state of the intake.
+         * @return The new match loading state.
+         */
         bool setMatchloading()
         {
-            
+            matchloading = !matchloading;
+            return matchloading;
         }
 
     private:
         IntakeSystem& intake;
         float targetSpeed = 1.0;
+        bool matchloading = false;
     };
 }

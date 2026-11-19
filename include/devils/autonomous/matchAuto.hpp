@@ -7,6 +7,9 @@
 #include "devils/subsystems/grabberSystem.hpp"
 #include "devils/subsystems/intakeSystem.hpp"
 #include "devils/subsystems/scoreTask.hpp"
+#include "devils/autonomous/intakeStep.hpp"
+#include "devils/autonomous/wristStep.hpp"
+#include "devils/autonomous/grabberStep.hpp"
 #include "devils/devilLib/odom/swerveOdom2.hpp"
 
 namespace devils
@@ -20,9 +23,16 @@ namespace devils
                 .maxVelocity = 30.0f
             };
             const auto liftStep = std::make_shared<LiftStep>(lift, 0, 31.0f);
+            const auto intakeStep = std::make_shared<IntakeStep>(intake, 1.0f);
+            const auto wristStep = std::make_shared<WristStep>(wrist, -1);
+            const auto grabberStep = std::make_shared<GrabberStep>(grabber, 1.0f);
+
             std::shared_ptr<ScoreTask> scorer = std::make_shared<ScoreTask>(wrist, lift, grabber);
 
             liftStep->start();
+            intakeStep->start();
+            wristStep->start();
+            grabberStep->start();
             scorer->start();
 
             // Blaze starts pressed against the wall, facing the field,
