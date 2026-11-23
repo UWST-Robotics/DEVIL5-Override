@@ -28,7 +28,7 @@ namespace devils
          * Sets the position to move the wrist to.
          * @param positions The number position to move to (-1 for down, 0 for neutral, 1 for up).
          */
-        void setPositionsToMove(const int position)
+        void setPosition(const int position)
         {
             wrist.setTarget(position);
         }

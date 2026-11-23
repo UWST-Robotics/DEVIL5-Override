@@ -34,6 +34,11 @@ namespace devils{
             return targetState;
         }
 
+        float getTarget()
+        {
+            return target;
+        }
+
         float getError(){
             float error;
             error = target-getPosition();

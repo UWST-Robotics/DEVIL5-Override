@@ -49,7 +49,7 @@ namespace devils
         );
 
         // Pneumatics
-        ADIPneumaticGroup togglesPnematics = ADIPneumaticGroup("TogglePneumatics", {'H'}, false);
+        ADIPneumaticGroup togglesPnematics = ADIPneumaticGroup("TogglePneumatics", {'H'}, true);
         // Motors
         SmartMotorGroup liftMotorsLeft = SmartMotorGroup("LiftMotorsLeft", {6, 8});
         SmartMotorGroup liftMotorsRight = SmartMotorGroup("LiftMotorsRight", {-7, -12});
@@ -206,6 +206,8 @@ namespace devils
                 {
                     if (upOnePinButton)
                     {
+                        if (lift.getTargetPosition() == 0.0f)
+                            wrist.setTarget(0);
                         lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // Move up one pin
                     }
                     else if (downOnePinButton)
@@ -249,8 +251,12 @@ namespace devils
                         }
                     }
                     else if (wristDown)
+                    {
+                        // if (wrist.getTargetState() - 1 < 0 && lift.getTargetPosition() >= 1.0f)
+                        //     wrist.setTarget(wrist.targetState); // prevent wrist from going to down position when lift is raised
+                        
                         wrist.setTarget(wrist.targetState - 1);
-
+                    }
 
                     // Moves the wrist to the up position whenever the lift is going up
                     // if (lift.getTargetPosition() > lift.getAveragePosition())
@@ -260,18 +266,14 @@ namespace devils
                 // Testing flag to make things nicer while working on other things
                 if (!testQuietly) {
                     if (intakeInButton)
-                {
-                    intake.runIntake(1.0f);
-                }
-                else if (intakeOutButton)
-                {
-                    intake.runIntake(-1.0f);
-                }
-                else
-                {
-                    intake.matchLoad(abs(rightY));                   
-                    throughtakeIntakeMotors.move(0.5f);
-                }
+                    {
+                        intake.matchLoad(1.0f);
+                    }
+                    else
+                    {
+                        intake.runIntake(rightY);                   
+                        throughtakeIntakeMotors.move(0.25f);
+                    }
                 }
 
                 
