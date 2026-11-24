@@ -8,16 +8,14 @@ namespace devils
     {
     public:
         GrabberStep(
-            GrabberSystem& grabber,
-            const float targetSpeed = 1.0)
-            : grabber(grabber),
-              targetSpeed(targetSpeed)
+            GrabberSystem& grabber)
+            : grabber(grabber)
         {
         }
 
         void onUpdate() override
         {
-            grabber.moveGrabber(targetSpeed);
+            grabber.update();
         }
 
         /**
@@ -26,11 +24,10 @@ namespace devils
          */
         void setTargetSpeed(const float speed)
         {
-            targetSpeed = speed;
+            grabber.moveGrabber(speed);
         }
 
     private:
         GrabberSystem& grabber;
-        float targetSpeed = 1.0;
     };
 }

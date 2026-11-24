@@ -268,11 +268,11 @@ namespace devils
                     if (intakeInButton)
                     {
                         intake.matchLoad(1.0f);
+                        wrist.setTarget(-1);
                     }
                     else
                     {
                         intake.runIntake(rightY);                   
-                        throughtakeIntakeMotors.move(0.25f);
                     }
                 }
 
@@ -298,6 +298,8 @@ namespace devils
                 // printf("Wrist target position: %f\n", wrist.getTargetPosition());
 
                 lift.update();
+
+                grabber.update();
 
                 // Odo telemetry for tuning (vbOdom is curretly broken)
                 odoXPos.set(odometry->getPose().x);

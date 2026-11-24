@@ -25,7 +25,7 @@ namespace devils
             const auto liftStep = std::make_shared<LiftStep>(lift, 0, 31.0f);
             const auto intakeStep = std::make_shared<IntakeStep>(intake, 1.0f);
             const auto wristStep = std::make_shared<WristStep>(wrist, -1);
-            const auto grabberStep = std::make_shared<GrabberStep>(grabber, 1.0f);
+            const auto grabberStep = std::make_shared<GrabberStep>(grabber);
 
             std::shared_ptr<ScoreTask> scorer = std::make_shared<ScoreTask>(wrist, lift, grabber);
 
@@ -50,18 +50,19 @@ namespace devils
             autoBuilder.jumpTo({0, -64.062, Units::degToRad(-90)});
             autoBuilder.driveToHolonomic({0, -56, Units::degToRad(-90)})->startSync();
             autoBuilder.rotateTo(0)->startSync();
-            togglePneumatics.setExtended(true);
+            grabberStep->setTargetSpeed(1);
+            togglePneumatics.setExtended(false);
 
             // toggle
             autoBuilder.driveToHolonomic({0, -58.782, Units::degToRad(0)})->startSync();
             autoBuilder.driveToHolonomic({0, -64.414, Units::degToRad(0)})->startSync();
-            autoBuilder.driveToHolonomic({0, -59.134, Units::degToRad(0)})->startSync();
-            autoBuilder.driveToHolonomic({0, -64.238, Units::degToRad(0)})->startSync();
+            autoBuilder.driveToHolonomic({0, -57.134, Units::degToRad(0)})->startSync();
+            autoBuilder.driveToHolonomic({0, -66, Units::degToRad(0)})->startSync();
 
             // lift +1
-            togglePneumatics.setExtended(false);
+            togglePneumatics.setExtended(true);
             wristStep->setPosition(1);
-            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // lift +1
+            // lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // lift +1
             autoBuilder.driveToHolonomic({-17.135, -53.446, Units::degToRad(22.5)})->startSync();
             // score preload
             scorer->setIsScore(!scorer->getIsScore());
@@ -76,9 +77,9 @@ namespace devils
             autoBuilder.driveToHolonomic({-62, -63.5, Units::degToRad(-180)})->startSync();
             // matchload 1
             intakeStep->setMatchloading(true);
-            pros::delay(2000);
+            pros::delay(2500);
             // lift +2
-            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(2)); // lift +2
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // lift +1
             wristStep->setPosition(1);
             autoBuilder.driveToHolonomic({-29.5, -53.91, Units::degToRad(135)})->startSync();
             // score
@@ -90,9 +91,9 @@ namespace devils
             // wrist reset + matchload 2
             wristStep->setPosition(-1);
             intakeStep->setMatchloading(true);
-            pros::delay(2000);
+            pros::delay(2500);
             // lift +3
-            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(3)); // lift +3
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(2)); // lift +2
             wristStep->setPosition(1);
             autoBuilder.driveToHolonomic({-29.5, -54.91, Units::degToRad(135)})->startSync();
             // score
@@ -104,9 +105,9 @@ namespace devils
             // wrist reset + matchload 3
             wristStep->setPosition(-1);
             intakeStep->setMatchloading(true);
-            pros::delay(2000);
+            pros::delay(2500);
             // lift +4
-            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(4)); // lift +4
+            lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(3)); // lift +3
             wristStep->setPosition(1);
             autoBuilder.driveToHolonomic({-31.679, -54.734, Units::degToRad(135)})->startSync();
             // score
@@ -118,7 +119,7 @@ namespace devils
             // wrist reset + matchload 4
             wristStep->setPosition(-1);
             intakeStep->setMatchloading(true);
-            pros::delay(2000);
+            pros::delay(2500);
             autoBuilder.driveToHolonomic({-52.284, 62.065, Units::degToRad(-180)})->startSync();
 
             // lift +1
@@ -134,7 +135,7 @@ namespace devils
             // wrist reset + matchload 5
             wristStep->setPosition(-1);
             intakeStep->setMatchloading(true);
-            pros::delay(2000);
+            pros::delay(2500);
             autoBuilder.driveToHolonomic({-52.284, 62.065, Units::degToRad(180)})->startSync();
             // lift +2
             lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(2)); // lift +2

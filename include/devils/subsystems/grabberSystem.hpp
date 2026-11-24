@@ -20,9 +20,17 @@ namespace devils
          * Moves the grabber at a target speed
          */
         void moveGrabber(float speed) {
-            rollers.move(speed);
+            grabberSpeed = speed;
+        }
+
+        void update()
+        {
+            rollers.move(grabberSpeed);
         }
 
         SmartMotorGroup& rollers;
+
+    private:
+        float grabberSpeed;
     };
 }

@@ -104,17 +104,18 @@ namespace devils
             mainController.rightY.setOptions(joystickOptions);
 
             // mainController.right.setMode(ControllerButton::JUST_PRESSED);
-            // mainController.r1.setMode(ControllerButton::JUST_PRESSED);
-            mainController.y.setMode(ControllerButton::JUST_PRESSED);
-            mainController.a.setMode(ControllerButton::JUST_PRESSED);
-            mainController.b.setMode(ControllerButton::JUST_PRESSED);
+            mainController.r1.setMode(ControllerButton::TOGGLED);
+            mainController.y.setMode(ControllerButton::PRESSED);
+            mainController.a.setMode(ControllerButton::PRESSED);
+            mainController.b.setMode(ControllerButton::PRESSED);
             mainController.left.setMode(ControllerButton::JUST_PRESSED);
             mainController.r2.setMode(ControllerButton::JUST_PRESSED);
             mainController.l1.setMode(ControllerButton::JUST_PRESSED);
             mainController.l2.setMode(ControllerButton::JUST_PRESSED);
-            mainController.down.setMode(ControllerButton::JUST_PRESSED);
+            mainController.down.setMode(ControllerButton::PRESSED);
 
             lift.calibrateLift();
+            scorer->start();
         }
 
         void autonomous() override
@@ -134,9 +135,6 @@ namespace devils
             
             float liftTarget = 0;
             bool extended = false;
-
-            int prevWristPos;
-            int currentWristPos;
             
             // Loop
             while (true)
@@ -187,8 +185,6 @@ namespace devils
                     {
                         if (lift.getTargetPosition() == 0.0f)
                             wrist.setTarget(0);
-                        else if (lift.getAveragePosition() < lift.getTargetPosition() && !wristDownButton)
-                            wrist.setTarget(1); // move wrist up when lift is being raised, this allows for easier scoring of top heights
                         lift.moveToPosition(lift.getTargetPosition() + lift.pinsToInches(1)); // Move up one pin
                         liftTarget = lift.getTargetPosition();
                     }
@@ -206,28 +202,26 @@ namespace devils
                         togglesPnematics.setExtended(!togglesPnematics.getExtended());
                     }
 
-                    if (wristDownButton)
-                    {   
-                        wrist.setTarget(wrist.targetState - 1);
-                    }
-
                     if (extendButton && !extended)
                     {
                         lift.moveToPosition(liftTarget);
                         wrist.setTarget(0);
+                        extended = true;
                     }
-                    else if (extendButton && extended)
+                    else if (!extendButton && extended)
                     {
                         lift.moveToPosition(0.0f);
                         wrist.setTarget(-1);
+                        extended = false;
                     }    
 
                     // uses wrist down state to grab vertical stacks
-                    if (wristDownButton)
-                        wrist.setTarget(-1);
-                    else if (prevWristPos == -1 && !wristDownButton)
+                    if (wristDownButton && lift.getAveragePosition() < 1.5)
                         wrist.setTarget(0);
-                    
+                    else if (!wristDownButton && !matchLoadButton && (lift.getAveragePosition() < 1.5f))
+                        wrist.setTarget(-1);
+
+                    grabber.moveGrabber(0.75f);
 
                     // Moves the wrist to the up position whenever the lift is going up
                     // if (lift.getTargetPosition() > lift.getAveragePosition())
@@ -250,6 +244,7 @@ namespace devils
                     {
                         intake.matchLoad(1.0f);                   
                         throughtakeIntakeMotors.move(0.25f);
+                        wrist.setTarget(-1);
                     }
                     else
                     {
@@ -263,12 +258,12 @@ namespace devils
                     scorer->setIsScore(!scorer->getIsScore());
                 }
 
-                prevWristPos = currentWristPos;
-                currentWristPos = wrist.getTargetState();
                 wrist.update();
                 // printf("Wrist target position: %f\n", wrist.getTargetPosition());
 
                 lift.update();
+
+                grabber.update();
 
                 // Odo telemetry for tuning (vbOdom is curretly broken)
                 odoXPos.set(odometry->getPose().x);

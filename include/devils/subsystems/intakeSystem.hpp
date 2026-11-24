@@ -29,16 +29,15 @@ namespace devils
         {
             topRollers.move(speed);
             bottomRollers.move(speed);
-            if (speed < 0)
-                throughtakeRollers.move(speed / 2);
+            throughtakeRollers.move(speed / 2);
+
         }
 
         void matchLoad(float speed)
         {
             topRollers.move(-speed);
             bottomRollers.move(speed);
-            if (speed < 0)
-                throughtakeRollers.move(speed / 2);
+            throughtakeRollers.move(speed / 2);
         }
 
         private:

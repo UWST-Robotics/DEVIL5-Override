@@ -83,6 +83,7 @@ namespace devils{
             {
                 if (timer.getIsFinished())
                 {
+                    grabber.moveGrabber(100);
                     step = 4;
                 }
             }
